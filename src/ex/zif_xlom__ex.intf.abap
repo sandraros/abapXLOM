@@ -9,21 +9,6 @@ INTERFACE zif_xlom__ex
   PUBLIC.
 
   TYPES ty_expression_type TYPE i.
-*  TYPES:
-*    BEGIN OF ts_operand_result,
-*      name                     TYPE string,
-*      object                   TYPE REF TO zif_xlom__va,
-*      "! <ul>
-*      "! <li>'X': the argument isn't changed when the formula is expanded for Array Evaluation
-*      "!          e.g. the argument Array of the function INDEX: if A1 contains =INDEX(C1:D2,&lcub;1,2&rcub;,&lcub;1,2&rcub;),
-*      "!          A1 and B1 values are the same as if they contain =INDEX(C1:D2,1,1) and =INDEX(C1:D2,2,2).</li>
-*      "! <li>' ': the argument is changed when the formula is expanded for Array Evaluation
-*      "!          e.g.the argument Text of the function RIGHT: if A1 contains =RIGHT(A1:A2,&lcub;1;2&rcub;),
-*      "!          A1 and A2 values are the same as if they contain =RIGHT(A1,1) and =RIGHT(A2,2).</li>
-*      "! </ul>
-*      not_part_of_result_array TYPE abap_bool,
-*    END OF ts_operand_result.
-*  TYPES tt_operand_result TYPE SORTED TABLE OF ts_operand_result WITH UNIQUE KEY name.
   TYPES tt_operand_result TYPE STANDARD TABLE OF REF TO zif_xlom__va WITH EMPTY KEY.
   TYPES:
     BEGIN OF ts_operand_expr,
@@ -49,13 +34,6 @@ INTERFACE zif_xlom__ex
       not_part_of_result_array TYPE abap_bool,
     END OF ts_parameter.
   TYPES tt_parameter TYPE STANDARD TABLE OF ts_parameter WITH EMPTY KEY.
-
-*  TYPES:
-*    "! TO BE DELETED AS NOT USED ANYMORE BY ZCL_XLOM__EX_UT_EVAL
-*    BEGIN OF ts_evaluate_array_operands,
-*      result          TYPE REF TO zif_xlom__va,
-*      operand_results TYPE tt_operand_result,
-*    END OF ts_evaluate_array_operands.
 
   CONSTANTS:
     "! Used to replace IS INSTANCE OF, in case one day the code is backported to ABAP before 7.50.
@@ -607,26 +585,9 @@ INTERFACE zif_xlom__ex
   DATA result_of_evaluation  TYPE REF TO zif_xlom__va    READ-ONLY.
   DATA parameters            TYPE tt_parameter           READ-ONLY.
   DATA arguments_or_operands TYPE tt_argument_or_operand READ-ONLY.
-*  DATA arguments_or_operands TYPE tt_argument_or_operand READ-ONLY.
 
-*  METHODS evaluate
-*    IMPORTING !context      TYPE REF TO zcl_xlom__ex_ut_eval_context
-*    RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
-
-  METHODS evaluate_single
+  METHODS evaluate
     IMPORTING arguments     TYPE tt_operand_result
               !context      TYPE REF TO zcl_xlom__ex_ut_eval_context
     RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
-
-*  "! Compare two expressions. NB: this other method may also be used ZCL_XLOM__EX_UT=>ARE_EQUAL( expression_1 = ... expression_2 = ... ).
-*  METHODS is_equal
-*    IMPORTING expression    TYPE REF TO zif_xlom__ex
-*    RETURNING VALUE(result) TYPE abap_bool.
-*
-*  METHODS set_arguments_or_operands
-*    IMPORTING arguments_or_operands TYPE tt_argument_or_operand.
-*
-*  METHODS set_result
-*    IMPORTING !value        TYPE REF TO zif_xlom__va
-*    RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
 ENDINTERFACE.

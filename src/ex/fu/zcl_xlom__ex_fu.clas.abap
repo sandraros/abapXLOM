@@ -53,7 +53,7 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
       CHANGING  arguments_or_operands = function->zif_xlom__ex~arguments_or_operands ).
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.

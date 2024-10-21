@@ -14,20 +14,16 @@ CLASS zcl_xlom__ex_ut_eval_aunit DEFINITION
     DATA range_c1    TYPE REF TO zcl_xlom_range.
     DATA range_d1    TYPE REF TO zcl_xlom_range.
 
-    METHODS assert_equals
-      IMPORTING act           TYPE REF TO zif_xlom__va
-                exp           TYPE REF TO zif_xlom__va
-      RETURNING VALUE(result) TYPE abap_bool.
+*    METHODS assert_equals
+*      IMPORTING act           TYPE REF TO zif_xlom__va
+*                exp           TYPE REF TO zif_xlom__va
+*      RETURNING VALUE(result) TYPE abap_bool.
 
     METHODS setup_default_xlom_objects.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_ut_eval_aunit IMPLEMENTATION.
-  METHOD assert_equals.
-    cl_abap_unit_assert=>assert_true( xsdbool( exp->is_equal( act ) ) ).
-  ENDMETHOD.
-
   METHOD setup_default_xlom_objects.
     application = zcl_xlom_application=>create( ).
     workbook = application->workbooks->add( ).
@@ -42,5 +38,9 @@ CLASS zcl_xlom__ex_ut_eval_aunit IMPLEMENTATION.
       CATCH zcx_xlom__va.
         cl_abap_unit_assert=>fail( 'unexpected' ).
     ENDTRY.
+*  ENDMETHOD.
+
+*  METHOD assert_equals.
+*    cl_abap_unit_assert=>assert_true( xsdbool( exp->is_equal( act ) ) ).
   ENDMETHOD.
 ENDCLASS.

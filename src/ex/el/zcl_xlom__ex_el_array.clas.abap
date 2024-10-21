@@ -30,55 +30,17 @@ CLASS zcl_xlom__ex_el_array IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
-    result = zif_xlom__ex~set_result( zcl_xlom__va_array=>create_initial(
-                                          row_count    = lines( rows )
-                                          column_count = REDUCE #( INIT n = 0
-                                                                        FOR <row> IN rows
-                                                                        NEXT n = nmax(
-                                                                            val1 = n
-                                                                            val2 = lines( <row>-columns_of_row ) ) )
-                                          rows         = VALUE #(
-                                              FOR <row> IN rows
-                                              ( columns_of_row = VALUE #( FOR <column> IN <row>-columns_of_row
-                                                                          ( <column>->evaluate( context ) ) ) ) ) ) ).
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~evaluate_single.
-    RAISE EXCEPTION TYPE zcx_xlom_todo.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~is_equal.
-    DATA(array) = CAST zcl_xlom__ex_el_array( expression ).
-    IF lines( rows ) <> lines( array->rows ).
-      RETURN.
-    ENDIF.
-
-    DATA(row_tabix) = 1.
-    WHILE row_tabix <= lines( rows ).
-
-      DATA(ref_columns) = REF #( rows[ row_tabix ]-columns_of_row ).
-      DATA(ref_array_columns) = REF #( array->rows[ row_tabix ]-columns_of_row ).
-      IF lines( ref_columns->* ) <> lines( ref_array_columns->* ).
-        result = abap_false.
-        RETURN.
-      ENDIF.
-
-      DATA(column_tabix) = 1.
-      WHILE column_tabix <= lines( ref_columns->* ).
-        IF abap_false = ref_columns->*[ column_tabix ]->is_equal( ref_array_columns->*[ column_tabix ] ).
-          RETURN.
-        ENDIF.
-        column_tabix = column_tabix + 1.
-      ENDWHILE.
-
-      row_tabix = row_tabix + 1.
-    ENDWHILE.
-
-    result = abap_true.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~set_result.
-    zif_xlom__ex~result_of_evaluation = value.
-    result = value.
+    result = zcl_xlom__va_array=>create_initial(
+                 row_count    = lines( rows )
+                 column_count = REDUCE #( INIT n = 0
+                                               FOR <row> IN rows
+                                               NEXT n = nmax( val1 = n
+                                                              val2 = lines( <row>-columns_of_row ) ) )
+                 rows         = VALUE #( FOR <row> IN rows
+                                         ( columns_of_row = VALUE #( FOR <column> IN <row>-columns_of_row
+                                                                     ( zcl_xlom__ex_ut_eval=>evaluate_array_operands(
+                                                                           expression = <column>
+                                                                           context    = context ) ) ) ) ) ).
+    zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
 ENDCLASS.

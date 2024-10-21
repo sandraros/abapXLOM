@@ -3,21 +3,17 @@ CLASS zcl_xlom__ex_ut_eval DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
-*    "! @parameter operands | In RIGHT("hello",) the second argument will be
-*    "!                       ZCL_XLOM__EX_EL_EMPTY_ARGUMENT=>SINGLETON while
-*    "!                       in RIGHT("hello") the second argument will be
-*    "!                       NOT BOUND. Need to differentiate because:
-*    "!                       <ul>
-*    "!                         <li>RIGHT("hello",) (means RIGHT("hello",0)) -> arguments "hello" and empty value</li>
-*    "!                         <li>RIGHT("hello") (means RIGHT("hello",1)) -> arguments "hello" and empty argument</li>
-*    "!                       </ul>
+    "! One simple example to understand:
+    "!
+    "! In E1, INDEX(A1:D4,{1,2;3,4},{1,2;3,4}) will correspond to four values in E1:F2:
+    "! E1: INDEX(A1:D4,1,1) (i.e. A1)
+    "! F1: INDEX(A1:D4,2,2) (i.e. B2)
+    "! E2: INDEX(A1:D4,3,3) (i.e. C3)
+    "! F2: INDEX(A1:D4,4,4) (i.e. D4)
     CLASS-METHODS evaluate_array_operands
       IMPORTING expression    TYPE REF TO zif_xlom__ex
-                 context      TYPE REF TO zcl_xlom__ex_ut_eval_context
-*                operands      TYPE zif_xlom__ex=>tt_argument_or_operand
-**                operands      TYPE zif_xlom__ex=>tt_operand_expr
+                context       TYPE REF TO zcl_xlom__ex_ut_eval_context
       RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
-*      RETURNING VALUE(result) TYPE zif_xlom__ex=>ts_evaluate_array_operands.
 
   PROTECTED SECTION.
 
@@ -97,7 +93,6 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
     DATA(at_least_one_array_or_range) = abap_false.
     DATA(operand_results) = VALUE zif_xlom__ex=>tt_operand_result( ).
     LOOP AT expression->arguments_or_operands INTO DATA(operand).
-*    LOOP AT operands INTO DATA(operand).
       DATA(parameter) = REF #( expression->parameters[ sy-tabix ] ).
 
       DATA(operand_result) = COND #( WHEN operand IS NOT BOUND
@@ -106,15 +101,6 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
                      ELSE zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = operand
                                                                          context    = context ) ).
       INSERT operand_result INTO TABLE operand_results.
-*      INSERT VALUE #( name                     = parameter->name
-*                      object                   = COND #( WHEN operand IS NOT BOUND
-*                                                         THEN zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = parameter->default
-*                                                                                                             context    = context )
-*                                                         ELSE zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = operand
-*                                                                                                             context    = context ) )
-*                      not_part_of_result_array = parameter->not_part_of_result_array )
-*             INTO TABLE operand_results
-*             REFERENCE INTO DATA(operand_result).
 
       IF     parameter->not_part_of_result_array = abap_false
          AND (    operand_result->type = operand_result->c_type-array
@@ -124,42 +110,13 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
           at_least_one_array_or_range = abap_true.
         ENDIF.
     ENDLOOP.
-*    LOOP AT operands REFERENCE INTO DATA(operand).
-*      IF operand->object IS NOT BOUND.
-*        " e.g. NUM_CHARS not passed to function RIGHT
-*        INSERT VALUE #( name                     = operand->name
-*                        object                   = VALUE #( )
-*                        not_part_of_result_array = operand->not_part_of_result_array )
-*               INTO TABLE operand_results.
-**               INTO TABLE result-operand_results.
-*      ELSE.
-*        "======================
-*        " EVALUATE THE OPERAND
-*        "======================
-*        INSERT VALUE #( name                     = operand->name
-*                        object                   = operand->object->evaluate( context )
-*                        not_part_of_result_array = operand->not_part_of_result_array )
-*               INTO TABLE operand_results
-**               INTO TABLE result-operand_results
-*               REFERENCE INTO DATA(operand_result).
-*        " Should we perform array evaluation on more than 1 cell?
-*        IF     operand_result->not_part_of_result_array = abap_false
-*           AND (    operand_result->object->type = operand_result->object->c_type-array
-*                 OR operand_result->object->type = operand_result->object->c_type-range )
-*           AND (    CAST zif_xlom__va_array( operand_result->object )->row_count    > 1
-*                 OR CAST zif_xlom__va_array( operand_result->object )->column_count > 1 ).
-*          at_least_one_array_or_range = abap_true.
-*        ENDIF.
-*      ENDIF.
-*    ENDLOOP.
 
     IF at_least_one_array_or_range = abap_false.
       "======================
       " EXPRESSION EVALUATION
       "======================
-      result = expression->evaluate_single( arguments = operand_results
-*      result = expression->evaluate_single( arguments = result-operand_results
-                                            context   = context ).
+      result = expression->evaluate( arguments = operand_results
+                                     context   = context ).
     ELSE.
 
       DATA(max_row_count) = 1.
@@ -170,9 +127,6 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
            OR operand_result IS NOT BOUND.
           CONTINUE.
         ENDIF.
-*      LOOP AT result-operand_results REFERENCE INTO operand_result
-*           WHERE     not_part_of_result_array  = abap_false
-*                 AND object                   IS BOUND.
         CASE operand_result->type.
           WHEN operand_result->c_type-array
             OR operand_result->c_type-range.
@@ -194,7 +148,6 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
           DATA(single_cell_operands) = VALUE zif_xlom__ex=>tt_operand_result( ).
           LOOP AT operand_results INTO operand_result.
             parameter = REF #( expression->parameters[ sy-tabix ] ).
-*          LOOP AT result-operand_results REFERENCE INTO operand_result.
             IF     parameter->not_part_of_result_array  = abap_false
                AND operand_result                   IS BOUND.
               IF operand_result->type = operand_result->c_type-array.
@@ -212,15 +165,12 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
               cell = operand_result.
             ENDIF.
             INSERT cell INTO TABLE single_cell_operands.
-*            INSERT VALUE #( name   = parameter->name
-*                            object = cell )
-*                   INTO TABLE single_cell_operands.
           ENDLOOP.
 
           "======================
           " EXPRESSION EVALUATION
           "======================
-          DATA(single_cell_result) = expression->evaluate_single( arguments = single_cell_operands
+          DATA(single_cell_result) = expression->evaluate( arguments = single_cell_operands
                                                                   context   = context ).
 
           target_array->zif_xlom__va_array~set_cell_value( row    = row

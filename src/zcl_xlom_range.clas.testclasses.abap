@@ -8,11 +8,12 @@ CLASS ltc_range DEFINITION FINAL
 
   PRIVATE SECTION.
     METHODS convert_column_a_xfd_to_number FOR TESTING RAISING cx_static_check.
+    METHODS convert_column_number_to_a_xfd FOR TESTING RAISING cx_static_check.
+    METHODS create_from_top_left_bottom_ri FOR TESTING RAISING cx_static_check.
 *    METHODS decode_range_address_a1_invali FOR TESTING RAISING cx_static_check.
     METHODS decode_range_address_a1_valid  FOR TESTING RAISING cx_static_check.
 *    METHODS decode_range_address_sh_invali FOR TESTING RAISING cx_static_check.
     METHODS decode_range_address_sh_valid  FOR TESTING RAISING cx_static_check.
-    METHODS convert_column_number_to_a_xfd FOR TESTING RAISING cx_static_check.
 
     TYPES ty_address TYPE zif_xlom__va_array=>ts_address.
 ENDCLASS.
@@ -57,6 +58,25 @@ CLASS ltc_range IMPLEMENTATION.
         cl_abap_unit_assert=>fail( msg = 'Exception expected for -1 - Column does not exist' ).
       CATCH cx_root ##NO_HANDLER.
     ENDTRY.
+  ENDMETHOD.
+
+  METHOD create_from_top_left_bottom_ri.
+*    zcl_xlom_range=>create_from_address_or_name(
+*      EXPORTING
+*        address     =                  " ADDRESS
+*        relative_to =                  " RELATIVE_TO
+**      RECEIVING
+**        result      =                  " RESULT
+*    ).
+**    CATCH zcx_xlom__va.(
+*      EXPORTING
+*        worksheet             =                  " WORKSHEET
+*        top_left              =                  " TOP_LEFT
+*        bottom_right          =                  " BOTTOM_RIGHT
+**        column_row_collection =                  " COLUMN_ROW_COLLECTION
+**      RECEIVING
+**        result                =                  " RESULT
+*    ).( -1 ).
   ENDMETHOD.
 
 *  METHOD decode_range_address_a1_invali.
@@ -121,6 +141,28 @@ CLASS ltc_range IMPLEMENTATION.
                                                                                           row    = 1 )
                                                                 bottom_right   = VALUE #( column = 1
                                                                                           row    = 1 ) ) ).
+    cl_abap_unit_assert=>assert_equals(
+        act = zcl_xlom_range=>decode_range_address_a1( '4:3' )
+        exp = VALUE ty_address( top_left     = VALUE #( row    = 3
+                                                        column = 0 )
+                                bottom_right = VALUE #( row    = 4
+                                                        column = 0 ) ) ).
+    cl_abap_unit_assert=>assert_equals(
+        act = zcl_xlom_range=>decode_range_address_a1( 'B:A' )
+        exp = VALUE ty_address( top_left     = VALUE #( row    = 0
+                                                        column = 1 )
+                                bottom_right = VALUE #( row    = 0
+                                                        column = 2 ) ) ).
+    cl_abap_unit_assert=>assert_equals( act = zcl_xlom_range=>decode_range_address_a1( 'A2:B1' )
+                                        exp = VALUE ty_address( top_left     = VALUE #( row    = 1
+                                                                                        column = 1 )
+                                                                bottom_right = VALUE #( row    = 2
+                                                                                        column = 2 ) ) ).
+    cl_abap_unit_assert=>assert_equals( act = zcl_xlom_range=>decode_range_address_a1( 'A2:B1' )
+                                        exp = VALUE ty_address( top_left     = VALUE #( row    = 1
+                                                                                        column = 1 )
+                                                                bottom_right = VALUE #( row    = 2
+                                                                                        column = 2 ) ) ).
   ENDMETHOD.
 
 *  METHOD decode_range_address_sh_invali.

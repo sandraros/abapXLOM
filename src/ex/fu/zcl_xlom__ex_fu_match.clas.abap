@@ -1,9 +1,8 @@
 "! MATCH(lookup_value, lookup_array, [match_type])
 "! https://support.microsoft.com/en-us/office/match-function-e8dffd45-c762-47d6-bf89-533f4a37673a
 CLASS zcl_xlom__ex_fu_match DEFINITION
-  PUBLIC FINAL
-  INHERITING FROM zcl_xlom__ex_fu
-*  CREATE PRIVATE
+  PUBLIC
+  INHERITING FROM zcl_xlom__ex_fu FINAL
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
@@ -42,7 +41,7 @@ CLASS zcl_xlom__ex_fu_match DEFINITION
                 match_type    TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_match.
 
-    METHODs zif_xlom__ex~evaluate_single REDEFINITION.
+    METHODS zif_xlom__ex~evaluate REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -59,10 +58,6 @@ CLASS zcl_xlom__ex_fu_match DEFINITION
       BEGIN OF c_match_type,
         exact_match TYPE i VALUE 0,
       END OF c_match_type.
-
-*    DATA lookup_value TYPE REF TO zif_xlom__ex.
-*    DATA lookup_array TYPE REF TO zif_xlom__ex.
-*    DATA match_type   TYPE REF TO zif_xlom__ex.
 ENDCLASS.
 
 
@@ -71,45 +66,25 @@ CLASS zcl_xlom__ex_fu_match IMPLEMENTATION.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-match.
     zif_xlom__ex~parameters = VALUE #( ( name = 'LOOKUP_VALUE' )
-                                       ( name = 'LOOKUP_ARRAY' )
-                                       ( name = 'MATCH_TYPE  ' default = zcl_xlom__ex_el_number=>create( 1 ) )
-                                       ( name = 'A1        ' default = zcl_xlom__ex_el_boolean=>true )
-                                       ( name = 'SHEET_TEXT' default = zcl_xlom__ex_el_string=>create( '' ) ) ).
+                                       ( name = 'LOOKUP_ARRAY' not_part_of_result_array = abap_true )
+                                       ( name = 'MATCH_TYPE  ' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
   ENDMETHOD.
 
   METHOD create.
     result = NEW zcl_xlom__ex_fu_match( ).
-    result->zif_xlom__ex~arguments_or_operands = VALUE #( (  )
-                                                          (  ) ).
+    result->zif_xlom__ex~arguments_or_operands = VALUE #( ( lookup_value )
+                                                          ( lookup_array )
+                                                          ( match_type   ) ).
     zcl_xlom__ex_ut=>check_arguments_or_operands(
       EXPORTING expression            = result
       CHANGING  arguments_or_operands = result->zif_xlom__ex~arguments_or_operands ).
-*    result->zif_xlom__ex~type = zif_xlom__ex=>c_type-function-match.
-*    result->lookup_value      = lookup_value.
-*    result->lookup_array      = lookup_array.
-*    result->match_type        = match_type.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~evaluate.
-*    DATA(array_evaluation) = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-*        expression = me
-*        context    = context
-*        operands   = VALUE #( ( name = 'LOOKUP_VALUE' object = lookup_value )
-*                              ( name = 'LOOKUP_ARRAY' object = lookup_array not_part_of_result_array = abap_true )
-*                              ( name = 'MATCH_TYPE  ' object = match_type ) ) ).
-*    IF array_evaluation-result IS BOUND.
-*      result = array_evaluation-result.
-*    ELSE.
-*      result = zif_xlom__ex~evaluate_single( arguments = array_evaluation-operand_results
-*                                             context   = context ).
-*    ENDIF.
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     TRY.
-        DATA(lookup_value_result) = arguments[ c_arg-LOOKUP_VALUE ].
-        DATA(lookup_array_result) = zcl_xlom__va=>to_array( arguments[ c_arg-LOOKUP_ARRAY ] ).
-        DATA(match_type_result) = COND i( LET result_num_chars = arguments[ c_arg-MATCH_TYPE ] IN
+        DATA(lookup_value_result) = arguments[ c_arg-lookup_value ].
+        DATA(lookup_array_result) = zcl_xlom__va=>to_array( arguments[ c_arg-lookup_array ] ).
+        DATA(match_type_result) = COND i( LET result_num_chars = arguments[ c_arg-match_type ] IN
                                           WHEN result_num_chars IS BOUND
                                           THEN COND #( WHEN result_num_chars->type = result_num_chars->c_type-empty
                                                        THEN 1
@@ -180,14 +155,5 @@ CLASS zcl_xlom__ex_fu_match IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_result.
-*    zif_xlom__ex~result_of_evaluation = value.
-*    result = value.
   ENDMETHOD.
 ENDCLASS.

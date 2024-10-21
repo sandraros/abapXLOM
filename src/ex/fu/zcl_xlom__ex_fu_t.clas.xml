@@ -5,10 +5,12 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_FU_T</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>T(&quot;1&quot;) -&gt; &quot;1&quot; ___ T(1) -&gt; &quot;&quot;</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
     <UNICODE>X</UNICODE>
+    <WITH_UNIT_TESTS>X</WITH_UNIT_TESTS>
    </VSEOCLASS>
    <DESCRIPTIONS>
     <SEOCOMPOTX>

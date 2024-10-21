@@ -34,33 +34,10 @@ CLASS zcl_xlom__ex_el_number IMPLEMENTATION.
                       object = result )
              INTO TABLE buffer.
     ENDIF.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~evaluate.
-*    result = zif_xlom__ex~set_result( zcl_xlom__va_number=>create( number ) ).
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     result = zcl_xlom__va_number=>create( number ).
     zif_xlom__ex~result_of_evaluation = result.
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    IF     expression->type = zif_xlom__ex=>c_type-number
-*       AND number           = CAST zcl_xlom__ex_el_number( expression )->number.
-*      result = abap_true.
-*    ELSE.
-*      result = abap_false.
-*    ENDIF.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_arguments_or_operands.
-*    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_result.
-*    zif_xlom__ex~result_of_evaluation = value.
-*    result = value.
   ENDMETHOD.
 ENDCLASS.

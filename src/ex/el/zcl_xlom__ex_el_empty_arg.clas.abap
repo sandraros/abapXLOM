@@ -25,19 +25,7 @@ CLASS zcl_xlom__ex_el_empty_arg IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
-    result = zif_xlom__ex~set_result( zcl_xlom__va_empty=>get_singleton( ) ).
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~evaluate_single.
-    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~is_equal.
-    result = xsdbool( expression->type = expression->c_type-empty_argument ).
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~set_result.
-    zif_xlom__ex~result_of_evaluation = value.
-    result = value.
+    result = zcl_xlom__va_empty=>get_singleton( ).
+    zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
 ENDCLASS.

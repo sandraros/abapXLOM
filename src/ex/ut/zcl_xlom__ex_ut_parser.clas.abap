@@ -346,10 +346,16 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
             ( subitem_by_priority->subitem_index + <operand_position_offset> ) ).
         SORT positions_of_operands_to_delet BY table_line DESCENDING.
         LOOP AT positions_of_operands_to_delet INTO DATA(position).
-          DELETE item->subitems INDEX position.
+          DATA(subitem_to_delete) = item->subitems[ position ].
+          LOOP AT item->subitems ASSIGNING FIELD-SYMBOL(<subitem>)
+               WHERE table_line = subitem_to_delete.
+            <subitem> = subitem_by_priority->subitem.
+          ENDLOOP.
         ENDLOOP.
       ENDLOOP.
     ENDLOOP.
+
+    DELETE ADJACENT DUPLICATES FROM item->subitems COMPARING table_line.
   ENDMETHOD.
 
   METHOD parse_expression_item_3.

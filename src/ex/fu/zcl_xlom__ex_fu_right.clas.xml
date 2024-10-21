@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_FU_RIGHT</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>RIGHT(&quot;abc&quot;,1) -&gt; &quot;c&quot;</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

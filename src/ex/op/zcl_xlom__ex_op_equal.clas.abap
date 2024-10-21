@@ -19,8 +19,6 @@ CLASS zcl_xlom__ex_op_equal DEFINITION
       END OF c_arg.
 
     METHODS constructor.
-*    DATA left_operand  TYPE REF TO zif_xlom__ex.
-*    DATA right_operand TYPE REF TO zif_xlom__ex.
 ENDCLASS.
 
 
@@ -33,26 +31,14 @@ CLASS zcl_xlom__ex_op_equal IMPLEMENTATION.
 
   METHOD create.
     result = NEW zcl_xlom__ex_op_equal( ).
-*    result->left_operand      = left_operand.
-*    result->right_operand     = right_operand.
-*    result->zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-equal.
+    result->zif_xlom__ex~arguments_or_operands = VALUE #( ( left_operand  )
+                                                          ( right_operand ) ).
+*    zcl_xlom__ex_ut=>check_arguments_or_operands(
+*      EXPORTING expression            = result
+*      CHANGING  arguments_or_operands = result->zif_xlom__ex~arguments_or_operands ).
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
-    DATA(array_evaluation) = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-                                 expression = me
-                                 context    = context
-                                 operands   = VALUE #( ( name = 'LEFT'  object = left_operand )
-                                                       ( name = 'RIGHT' object = right_operand ) ) ).
-    IF array_evaluation-result IS BOUND.
-      result = array_evaluation-result.
-    ELSE.
-      result = zif_xlom__ex~evaluate_single( arguments = array_evaluation-operand_results
-                                             context   = context ).
-    ENDIF.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~evaluate_single.
     DATA(left_result) = arguments[ c_arg-left_operand ].
     DATA(right_result) = arguments[ c_arg-right_operand ].
     IF left_result->type <> right_result->type.
@@ -65,21 +51,5 @@ CLASS zcl_xlom__ex_op_equal IMPLEMENTATION.
       result = zcl_xlom__va_boolean=>get( xsdbool( <left_operand_value> = <right_operand_value> ) ).
     ENDIF.
     zif_xlom__ex~result_of_evaluation = result.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    IF     expression       IS BOUND
-*       AND expression->type  = zif_xlom__ex=>c_type-operation-equal
-*       AND left_operand->is_equal( CAST zcl_xlom__ex_op_equal( expression )->left_operand )
-*       AND right_operand->is_equal( CAST zcl_xlom__ex_op_equal( expression )->right_operand ).
-*      result = abap_true.
-*    ELSE.
-*      result = abap_false.
-*    ENDIF.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~set_result.
-    zif_xlom__ex~result_of_evaluation = value.
-    result = value.
   ENDMETHOD.
 ENDCLASS.

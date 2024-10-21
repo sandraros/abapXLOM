@@ -40,7 +40,7 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
                 sheet_text    TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_address.
 
-    METHODs zif_xlom__ex~evaluate_single REDEFINITION.
+    METHODs zif_xlom__ex~evaluate REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -117,7 +117,7 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
 *                                       ( name = 'SHEET_TEXT' object = sheet_text ) ) ).
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     TRY.
         DATA(row_num) = zcl_xlom__va=>to_number( arguments[ c_arg-ROW_NUM ] )->get_integer( ).
         DATA(column_num) = zcl_xlom__va=>to_number( arguments[ c_arg-COLUMN_NUM ] )->get_integer( ).

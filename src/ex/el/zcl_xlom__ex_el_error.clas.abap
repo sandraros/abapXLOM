@@ -112,19 +112,7 @@ CLASS zcl_xlom__ex_el_error IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
-    result = zif_xlom__ex~set_result( zcl_xlom__va_error=>get_by_error_number( internal_error_number ) ).
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~evaluate_single.
-    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~is_equal.
-    RAISE EXCEPTION TYPE zcx_xlom_todo.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~set_result.
-    zif_xlom__ex~result_of_evaluation = value.
-    result = value.
+    result = zcl_xlom__va_error=>get_by_error_number( internal_error_number ).
+    zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
 ENDCLASS.

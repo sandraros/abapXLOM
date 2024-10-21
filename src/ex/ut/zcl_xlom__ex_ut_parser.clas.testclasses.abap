@@ -18,7 +18,6 @@ CLASS ltc_parser DEFINITION FINAL
     METHODS parentheses_arithmetic_complex FOR TESTING RAISING cx_static_check.
     METHODS priority                       FOR TESTING RAISING cx_static_check.
 
-
     TYPES tt_token       TYPE zcl_xlom__ex_ut_lexer=>tt_token.
     TYPES ts_result_lexe TYPE zcl_xlom__ex_ut_lexer=>ts_result_lexe.
 

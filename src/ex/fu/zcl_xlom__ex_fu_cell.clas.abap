@@ -6,7 +6,6 @@
 CLASS zcl_xlom__ex_fu_cell DEFINITION
   PUBLIC FINAL
   INHERITING FROM zcl_xlom__ex_fu
-*  CREATE PRIVATE
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
@@ -59,13 +58,12 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
                 !reference    TYPE REF TO zcl_xlom__ex_el_range OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_cell.
 
-    METHODs zif_xlom__ex~evaluate_single REDEFINITION.
+    METHODs zif_xlom__ex~evaluate REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
 
   PRIVATE SECTION.
-*    TYPES ty_info_type TYPE i.
     CONSTANTS:
       BEGIN OF c_arg,
         info_type  TYPE i VALUE 1,
@@ -76,8 +74,6 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
       BEGIN OF c_info_type,
         filename TYPE string VALUE 'filename',
       END OF c_info_type.
-*    DATA info_type TYPE REF TO zcl_xlom__ex_el_string.
-*    DATA reference TYPE REF TO zcl_xlom__ex_el_range.
 ENDCLASS.
 
 
@@ -96,37 +92,9 @@ CLASS zcl_xlom__ex_fu_cell IMPLEMENTATION.
     zcl_xlom__ex_ut=>check_arguments_or_operands(
       EXPORTING expression            = result
       CHANGING  arguments_or_operands = result->zif_xlom__ex~arguments_or_operands ).
-*    result->zif_xlom__ex~type = zif_xlom__ex=>c_type-function-cell.
-*    result->info_type         = info_type.
-*    result->reference         = reference.
-*    IF reference IS NOT BOUND.
-*      RAISE EXCEPTION TYPE zcx_xlom_todo.
-*    ENDIF.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~evaluate.
-*    DATA temp_result TYPE REF TO zcl_xlom__va_string.
-*
-*    TRY.
-*        " In cell B1, formula =CELL("address",A1:A6) is the same result as =CELL("address",A1), which is $A$1 in cell B1;
-*        " the cells B2 to B6 are not initialized with $A$2, $A$3, etc.
-*        DATA(info_type_result) = zcl_xlom__va=>to_string( info_type->zif_xlom__ex~evaluate( context ) )->get_string( ).
-*        CASE info_type_result.
-*          WHEN c_info_type-filename.
-*            " Retourne par exemple "C:\temp\[Book1.xlsx]Sheet1"
-*            temp_result = zcl_xlom__va_string=>create( context->worksheet->parent->path
-*                                                        && |\\[{ context->worksheet->parent->name }]|
-*                                                        && context->worksheet->name ).
-*          WHEN OTHERS.
-*            RAISE EXCEPTION TYPE zcx_xlom_todo.
-*        ENDCASE.
-*        result = zif_xlom__ex~set_result( temp_result ).
-*      CATCH zcx_xlom__va INTO DATA(error).
-*        result = error->result_error.
-*    ENDTRY.
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     TRY.
         " In cell B1, formula =CELL("address",A1:A6) is the same result as =CELL("address",A1), which is $A$1 in cell B1;
         " the cells B2 to B6 are not initialized with $A$2, $A$3, etc.
@@ -144,15 +112,5 @@ CLASS zcl_xlom__ex_fu_cell IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
-*    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_result.
-*    zif_xlom__ex~result_of_evaluation = value.
-*    result = value.
   ENDMETHOD.
 ENDCLASS.

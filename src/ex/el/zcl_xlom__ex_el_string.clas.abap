@@ -20,27 +20,10 @@ CLASS zcl_xlom__ex_el_string IMPLEMENTATION.
     result = NEW zcl_xlom__ex_el_string( ).
     result->string            = text.
     result->zif_xlom__ex~type = zif_xlom__ex=>c_type-string.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~evaluate.
-*    result = zif_xlom__ex~set_result( zcl_xlom__va_string=>create( string ) ).
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     result = zcl_xlom__va_string=>get( string ).
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    IF expression->type <> zif_xlom__ex=>c_type-string.
-*      RETURN.
-*    ENDIF.
-*    DATA(string_object) = CAST zcl_xlom__ex_el_string( expression ).
-*    result = xsdbool( string = string_object->string ).
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_result.
-*    zif_xlom__ex~result_of_evaluation = value.
-*    result = value.
+    zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
 ENDCLASS.

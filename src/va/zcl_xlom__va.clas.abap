@@ -21,6 +21,7 @@ CLASS zcl_xlom__va DEFINITION
 
     CLASS-METHODS to_range
       IMPORTING !input        TYPE REF TO zif_xlom__va
+                worksheet     TYPE REF TO zcl_xlom_worksheet
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range
       RAISING   zcx_xlom__va.
 
@@ -139,6 +140,13 @@ CLASS zcl_xlom__va IMPLEMENTATION.
         " TODO I didn't check whether it should be #N/A, #REF! or #VALUE!
         RAISE EXCEPTION TYPE zcx_xlom__va
           EXPORTING result_error = zcl_xlom__va_error=>value_cannot_be_calculated.
+      WHEN input->c_type-number.
+        DATA(number) = CAST zcl_xlom__va_number( input )->get_number( ).
+        IF frac( number ) <> 0.
+          RAISE EXCEPTION TYPE zcx_xlom_todo.
+        ENDIF.
+        result = zcl_xlom_range=>create_from_address_or_name( address     = |{ number }:{ number }|
+                                                              relative_to = worksheet ).
       WHEN input->c_type-range.
         result = CAST #( input ).
       WHEN OTHERS.

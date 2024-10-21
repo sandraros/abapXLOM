@@ -1,9 +1,8 @@
 "! FIND(find_text, within_text, [start_num])
 "! https://support.microsoft.com/en-us/office/find-findb-functions-c7912941-af2a-4bdf-a553-d0d89b0a0628
 CLASS zcl_xlom__ex_fu_find DEFINITION
-  PUBLIC FINAL
-  INHERITING FROM zcl_xlom__ex_fu
-*  CREATE PRIVATE
+  PUBLIC
+  INHERITING FROM zcl_xlom__ex_fu FINAL
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
@@ -13,7 +12,7 @@ CLASS zcl_xlom__ex_fu_find DEFINITION
                 start_num     TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_find.
 
-    METHODs zif_xlom__ex~evaluate_single REDEFINITION.
+    METHODS zif_xlom__ex~evaluate REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -25,10 +24,6 @@ CLASS zcl_xlom__ex_fu_find DEFINITION
         within_text TYPE i VALUE 2,
         start_num   TYPE i VALUE 3,
       END OF c_arg.
-
-*    DATA find_text   TYPE REF TO zif_xlom__ex.
-*    DATA within_text TYPE REF TO zif_xlom__ex.
-*    DATA start_num   TYPE REF TO zif_xlom__ex.
 ENDCLASS.
 
 
@@ -43,38 +38,19 @@ CLASS zcl_xlom__ex_fu_find IMPLEMENTATION.
 
   METHOD create.
     result = NEW zcl_xlom__ex_fu_find( ).
-    result->zif_xlom__ex~arguments_or_operands = VALUE #( ( FIND_TEXT   )
-                                                          ( WITHIN_TEXT )
-                                                          ( START_NUM   ) ).
+    result->zif_xlom__ex~arguments_or_operands = VALUE #( ( find_text   )
+                                                          ( within_text )
+                                                          ( start_num   ) ).
     zcl_xlom__ex_ut=>check_arguments_or_operands(
       EXPORTING expression            = result
       CHANGING  arguments_or_operands = result->zif_xlom__ex~arguments_or_operands ).
-*    result->zif_xlom__ex~type = zif_xlom__ex=>c_type-function-find.
-*    result->find_text         = find_text.
-*    result->within_text       = within_text.
-*    result->start_num         = start_num.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~evaluate.
-*    DATA(array_evaluation) = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-*                                 expression = me
-*                                 context    = context
-*                                 operands   = VALUE #( ( name = 'FIND_TEXT  ' object = find_text   )
-*                                                       ( name = 'WITHIN_TEXT' object = within_text )
-*                                                       ( name = 'START_NUM  ' object = start_num   ) ) ).
-*    result = zif_xlom__ex~set_result(
-*                 COND #( WHEN array_evaluation-result IS BOUND
-*                         THEN array_evaluation-result
-*                         ELSE zif_xlom__ex~evaluate_single( arguments = array_evaluation-operand_results
-*                                                            context   = context ) ) ).
   ENDMETHOD.
 
-  METHOD zif_xlom__ex~evaluate_single.
+  METHOD zif_xlom__ex~evaluate.
     TRY.
-        DATA(result_of_find_text) = zcl_xlom__va=>to_string( arguments[ c_arg-FIND_TEXT ] )->get_string( ).
-        DATA(result_of_within_text) = zcl_xlom__va=>to_string( arguments[
-                                                                   c_arg-WITHIN_TEXT ] )->get_string( ).
-        DATA(result_of_start_num) = CAST zcl_xlom__va_number( arguments[ c_arg-START_NUM ] ).
+        DATA(result_of_find_text) = zcl_xlom__va=>to_string( arguments[ c_arg-find_text ] )->get_string( ).
+        DATA(result_of_within_text) = zcl_xlom__va=>to_string( arguments[ c_arg-within_text ] )->get_string( ).
+        DATA(result_of_start_num) = CAST zcl_xlom__va_number( arguments[ c_arg-start_num ] ).
         DATA(start_offset) = COND i( WHEN result_of_start_num IS BOUND THEN result_of_start_num->get_number( ) ).
         IF start_offset > strlen( result_of_within_text ).
           result = zcl_xlom__va_error=>value_cannot_be_calculated.
@@ -94,14 +70,5 @@ CLASS zcl_xlom__ex_fu_find IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_result.
-*    zif_xlom__ex~result_of_evaluation = value.
-*    result = value.
   ENDMETHOD.
 ENDCLASS.
