@@ -1,66 +1,49 @@
 *"* use this source file for your ABAP unit test classes
 
-CLASS ltc_app DEFINITION FINAL
+CLASS ltc_app DEFINITION
+  INHERITING FROM zcl_xlom__ex_ut_eval_aunit FINAL
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
   PRIVATE SECTION.
-    METHODS array                      FOR TESTING RAISING cx_static_check.
-
+    METHODS array_evaluation           FOR TESTING RAISING cx_static_check.
     METHODS complex_1                  FOR TESTING RAISING cx_static_check.
     METHODS complex_2                  FOR TESTING RAISING cx_static_check.
-
-    METHODS error                      FOR TESTING RAISING cx_static_check.
-
     METHODS function_optional_argument FOR TESTING RAISING cx_static_check.
-
-
-
-
-
-
-
-
-
-    METHODS number                     FOR TESTING RAISING cx_static_check.
-
     METHODS range_a1_plus_one          FOR TESTING RAISING cx_static_check.
     METHODS range_two_sheets           FOR TESTING RAISING cx_static_check.
-    METHODS string                     FOR TESTING RAISING cx_static_check.
-
-    DATA application TYPE REF TO zcl_xlom_application.
-    DATA workbook    TYPE REF TO zcl_xlom_workbook.
-    DATA worksheet   TYPE REF TO zcl_xlom_worksheet.
-    DATA range_a1    TYPE REF TO zcl_xlom_range.
-    DATA range_a2    TYPE REF TO zcl_xlom_range.
-    DATA range_b1    TYPE REF TO zcl_xlom_range.
-    DATA range_b2    TYPE REF TO zcl_xlom_range.
-    DATA range_c1    TYPE REF TO zcl_xlom_range.
-    DATA range_d1    TYPE REF TO zcl_xlom_range.
-
-*    METHODS assert_equals
-*      IMPORTING act           TYPE REF TO zif_xlom__va
-*                exp           TYPE REF TO zif_xlom__va
-*      RETURNING VALUE(result) TYPE abap_bool.
 
     METHODS setup.
 ENDCLASS.
 
 
 CLASS ltc_app IMPLEMENTATION.
-  METHOD array.
-    range_a1->set_formula2( value = `{1,2}` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_a1 )->get_number( )
-                                        exp = 1 ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_b1 )->get_number( )
-                                        exp = 2 ).
+  METHOD array_evaluation.
+    value = application->evaluate( `ADDRESS({1,2},{1,2;3,4},{1,4},TRUE,{"s","t"})` ).
+    " same as:  ADDRESS(1,1,1,TRUE,"s")  ADDRESS(2,2,4,TRUE,"t")
+    "           ADDRESS(1,3,1,TRUE,"s")  ADDRESS(2,4,4,TRUE,"t")
+    " expects:  s!$A$1  t!B2
+    "           s!$C$1  t!D2
+    DATA(value_array) = CAST zif_xlom__va_array( value ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value_array->get_cell_value(
+                                                                            column = 1
+                                                                            row    = 1 ) )->get_string( )
+                                        exp = `s!$A$1` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value_array->get_cell_value(
+                                                                            column = 2
+                                                                            row    = 1 ) )->get_string( )
+                                        exp = `t!B2` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value_array->get_cell_value(
+                                                                            column = 1
+                                                                            row    = 2 ) )->get_string( )
+                                        exp = `s!$C$1` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value_array->get_cell_value(
+                                                                            column = 2
+                                                                            row    = 2 ) )->get_string( )
+                                        exp = `t!D2` ).
   ENDMETHOD.
-
-*  METHOD assert_equals.
-*    cl_abap_unit_assert=>assert_true( xsdbool( exp->is_equal( act ) ) ).
-*  ENDMETHOD.
 
   METHOD complex_1.
     range_a2->set_formula2(
@@ -95,12 +78,6 @@ CLASS ltc_app IMPLEMENTATION.
                                         exp = `MY_TEST` ).
   ENDMETHOD.
 
-  METHOD error.
-    range_a1->set_formula2( value = `#N/A` ).
-    cl_abap_unit_assert=>assert_equals( act = range_a1->value( )->type
-                                        exp = zif_xlom__va=>c_type-error ).
-  ENDMETHOD.
-
   METHOD function_optional_argument.
     range_a1->set_formula2( value = `RIGHT("hello",0)` ).
     cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
@@ -108,20 +85,6 @@ CLASS ltc_app IMPLEMENTATION.
     range_a1->set_formula2( value = `RIGHT("hello",)` ).
     cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
                                         exp = '' ).
-  ENDMETHOD.
-
-  METHOD number.
-    range_a1->set_formula2( value = `1` ).
-    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_a1->value( ) )->get_number( )
-                                        exp = 1 ).
-*    assert_equals( act = range_a1->value( )
-*                   exp = zcl_xlom__va_number=>get( 1 ) ).
-
-    range_a1->set_formula2( value = `-1` ).
-    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_a1->value( ) )->get_number( )
-                                        exp = -1 ).
-*    assert_equals( act = range_a1->value( )
-*                   exp = zcl_xlom__va_number=>get( -1 ) ).
   ENDMETHOD.
 
   METHOD range_a1_plus_one.
@@ -146,24 +109,6 @@ CLASS ltc_app IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD setup.
-    application = zcl_xlom_application=>create( ).
-    workbook = application->workbooks->add( ).
-    TRY.
-        worksheet = workbook->worksheets->item( 'Sheet1' ).
-        range_a1 = worksheet->range( cell1_string = 'A1' ).
-        range_a2 = worksheet->range( cell1_string = 'A2' ).
-        range_b1 = worksheet->range( cell1_string = 'B1' ).
-        range_b2 = worksheet->range( cell1_string = 'B2' ).
-        range_c1 = worksheet->range( cell1_string = 'C1' ).
-        range_d1 = worksheet->range( cell1_string = 'D1' ).
-      CATCH zcx_xlom__va INTO DATA(error). " TODO: variable is assigned but never used (ABAP cleaner)
-        cl_abap_unit_assert=>fail( 'unexpected' ).
-    ENDTRY.
-  ENDMETHOD.
-
-  METHOD string.
-    range_a1->set_formula2( value = `"1"` ).
-    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( range_a1->value( ) )->get_string( )
-                                        exp = '1' ).
+    setup_default_xlom_objects( ).
   ENDMETHOD.
 ENDCLASS.

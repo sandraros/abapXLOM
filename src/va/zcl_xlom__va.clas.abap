@@ -39,15 +39,14 @@ ENDCLASS.
 CLASS zcl_xlom__va IMPLEMENTATION.
   METHOD to_array.
     CASE input->type.
-      WHEN input->c_type-error.
-        " TODO I didn't check whether it should be #N/A, #REF! or #VALUE!
-        RAISE EXCEPTION TYPE zcx_xlom__va
-          EXPORTING result_error = zcl_xlom__va_error=>value_cannot_be_calculated.
       WHEN input->c_type-array
         OR input->c_type-range.
         result = CAST #( input ).
       WHEN OTHERS.
-        RAISE EXCEPTION TYPE zcx_xlom_todo.
+        result = zcl_xlom__va_array=>create_initial(
+                     row_count    = 1
+                     column_count = 1
+                     rows         = VALUE #( ( columns_of_row = VALUE #( ( input ) ) ) ) ).
     ENDCASE.
   ENDMETHOD.
 

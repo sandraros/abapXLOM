@@ -48,21 +48,35 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_arguments_or_operands.
+    " Only a variadic function may have more arguments than the number of parameters.
+    IF     expression->parameters IS NOT INITIAL
+       AND expression->parameters[ lines( expression->parameters ) ]-variadic  = abap_false
+       AND lines( arguments_or_operands ) > lines( expression->parameters ).
+      RAISE EXCEPTION TYPE zcx_xlom_todo.
+    ENDIF.
+
     DATA(parameter_number) = 0.
     LOOP AT expression->parameters REFERENCE INTO DATA(parameter).
       parameter_number = parameter_number + 1.
+
+      " Check that for a mandatory parameter, an argument is passed
       DATA(argument_or_operand) = REF #( arguments_or_operands[ parameter_number ] OPTIONAL ).
       IF     argument_or_operand IS NOT BOUND
-         AND parameter->default  IS NOT BOUND.
-        " Mandatory parameter not passed
+         AND parameter->default  IS NOT BOUND
+         AND parameter->variadic = abap_false.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
       ENDIF.
-      IF parameter->default IS BOUND.
-        IF argument_or_operand IS NOT BOUND.
-          INSERT parameter->default INTO arguments_or_operands INDEX parameter_number.
-        ELSEIF argument_or_operand->* IS NOT BOUND.
-          argument_or_operand->* = parameter->default.
-        ENDIF.
+
+      " Set the default value if one is defined.
+      " If an argument is passed empty, don't assign the default value
+      " (different behavior in at least RIGHT and LEFT functions).
+      IF     parameter->default  IS BOUND
+         AND argument_or_operand IS NOT BOUND.
+*        IF argument_or_operand IS NOT BOUND.
+        INSERT parameter->default INTO arguments_or_operands INDEX parameter_number.
+*        ELSEIF argument_or_operand->*->type = argument_or_operand->*->c_type-empty_argument.
+*          argument_or_operand->* = parameter->default.
+*        ENDIF.
       ENDIF.
     ENDLOOP.
   ENDMETHOD.

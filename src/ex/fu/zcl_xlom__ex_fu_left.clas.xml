@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_FU_LEFT</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>.</DESCRIPT>
+    <DESCRIPT>LEFT(&quot;Hello&quot;,2) -&gt; &quot;He&quot;</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

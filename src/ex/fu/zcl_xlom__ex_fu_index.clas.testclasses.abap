@@ -6,12 +6,17 @@ CLASS ltc_app DEFINITION
 
   PRIVATE SECTION.
     METHODS test FOR TESTING RAISING cx_static_check.
+
+    METHODS setup.
 ENDCLASS.
 
-CLASS ltc_app IMPLEMENTATION.
-  METHOD test.
-    setup_default_xlom_objects( ).
 
+CLASS ltc_app IMPLEMENTATION.
+  METHOD setup.
+    setup_default_xlom_objects( ).
+  ENDMETHOD.
+
+  METHOD test.
     range_b2->set_value( zcl_xlom__va_string=>create( `Hello` ) ).
     range_a1->set_formula2( value = `INDEX(A1:C3,2,2)` ).
     cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )

@@ -1,6 +1,6 @@
-"! RIGHT(text,[num_chars])
-"! A1=RIGHT({"hello","world"},{2,3}) -> A1="lo", B1="rld"
-"! https://support.microsoft.com/en-us/office/right-rightb-functions-240267ee-9afa-4639-a02b-f19e1786cf2f
+"! LEFT(text,[num_chars])
+"! A1=LEFT({"hello","world"},{2,3}) -> A1="he", B1="wor"
+"! https://support.microsoft.com/en-us/office/left-leftb-functions-9203d2d2-7960-479b-84c6-1ea52b99640c
 CLASS zcl_xlom__ex_fu_left DEFINITION
   PUBLIC FINAL
   INHERITING FROM zcl_xlom__ex_fu
@@ -29,7 +29,7 @@ ENDCLASS.
 CLASS zcl_xlom__ex_fu_left IMPLEMENTATION.
   METHOD constructor.
     super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-right.
+    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-left.
     zif_xlom__ex~parameters = VALUE #( ( name = 'TEXT' )
                                        ( name = 'NUM_CHARS' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
   ENDMETHOD.
@@ -44,11 +44,11 @@ CLASS zcl_xlom__ex_fu_left IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
-    DATA right TYPE string.
+    DATA left TYPE string.
 
     TRY.
-        DATA(text) = zcl_xlom__va=>to_string( arguments[ c_arg-TEXT ] )->get_string( ).
-        DATA(result_num_chars) = arguments[ c_arg-NUM_CHARS ].
+        DATA(text) = zcl_xlom__va=>to_string( arguments[ c_arg-text ] )->get_string( ).
+        DATA(result_num_chars) = arguments[ c_arg-num_chars ].
         DATA(number_num_chars) = COND #( WHEN result_num_chars       IS BOUND
                                           AND result_num_chars->type <> result_num_chars->c_type-empty THEN
                                            zcl_xlom__va=>to_number( result_num_chars )->get_number( )
@@ -58,15 +58,16 @@ CLASS zcl_xlom__ex_fu_left IMPLEMENTATION.
           result = zcl_xlom__va_error=>value_cannot_be_calculated.
         ELSE.
           IF text = ''.
-            right = ``.
+            left = ``.
           ELSE.
-            DATA(off) = COND i( WHEN number_num_chars > strlen( text )
-                                THEN 0
-                                ELSE strlen( text ) - number_num_chars ).
-            right = substring( val = text
-                               off = off ).
+            DATA(len) = COND i( WHEN number_num_chars > strlen( text )
+                                THEN strlen( text )
+                                ELSE number_num_chars ).
+            left = substring( val = text
+                              off = 0
+                              len = len ).
           ENDIF.
-          result = zcl_xlom__va_string=>create( right ).
+          result = zcl_xlom__va_string=>create( left ).
         ENDIF.
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.

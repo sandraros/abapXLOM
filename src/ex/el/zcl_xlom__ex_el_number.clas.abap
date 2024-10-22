@@ -1,14 +1,17 @@
-CLASS zcl_xlom__ex_el_number DEFINITION
-  PUBLIC FINAL
-  CREATE PRIVATE.
+class ZCL_XLOM__EX_EL_NUMBER definition
+  public
+  final
+  create private .
 
-  PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+public section.
 
-    CLASS-METHODS create
-      IMPORTING !number       TYPE f
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_number.
+  interfaces ZIF_XLOM__EX .
 
+  class-methods CREATE
+    importing
+      !NUMBER type F
+    returning
+      value(RESULT) type ref to ZCL_XLOM__EX_EL_NUMBER .
   PRIVATE SECTION.
     TYPES:
       BEGIN OF ts_buffer_line,
@@ -23,7 +26,10 @@ CLASS zcl_xlom__ex_el_number DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_xlom__ex_el_number IMPLEMENTATION.
+
+CLASS ZCL_XLOM__EX_EL_NUMBER IMPLEMENTATION.
+
+
   METHOD create.
     result = VALUE #( buffer[ number = number ]-object OPTIONAL ).
     IF result IS NOT BOUND.
@@ -35,6 +41,7 @@ CLASS zcl_xlom__ex_el_number IMPLEMENTATION.
              INTO TABLE buffer.
     ENDIF.
   ENDMETHOD.
+
 
   METHOD zif_xlom__ex~evaluate.
     result = zcl_xlom__va_number=>create( number ).

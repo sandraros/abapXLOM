@@ -42,6 +42,9 @@ CLASS zcl_xlom_range DEFINITION
                 item          TYPE int8 OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
+    METHODS column
+      RETURNING VALUE(result) TYPE i.
+
     METHODS columns
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
@@ -207,6 +210,7 @@ CLASS zcl_xlom_range DEFINITION
                 column_size   TYPE i
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
+    "! Intersection with the "used range" of the range worksheet to reduce the search area (to improve the performance).
     CLASS-METHODS optimize_array_if_range
       IMPORTING array         TYPE REF TO zif_xlom__va_array
       RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
@@ -284,6 +288,10 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     result = zcl_xlom_range=>create_from_row_column( worksheet = parent
                                                      row       = _address-top_left-row + row - 1
                                                      column    = _address-top_left-column + column - 1 ).
+  ENDMETHOD.
+
+  METHOD column.
+    result = _address-top_left-column.
   ENDMETHOD.
 
   METHOD columns.
@@ -659,8 +667,6 @@ CLASS zcl_xlom_range IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD optimize_array_if_range.
-*    DATA(row_count) = 0.
-*    DATA(column_count) = 0.
     IF array->zif_xlom__va~type = array->zif_xlom__va~c_type-range.
       DATA(range) = CAST zcl_xlom_range( array ).
       result = range->application->_intersect_2_basis(

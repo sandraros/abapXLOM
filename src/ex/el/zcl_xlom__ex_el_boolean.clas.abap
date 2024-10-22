@@ -28,7 +28,7 @@ ENDCLASS.
 CLASS zcl_xlom__ex_el_boolean IMPLEMENTATION.
   METHOD class_constructor.
     false = create( abap_false ).
-    true = create( abap_false ).
+    true = create( abap_true ).
   ENDMETHOD.
 
   METHOD constructor.

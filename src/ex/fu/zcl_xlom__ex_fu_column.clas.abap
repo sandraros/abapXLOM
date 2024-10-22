@@ -1,5 +1,5 @@
-"! ROW([reference])
-"! https://support.microsoft.com/en-us/office/row-function-3a63b74a-c4d0-4093-b49a-e76eb49a6d8d
+"! COLUMN([reference])
+"! https://support.microsoft.com/en-us/office/column-function-44e8c754-711c-4df3-9da4-47a55042554b
 CLASS zcl_xlom__ex_fu_column DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom__ex_fu FINAL
@@ -26,7 +26,7 @@ ENDCLASS.
 CLASS zcl_xlom__ex_fu_column IMPLEMENTATION.
   METHOD constructor.
     super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-row.
+    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-column.
     zif_xlom__ex~parameters = VALUE #( ( name = 'REFERENCE' default = zcl_xlom__ex_el_empty_arg=>create( ) ) ).
   ENDMETHOD.
 
@@ -41,9 +41,9 @@ CLASS zcl_xlom__ex_fu_column IMPLEMENTATION.
   METHOD zif_xlom__ex~evaluate.
     DATA(reference) = arguments[ c_arg-reference ].
     IF reference->type = reference->c_type-empty.
-      result = zcl_xlom__va_number=>create( EXACT #( context->containing_cell-row ) ).
+      result = zcl_xlom__va_number=>create( EXACT #( context->containing_cell-column ) ).
     ELSE.
-      result = zcl_xlom__va_number=>create( ( CAST zcl_xlom_range( reference )->row( ) ) ).
+      result = zcl_xlom__va_number=>create( ( CAST zcl_xlom_range( reference )->column( ) ) ).
     ENDIF.
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.

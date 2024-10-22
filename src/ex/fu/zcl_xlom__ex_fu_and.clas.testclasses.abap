@@ -12,8 +12,12 @@ CLASS ltc_app IMPLEMENTATION.
   METHOD test.
     setup_default_xlom_objects( ).
 
-    range_a1->set_formula2( value = `IF(0=1,2,4)` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_a1->value( ) )->get_number( )
-                                        exp = 4 ).
+    range_a1->set_formula2( value = `AND(0=0,1=1)` ).
+    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_boolean( range_a1->value( ) )->boolean_value
+                                        exp = abap_true ).
+
+    range_a1->set_formula2( value = `AND(0=0,0=1)` ).
+    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_boolean( range_a1->value( ) )->boolean_value
+                                        exp = abap_false ).
   ENDMETHOD.
 ENDCLASS.

@@ -29,9 +29,13 @@ INTERFACE zif_xlom__ex
   TYPES:
     BEGIN OF ts_parameter,
       name                     TYPE string,
-      "! If not bound, the parameter is mandatory. If bound, the parameter is optional.
+      "! If DEFAULT is bound, the parameter is mandatory, otherwise it's optional.
+      "! The DEFAULT value is assigned by the method ZCL_XLOM__EX_UT=>CHECK_ARGUMENTS_OR_OPERANDS.
       default                  TYPE REF TO zif_xlom__ex,
       not_part_of_result_array TYPE abap_bool,
+      "! Variadic function. Only the last parameter can be assigned the variadic flag, and it is
+      "! always optional.
+      variadic                 TYPE abap_bool,
     END OF ts_parameter.
   TYPES tt_parameter TYPE STANDARD TABLE OF ts_parameter WITH EMPTY KEY.
 
@@ -581,10 +585,10 @@ INTERFACE zif_xlom__ex
       END OF function,
     END OF c_type.
 
-  DATA type                  TYPE ty_expression_type     READ-ONLY.
-  DATA result_of_evaluation  TYPE REF TO zif_xlom__va    READ-ONLY.
-  DATA parameters            TYPE tt_parameter           READ-ONLY.
-  DATA arguments_or_operands TYPE tt_argument_or_operand READ-ONLY.
+  DATA type                         TYPE ty_expression_type     READ-ONLY.
+  DATA result_of_evaluation         TYPE REF TO zif_xlom__va    READ-ONLY.
+  DATA parameters                   TYPE tt_parameter           READ-ONLY.
+  DATA arguments_or_operands        TYPE tt_argument_or_operand READ-ONLY.
 
   METHODS evaluate
     IMPORTING arguments     TYPE tt_operand_result

@@ -12,7 +12,7 @@ CLASS zcl_xlom__ex_ut_eval DEFINITION
     "! F2: INDEX(A1:D4,4,4) (i.e. D4)
     CLASS-METHODS evaluate_array_operands
       IMPORTING expression    TYPE REF TO zif_xlom__ex
-                context       TYPE REF TO zcl_xlom__ex_ut_eval_context
+                context       TYPE REF TO zcl_xlom__ex_ut_eval_context OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
 
   PROTECTED SECTION.
@@ -90,25 +90,29 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
     "  a | b       op   k | n | q              a op k | b op n | #N/A
     "  d | e            l | o | r              d op l | e op o | #N/A
     "  g | h                                   #N/A   | #N/A   | #N/A
+
     DATA(at_least_one_array_or_range) = abap_false.
     DATA(operand_results) = VALUE zif_xlom__ex=>tt_operand_result( ).
     LOOP AT expression->arguments_or_operands INTO DATA(operand).
-      DATA(parameter) = REF #( expression->parameters[ sy-tabix ] ).
+      IF operand IS NOT BOUND.
+        RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+      ENDIF.
 
-      DATA(operand_result) = COND #( WHEN operand IS NOT BOUND
-                     THEN zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = parameter->default
-                                                                         context    = context )
-                     ELSE zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = operand
-                                                                         context    = context ) ).
+      DATA(operand_result) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = operand
+                                                                            context    = context ).
       INSERT operand_result INTO TABLE operand_results.
 
-      IF     parameter->not_part_of_result_array = abap_false
+      " There can be an operand but no parameter in case the parameter is an endless list
+      " of parameters, like in the AND function, only the 2 first parameters are defined.
+      DATA(parameter) = REF #( expression->parameters[ sy-tabix ] OPTIONAL ).
+      IF     parameter IS BOUND
+         AND parameter->not_part_of_result_array  = abap_false
          AND (    operand_result->type = operand_result->c_type-array
                OR operand_result->type = operand_result->c_type-range )
          AND (    CAST zif_xlom__va_array( operand_result )->row_count    > 1
                OR CAST zif_xlom__va_array( operand_result )->column_count > 1 ).
-          at_least_one_array_or_range = abap_true.
-        ENDIF.
+        at_least_one_array_or_range = abap_true.
+      ENDIF.
     ENDLOOP.
 
     IF at_least_one_array_or_range = abap_false.
@@ -119,10 +123,17 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
                                      context   = context ).
     ELSE.
 
+      " Exceptions for few functions
+      IF expression->type between 1000 and 9999.
+        CAST zcl_xlom__ex_fu( expression )->adjust_evaluated_operands( CHANGING evaluated_operands = operand_results ).
+      ENDIF.
+
       DATA(max_row_count) = 1.
       DATA(max_column_count) = 1.
       LOOP AT operand_results INTO operand_result.
-        parameter = REF #( expression->parameters[ sy-tabix ] ).
+        " There can be an operand but no parameter in case the parameter is an endless list
+        " of parameters, like in the AND function, only the 2 first parameters are defined.
+        parameter = REF #( expression->parameters[ sy-tabix ] OPTIONAL ).
         IF    parameter->not_part_of_result_array  = abap_true
            OR operand_result IS NOT BOUND.
           CONTINUE.
@@ -149,18 +160,32 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
           LOOP AT operand_results INTO operand_result.
             parameter = REF #( expression->parameters[ sy-tabix ] ).
             IF     parameter->not_part_of_result_array  = abap_false
-               AND operand_result                   IS BOUND.
-              IF operand_result->type = operand_result->c_type-array.
-                DATA(operand_result_array) = CAST zcl_xlom__va_array( operand_result ).
-                DATA(cell) = operand_result_array->zif_xlom__va_array~get_cell_value( column = column
-                                                                                      row    = row ).
-              ELSEIF operand_result->type = operand_result->c_type-range.
-                DATA(operand_result_range) = CAST zcl_xlom_range( operand_result ).
-                cell = operand_result_range->cells( row    = row
-                                                    column = column ).
-              ELSE.
-                cell = operand_result.
-              ENDIF.
+               AND operand_result IS BOUND.
+              CASE operand_result->type.
+                WHEN operand_result->c_type-array
+                  OR operand_result->c_type-range.
+                  DATA(operand_array_range) = CAST zif_xlom__va_array( operand_result ).
+                  DATA(cell) = operand_array_range->get_cell_value(
+                                   column = COND #( WHEN operand_array_range->column_count = 1
+                                                    THEN 1
+                                                    ELSE column )
+                                   row    = COND #( WHEN operand_array_range->row_count = 1
+                                                    THEN 1
+                                                    ELSE row ) ).
+                WHEN OTHERS.
+                  cell = operand_result.
+              ENDCASE.
+*              IF operand_result->type = operand_result->c_type-array.
+*                DATA(operand_result_array) = CAST zcl_xlom__va_array( operand_result ).
+*                DATA(cell) = operand_result_array->zif_xlom__va_array~get_cell_value( column = column
+*                                                                                      row    = row ).
+*              ELSEIF operand_result->type = operand_result->c_type-range.
+*                DATA(operand_result_range) = CAST zcl_xlom_range( operand_result ).
+*                cell = operand_result_range->cells( row    = row
+*                                                    column = column ).
+*              ELSE.
+*                cell = operand_result.
+*              ENDIF.
             ELSE.
               cell = operand_result.
             ENDIF.
@@ -171,7 +196,7 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
           " EXPRESSION EVALUATION
           "======================
           DATA(single_cell_result) = expression->evaluate( arguments = single_cell_operands
-                                                                  context   = context ).
+                                                           context   = context ).
 
           target_array->zif_xlom__va_array~set_cell_value( row    = row
                                                            column = column

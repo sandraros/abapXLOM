@@ -1,6 +1,5 @@
-"! RIGHT(text,[num_chars])
-"! A1=RIGHT({"hello","world"},{2,3}) -> A1="lo", B1="rld"
-"! https://support.microsoft.com/en-us/office/right-rightb-functions-240267ee-9afa-4639-a02b-f19e1786cf2f
+"! MID(text, start_num, num_chars)
+"! https://support.microsoft.com/en-us/office/mid-midb-functions-d5f9e25c-d7d6-472e-b568-4ecb12433028
 CLASS zcl_xlom__ex_fu_mid DEFINITION
   PUBLIC FINAL
   INHERITING FROM zcl_xlom__ex_fu
@@ -9,7 +8,8 @@ CLASS zcl_xlom__ex_fu_mid DEFINITION
   PUBLIC SECTION.
     CLASS-METHODS create
       IMPORTING !text         TYPE REF TO zif_xlom__ex
-                num_chars     TYPE REF TO zif_xlom__ex OPTIONAL
+                start_num     TYPE REF TO zif_xlom__ex
+                num_chars     TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_mid.
 
     METHODs zif_xlom__ex~evaluate REDEFINITION.
@@ -21,7 +21,8 @@ CLASS zcl_xlom__ex_fu_mid DEFINITION
     CONSTANTS:
       BEGIN OF c_arg,
         text      TYPE i VALUE 1,
-        num_chars TYPE i VALUE 2,
+        start_num TYPE i VALUE 2,
+        num_chars TYPE i VALUE 3,
       END OF c_arg.
 ENDCLASS.
 
@@ -29,14 +30,17 @@ ENDCLASS.
 CLASS zcl_xlom__ex_fu_mid IMPLEMENTATION.
   METHOD constructor.
     super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-right.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'TEXT' )
-                                       ( name = 'NUM_CHARS' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
+    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-mid.
+    zif_xlom__ex~parameters = VALUE #( ( name = 'TEXT     ' )
+                                       ( name = 'START_NUM' )
+                                       ( name = 'NUM_CHARS' ) ).
+
   ENDMETHOD.
 
   METHOD create.
     result = NEW zcl_xlom__ex_fu_mid( ).
-    result->zif_xlom__ex~arguments_or_operands = VALUE #( ( text )
+    result->zif_xlom__ex~arguments_or_operands = VALUE #( ( text      )
+                                                          ( start_num )
                                                           ( num_chars ) ).
     zcl_xlom__ex_ut=>check_arguments_or_operands(
       EXPORTING expression            = result
@@ -47,27 +51,22 @@ CLASS zcl_xlom__ex_fu_mid IMPLEMENTATION.
     DATA right TYPE string.
 
     TRY.
-        DATA(text) = zcl_xlom__va=>to_string( arguments[ c_arg-TEXT ] )->get_string( ).
-        DATA(result_num_chars) = arguments[ c_arg-NUM_CHARS ].
-        DATA(number_num_chars) = COND #( WHEN result_num_chars       IS BOUND
-                                          AND result_num_chars->type <> result_num_chars->c_type-empty THEN
-                                           zcl_xlom__va=>to_number( result_num_chars )->get_number( )
-                                         WHEN result_num_chars IS NOT BOUND THEN
-                                           1 ).
-        IF number_num_chars < 0.
+        DATA(text) = zcl_xlom__va=>to_string( arguments[ c_arg-text ] )->get_string( ).
+        DATA(start_num) = zcl_xlom__va=>to_number( arguments[ c_arg-start_num ] )->get_integer( ).
+        DATA(num_chars) = zcl_xlom__va=>to_number( arguments[ c_arg-num_chars ] )->get_integer( ).
+
+        IF    start_num <= 0
+           OR num_chars <= 0.
           result = zcl_xlom__va_error=>value_cannot_be_calculated.
         ELSE.
-          IF text = ''.
-            right = ``.
-          ELSE.
-            DATA(off) = COND i( WHEN number_num_chars > strlen( text )
-                                THEN 0
-                                ELSE strlen( text ) - number_num_chars ).
-            right = substring( val = text
-                               off = off ).
-          ENDIF.
-          result = zcl_xlom__va_string=>create( right ).
+          result = zcl_xlom__va_string=>get( COND #( WHEN start_num                 > strlen( text )
+                                                       OR start_num + num_chars - 1 > strlen( text )
+                                                     THEN ``
+                                                     ELSE substring( val = text
+                                                                     off = start_num - 1
+                                                                     len = num_chars ) ) ).
         ENDIF.
+
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
     ENDTRY.

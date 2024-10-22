@@ -3,12 +3,10 @@
 CLASS zcl_xlom__ex_fu_address DEFINITION
   PUBLIC FINAL
   INHERITING FROM zcl_xlom__ex_fu
-*  CREATE PRIVATE
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
-*    INTERFACES zif_xlom__ex.
 
     "! @parameter row_num    | Required. A numeric value that specifies the row number to use in the cell reference.
     "! @parameter column_num    | Required. A numeric value that specifies the column number to use in the cell reference.
@@ -62,13 +60,6 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
         relative_row_absolute_column TYPE i VALUE 3,
         relative                     TYPE i VALUE 4,
       END OF c_abs.
-
-*    METHODS constructor.
-*    DATA row_num    TYPE REF TO zif_xlom__ex.
-*    DATA column_num TYPE REF TO zif_xlom__ex.
-*    DATA abs_num    TYPE REF TO zif_xlom__ex.
-*    DATA a1         TYPE REF TO zif_xlom__ex.
-*    DATA sheet_text TYPE REF TO zif_xlom__ex.
 ENDCLASS.
 
 
@@ -93,64 +84,42 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
     zcl_xlom__ex_ut=>check_arguments_or_operands(
       EXPORTING expression            = result
       CHANGING  arguments_or_operands = result->zif_xlom__ex~arguments_or_operands ).
-*    result->zif_xlom__ex~type = zif_xlom__ex=>c_type-function-address.
-*    result->row_num           = row_num.
-*    result->column_num        = column_num.
-*    result->abs_num           = abs_num.
-*    result->a1                = a1.
-*    result->sheet_text        = sheet_text.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~evaluate.
-*    " ADDRESS({1;5};{2;5};{1;2};{0;1};{"Sheet1";"Sheet2"})
-*    " returns
-*    " Sheet1!R1C2 (ADDRESS(1;2;1;0;"Sheet1"))
-*    " Sheet2!E$5  (ADDRESS(5;5;2;1;"Sheet2"))
-*    " TODO: variable is assigned but never used (ABAP cleaner)
-*    result = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-*                 expression = me
-*                 context    = context
-*                 operands   = VALUE #( ( name = 'ROW_NUM   ' object = row_num    )
-*                                       ( name = 'COLUMN_NUM' object = column_num )
-*                                       ( name = 'ABS_NUM   ' object = abs_num    )
-*                                       ( name = 'A1        ' object = a1         )
-*                                       ( name = 'SHEET_TEXT' object = sheet_text ) ) ).
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
     TRY.
-        DATA(row_num) = zcl_xlom__va=>to_number( arguments[ c_arg-ROW_NUM ] )->get_integer( ).
-        DATA(column_num) = zcl_xlom__va=>to_number( arguments[ c_arg-COLUMN_NUM ] )->get_integer( ).
-        DATA(abs_num) = zcl_xlom__va=>to_number( arguments[ c_arg-ABS_NUM ] )->get_integer( ).
-        DATA(a1) = zcl_xlom__va=>to_boolean( arguments[ c_arg-A1 ] )->boolean_value.
-        DATA(sheet_text) = zcl_xlom__va=>to_string( arguments[ c_arg-SHEET_TEXT ] )->get_string( ).
+        DATA(row_num) = zcl_xlom__va=>to_number( arguments[ c_arg-row_num ] )->get_integer( ).
+        DATA(column_num) = zcl_xlom__va=>to_number( arguments[ c_arg-column_num ] )->get_integer( ).
+        DATA(abs_num) = zcl_xlom__va=>to_number( arguments[ c_arg-abs_num ] )->get_integer( ).
+        DATA(a1) = zcl_xlom__va=>to_boolean( arguments[ c_arg-a1 ] )->boolean_value.
+        DATA(sheet_text) = zcl_xlom__va=>to_string( arguments[ c_arg-sheet_text ] )->get_string( ).
 
-        IF    row_num NOT    BETWEEN 1 AND zcl_xlom_worksheet=>max_rows
+        " Only A1 reference style is currently supported
+        IF a1 <> abap_true.
+          RAISE EXCEPTION TYPE zcx_xlom_todo EXPORTING text = 'The function ADDRESS currently only supports the A1 reference style'.
+        ENDIF.
+
+        IF    row_num    NOT BETWEEN 1 AND zcl_xlom_worksheet=>max_rows
            OR column_num NOT BETWEEN 1 AND zcl_xlom_worksheet=>max_columns
-           OR abs_num NOT    BETWEEN 0 AND 4
-           OR abs_num NOT    BETWEEN 0 AND 1.
+           OR abs_num    NOT BETWEEN c_abs-absolute AND c_abs-relative.
           result = zcl_xlom__va_error=>value_cannot_be_calculated.
           RETURN.
         ENDIF.
 
-        case abs_num.
-          when c_abs-absolute.
-            result = zcl_xlom__va_string=>get( |${ zcl_xlom_range=>convert_column_number_to_a_xfd( column_num ) }${ row_num }| ).
-          when others.
-            raise EXCEPTION type zcx_xlom_todo.
-        ENDCASE.
+        DATA(sheet_and_excl_mark) = COND string( WHEN sheet_text IS NOT INITIAL THEN |{ sheet_text }!| ).
+        DATA(column_prefix) = SWITCH string( abs_num
+                                             WHEN c_abs-absolute OR c_abs-relative_row_absolute_column
+                                             THEN '$' ).
+        DATA(row_prefix) = SWITCH string( abs_num
+                                          WHEN c_abs-absolute OR c_abs-absolute_row_relative_column
+                                          THEN '$' ).
+
+        result = zcl_xlom__va_string=>get(
+            |{ sheet_and_excl_mark }{ column_prefix }{ zcl_xlom_range=>convert_column_number_to_a_xfd( column_num ) }{ row_prefix }{ row_num }| ).
 
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~is_equal.
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*  ENDMETHOD.
-*
-*  METHOD zif_xlom__ex~set_result.
-*    RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.

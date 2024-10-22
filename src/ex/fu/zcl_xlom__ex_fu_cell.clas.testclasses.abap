@@ -5,13 +5,17 @@ CLASS ltc_app DEFINITION
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
   PRIVATE SECTION.
-    METHODS test FOR TESTING RAISING cx_static_check.
+    METHODS filename FOR TESTING RAISING cx_static_check.
+
+    METHODS setup.
 ENDCLASS.
 
 CLASS ltc_app IMPLEMENTATION.
-  METHOD test.
+  METHOD setup.
     setup_default_xlom_objects( ).
+  ENDMETHOD.
 
+  METHOD filename.
 * TODO not very clear what CELL should do without the Reference argument...
 *    range_a1->set_formula2( value = `CELL("filename")` ).
 *    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va_converter=>to_string( range_a1->value( ) )->get_string( )

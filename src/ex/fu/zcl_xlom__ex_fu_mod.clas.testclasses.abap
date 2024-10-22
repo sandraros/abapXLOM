@@ -5,31 +5,20 @@ CLASS ltc_app DEFINITION
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
   PRIVATE SECTION.
-    METHODS test FOR TESTING RAISING cx_static_check.
+    METHODS nominal FOR TESTING RAISING cx_static_check.
+
+    METHODS setup.
 ENDCLASS.
 
+
 CLASS ltc_app IMPLEMENTATION.
-  METHOD test.
+  METHOD setup.
     setup_default_xlom_objects( ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `LEN("ABC")` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_a1->value( ) )->get_number( )
-                                        exp = 3 ).
-
-    range_a1->set_formula2( value = `LEN("ABC ")` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_a1->value( ) )->get_number( )
-                                        exp = 4 ).
-
-    range_a1->set_formula2( value = `LEN("")` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_a1->value( ) )->get_number( )
-                                        exp = 0 ).
-
-    range_a1->set_value( zcl_xlom__va_string=>create( `Hello ` ) ).
-    range_a2->set_value( zcl_xlom__va_string=>create( `world` ) ).
-    range_b1->set_formula2( value = `LEN(A1:A2)` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_b1->value( ) )->get_number( )
-                                        exp = 6 ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_number( range_b2->value( ) )->get_number( )
-                                        exp = 5 ).
+  METHOD nominal.
+    value = application->evaluate( `MOD(7,2)` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( value )->get_number( )
+                                        exp = 1 ).
   ENDMETHOD.
 ENDCLASS.

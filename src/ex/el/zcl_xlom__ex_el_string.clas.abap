@@ -1,26 +1,34 @@
-CLASS zcl_xlom__ex_el_string DEFINITION
-  PUBLIC FINAL
-  CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+class ZCL_XLOM__EX_EL_STRING definition
+  public
+  final
+  create private
 
-  PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+  global friends ZIF_XLOM__UT_ALL_FRIENDS .
 
-    CLASS-METHODS create
-      IMPORTING !text         TYPE csequence
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_string.
+public section.
 
+  interfaces ZIF_XLOM__EX .
+
+  class-methods CREATE
+    importing
+      !TEXT type CSEQUENCE
+    returning
+      value(RESULT) type ref to ZCL_XLOM__EX_EL_STRING .
   PRIVATE SECTION.
     DATA string TYPE string.
 ENDCLASS.
 
 
-CLASS zcl_xlom__ex_el_string IMPLEMENTATION.
+
+CLASS ZCL_XLOM__EX_EL_STRING IMPLEMENTATION.
+
+
   METHOD create.
     result = NEW zcl_xlom__ex_el_string( ).
     result->string            = text.
     result->zif_xlom__ex~type = zif_xlom__ex=>c_type-string.
   ENDMETHOD.
+
 
   METHOD zif_xlom__ex~evaluate.
     result = zcl_xlom__va_string=>get( string ).

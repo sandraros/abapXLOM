@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_FU_MID</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>.</DESCRIPT>
+    <DESCRIPT>MID(&quot;Hello&quot;,2,3) -&gt; &quot;ell&quot;</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

@@ -5,36 +5,49 @@ CLASS ltc_app DEFINITION
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
   PRIVATE SECTION.
-    METHODS test FOR TESTING RAISING cx_static_check.
+    METHODS test_1 FOR TESTING RAISING cx_static_check.
+    METHODS test_2 FOR TESTING RAISING cx_static_check.
+    METHODS test_3 FOR TESTING RAISING cx_static_check.
+    METHODS test_4 FOR TESTING RAISING cx_static_check.
+    METHODS test_5 FOR TESTING RAISING cx_static_check.
+
+    METHODS setup.
 ENDCLASS.
 
+
 CLASS ltc_app IMPLEMENTATION.
-  METHOD test.
+  METHOD setup.
     setup_default_xlom_objects( ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `RIGHT("Hello",2)` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
-                                        exp = 'lo' ).
+  METHOD test_1.
+    value = application->evaluate( `LEFT("Hello",2)` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value )->get_string( )
+                                        exp = 'He' ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `RIGHT(25,1)` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
-                                        exp = '5' ).
+  METHOD test_2.
+    value = application->evaluate( `LEFT(25,1)` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value )->get_string( )
+                                        exp = '2' ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `RIGHT("hello")` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
-                                        exp = 'o' ).
+  METHOD test_3.
+    value = application->evaluate( `LEFT("hello")` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value )->get_string( )
+                                        exp = 'h' ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `RIGHT("hello")` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
-                                        exp = 'o' ).
-
-    range_a1->set_formula2( value = `RIGHT("hello",0)` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
+  METHOD test_4.
+    value = application->evaluate( `LEFT("hello",0)` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value )->get_string( )
                                         exp = '' ).
+  ENDMETHOD.
 
-    " RIGHT("hello",) is the same result as RIGHT("hello",0), it differs from RIGHT("hello"), which is the same as RIGHT("hello",1).
-    range_a1->set_formula2( value = `RIGHT("hello",)` ).
-    cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
+  METHOD test_5.
+    " LEFT("hello",) is the same result as LEFT("hello",0), it differs from LEFT("hello"), which is the same as LEFT("hello",1).
+    value = application->evaluate( `LEFT("hello",)` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_string( value )->get_string( )
                                         exp = '' ).
   ENDMETHOD.
 ENDCLASS.

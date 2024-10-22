@@ -1,47 +1,48 @@
-CLASS zcl_xlom__ex_el_error DEFINITION
-  PUBLIC FINAL
-  CREATE PRIVATE.
+class ZCL_XLOM__EX_EL_ERROR definition
+  public
+  final
+  create private .
 
-  PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+public section.
 
-    TYPES ty_error_number TYPE i.
+  interfaces ZIF_XLOM__EX .
 
-    CLASS-DATA blocked                    TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-    CLASS-DATA calc                       TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-    CLASS-DATA connect                    TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  types TY_ERROR_NUMBER type I .
+
+  class-data BLOCKED type ref to ZCL_XLOM__EX_EL_ERROR read-only .
+  class-data CALC type ref to ZCL_XLOM__EX_EL_ERROR read-only .
+  class-data CONNECT type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #DIV/0! Is produced by =1/0
-    CLASS-DATA division_by_zero           TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-    CLASS-DATA field                      TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-    CLASS-DATA getting_data               TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data DIVISION_BY_ZERO type ref to ZCL_XLOM__EX_EL_ERROR read-only .
+  class-data FIELD type ref to ZCL_XLOM__EX_EL_ERROR read-only .
+  class-data GETTING_DATA type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #N/A. Is produced by =ERROR.TYPE(1) or if C1 contains =A1:A2+B1:B3 -> C3=#N/A.
-    CLASS-DATA na_not_applicable          TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data NA_NOT_APPLICABLE type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #NAME! Is produced by =XXXX if XXXX is not an existing range name.
-    CLASS-DATA name                       TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-    CLASS-DATA null                       TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data NAME type ref to ZCL_XLOM__EX_EL_ERROR read-only .
+  class-data NULL type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #NUM! Is produced by =1E+240*1E+240
-    CLASS-DATA num                        TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data NUM type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! TODO #PYTHON! internal error number is not 2222, what is it?
-    CLASS-DATA python                     TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data PYTHON type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #REF! Is produced by =INDEX(A1,2,1)
-    CLASS-DATA ref                        TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data REF type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #SPILL! Is produced by A1 containing ={1,2} and B1 containing a value -> A1=#SPILL!
-    CLASS-DATA spill                      TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-    CLASS-DATA unknown                    TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
+  class-data SPILL type ref to ZCL_XLOM__EX_EL_ERROR read-only .
+  class-data UNKNOWN type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! #VALUE! Is produced by =1+"a". #VALUE! in English, #VALEUR! in French.
-    CLASS-DATA value_cannot_be_calculated TYPE REF TO zcl_xlom__ex_el_error READ-ONLY.
-
+  class-data VALUE_CANNOT_BE_CALCULATED type ref to ZCL_XLOM__EX_EL_ERROR read-only .
     "! English error name (different in other languages e.g. #VALUE! is #VALEUR! in French)
-    DATA english_error_name    TYPE string          READ-ONLY.
+  data ENGLISH_ERROR_NAME type STRING read-only .
     "! Value of enumeration xlCVError e.g. xlErrValue = 2015 (#VALUE!)
-    DATA internal_error_number TYPE ty_error_number READ-ONLY.
+  data INTERNAL_ERROR_NUMBER type TY_ERROR_NUMBER read-only .
 
-    CLASS-METHODS class_constructor.
-
-    CLASS-METHODS get_from_error_name
-      IMPORTING error_name    TYPE csequence
-      RETURNING VALUE(result) TYPE REF TO zif_xlom__ex.
-
+  class-methods CLASS_CONSTRUCTOR .
+  class-methods GET_FROM_ERROR_NAME
+    importing
+      !ERROR_NAME type CSEQUENCE
+    returning
+      value(RESULT) type ref to ZIF_XLOM__EX .
   PRIVATE SECTION.
     TYPES:
       BEGIN OF ts_error,
@@ -62,7 +63,10 @@ CLASS zcl_xlom__ex_el_error DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_xlom__ex_el_error IMPLEMENTATION.
+
+CLASS ZCL_XLOM__EX_EL_ERROR IMPLEMENTATION.
+
+
   METHOD class_constructor.
     blocked                    = zcl_xlom__ex_el_error=>create( english_error_name    = '#BLOCKED!     '
                                                                 internal_error_number = 2047 ).
@@ -96,6 +100,7 @@ CLASS zcl_xlom__ex_el_error IMPLEMENTATION.
                                                                 internal_error_number = 2015 ).
   ENDMETHOD.
 
+
   METHOD create.
     result = NEW zcl_xlom__ex_el_error( ).
     result->zif_xlom__ex~type     = zif_xlom__ex=>c_type-error.
@@ -107,9 +112,11 @@ CLASS zcl_xlom__ex_el_error IMPLEMENTATION.
            INTO TABLE errors.
   ENDMETHOD.
 
+
   METHOD get_from_error_name.
     result = errors[ english_error_name = error_name ]-object.
   ENDMETHOD.
+
 
   METHOD zif_xlom__ex~evaluate.
     result = zcl_xlom__va_error=>get_by_error_number( internal_error_number ).

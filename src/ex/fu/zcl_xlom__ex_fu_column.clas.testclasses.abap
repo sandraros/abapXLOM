@@ -5,20 +5,27 @@ CLASS ltc_app DEFINITION
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
   PRIVATE SECTION.
-    METHODS test FOR TESTING RAISING cx_static_check.
+    METHODS with_reference FOR TESTING RAISING cx_static_check.
+    METHODS without_reference FOR TESTING RAISING cx_static_check.
+
+    METHODS setup.
 ENDCLASS.
 
 
 CLASS ltc_app IMPLEMENTATION.
-  METHOD test.
+  METHOD setup.
     setup_default_xlom_objects( ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `ROW(B2)` ).
+  METHOD with_reference.
+    range_a1->set_formula2( value = `COLUMN(B1)` ).
     cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_a1->value( ) )->get_number( )
                                         exp = 2 ).
+  ENDMETHOD.
 
-    range_a1->set_formula2( value = `ROW()` ).
-    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_a1->value( ) )->get_number( )
-                                        exp = 1 ).
+  METHOD without_reference.
+    range_b1->set_formula2( value = `COLUMN()` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_b1->value( ) )->get_number( )
+                                        exp = 2 ).
   ENDMETHOD.
 ENDCLASS.
