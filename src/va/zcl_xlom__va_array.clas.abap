@@ -138,7 +138,6 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__va_array~get_array_value.
-    RAISE EXCEPTION TYPE zcx_xlom_todo.
     DATA(row_count)    = bottom_right-row - top_left-row + 1.
     DATA(column_count) = bottom_right-column - top_left-column + 1.
     DATA(target_array) = create_initial( row_count    = row_count

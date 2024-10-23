@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_FU_FILTER</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>************* TODO ***************</DESCRIPT>
+    <DESCRIPT>FILTER({&quot;a&quot;,&quot;b&quot;;&quot;m&quot;,&quot;n&quot;},{TRUE;FALSE}) -&gt; {&quot;a&quot;,&quot;b&quot;}</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

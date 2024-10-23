@@ -1,4 +1,18 @@
-"! FILTER(array, include, [if_empty])
+"! FILTER(array, include, [if_empty]) <br/>
+"!  &#x2000;
+"!     │ A │ B <br/>
+"!    ─│ ─ │ ─ <br/>
+"!   1 │ a │ b <br/>
+"!    ─│ ─ │ ─ <br/>
+"!   2 │ m │ n
+"! <ul>
+"! <li>Vertical search: FILTER(A1:B2,A1:A2="a") → {"a","b"} (1 row, two columns</li>
+"! <li>Horizontal search: FILTER(A1:B2,A1:B1="a") → {"a";"m"} (two rows, 1 column)</li>
+"! <li>No match without <strong>if_empty</strong>: FILTER(A1:B2,A1:B1="c") → #CALC!</li>
+"! <li>No match with <strong>if_empty</strong>: FILTER(A1:B2,A1:B1="c","") → ""</li>
+"! <li>Include size is neither one row nor one column of <strong>array</strong>: FILTER(A1:B2,A1="a") → #VALUE!</li>
+"! <li>Idem: FILTER(A1:B3,A1:A2="a") → #VALUE!</li>
+"! </ul>
 "! https://support.microsoft.com/en-us/office/filter-function-f4f7cb66-82eb-4767-8f7c-4877ad80c759
 CLASS zcl_xlom__ex_fu_filter DEFINITION
   PUBLIC
@@ -38,9 +52,10 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-match.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'ARRAY   ' )
-                                       ( name = 'INCLUDE ' not_part_of_result_array = abap_true )
-                                       ( name = 'IF_EMPTY' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
+    zif_xlom__ex~parameters = VALUE #( not_part_of_result_array = abap_true
+                                       ( name = 'ARRAY   ' )
+                                       ( name = 'INCLUDE ' )
+                                       ( name = 'IF_EMPTY' default = zcl_xlom__ex_el_empty_arg=>singleton ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -55,75 +70,116 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     TRY.
-*        DATA(array) = CAST zif_xlom__va_array( arguments[ c_arg-array ] ).
-*        DATA(include) = zcl_xlom__va=>to_array( arguments[ c_arg-lookup_array ] ).
-*        DATA(match_type_result) = COND i( LET result_num_chars = arguments[ c_arg-match_type ] IN
-*                                          WHEN result_num_chars IS BOUND
-*                                          THEN COND #( WHEN result_num_chars->type = result_num_chars->c_type-empty
-*                                                       THEN 1
-*                                                       ELSE zcl_xlom__va=>to_number( result_num_chars )->get_integer( ) ) ).
-*        IF match_type_result <> c_match_type-exact_match.
-*          RAISE EXCEPTION TYPE zcx_xlom_todo.
-*        ENDIF.
-*        IF     lookup_array_result->row_count    > 1
-*           AND lookup_array_result->column_count > 1.
-*          " MATCH cannot lookup a two-dimension array, it can search either one row or one column.
-*          result = zcl_xlom__va_error=>na_not_applicable.
-*        ELSE.
-*          DATA(optimized_lookup_array) = zcl_xlom_range=>optimize_array_if_range( lookup_array_result ).
-*          IF optimized_lookup_array IS NOT INITIAL.
-*            DATA(row_number) = optimized_lookup_array-top_left-row.
-*            WHILE row_number <= optimized_lookup_array-bottom_right-row.
-*              DATA(column_number) = optimized_lookup_array-top_left-column.
-*              WHILE column_number <= optimized_lookup_array-bottom_right-column.
-*                DATA(cell_value) = lookup_array_result->get_cell_value( column = column_number
-*                                                                        row    = row_number ).
-*                DATA(equal) = abap_false.
-*                DATA(lookup_value_result_2) = SWITCH #( lookup_value_result->type
-*                                                        WHEN zif_xlom__va=>c_type-array
-*                                                          OR zif_xlom__va=>c_type-range
-*                                                        THEN CAST zif_xlom__va( CAST zif_xlom__va_array( lookup_value_result )->get_cell_value(
-*                                                                                    column = 1
-*                                                                                    row    = 1 ) )
-*                                                        ELSE lookup_value_result ).
-*                IF    lookup_value_result_2->type = zif_xlom__va=>c_type-string
-*                   OR cell_value->type            = zif_xlom__va=>c_type-string.
-*                  equal = xsdbool( zcl_xlom__va=>to_string( lookup_value_result_2 )->get_string( )
-*                                   = zcl_xlom__va=>to_string( cell_value )->get_string( ) ).
-*                ELSEIF    lookup_value_result_2->type = zif_xlom__va=>c_type-number
-*                       OR cell_value->type            = zif_xlom__va=>c_type-number.
-*                  equal = xsdbool( zcl_xlom__va=>to_number( lookup_value_result_2 )->get_number( )
-*                                   = zcl_xlom__va=>to_number( cell_value )->get_number( ) ).
-*                ELSEIF    lookup_value_result_2->type = zif_xlom__va=>c_type-boolean
-*                       OR cell_value->type            = zif_xlom__va=>c_type-boolean.
-*                  equal = xsdbool( zcl_xlom__va=>to_boolean( lookup_value_result_2 )->boolean_value
-*                                   = zcl_xlom__va=>to_boolean( cell_value )->boolean_value ).
-*                ELSEIF     lookup_value_result_2->type = zif_xlom__va=>c_type-empty
-*                       AND cell_value->type            = zif_xlom__va=>c_type-empty.
-*                  equal = abap_true.
-*                ELSE.
-*                  RAISE EXCEPTION TYPE zcx_xlom_todo.
-*                ENDIF.
-*                IF equal = abap_true.
-*                  IF lookup_array_result->row_count > 1.
-*                    result = zcl_xlom__va_number=>create( EXACT #( row_number ) ).
-*                  ELSE.
-*                    result = zcl_xlom__va_number=>create( EXACT #( column_number ) ).
-*                  ENDIF.
-*                  " Dummy code to exit the two loops
-*                  row_number = lookup_array_result->row_count.
-*                  column_number = lookup_array_result->column_count.
-*                ENDIF.
-*                column_number = column_number + 1.
-*              ENDWHILE.
-*              row_number = row_number + 1.
-*            ENDWHILE.
-*          ENDIF.
-*          IF result IS NOT BOUND.
-*            " no match found
-*            result = zcl_xlom__va_error=>na_not_applicable.
-*          ENDIF.
-*        ENDIF.
+        DATA(lookup_array) = zcl_xlom__va=>to_array( arguments[ c_arg-array ] ).
+        DATA(filter_condition_aka_include) = zcl_xlom__va=>to_array( arguments[ c_arg-include ] ).
+        DATA(if_empty) = arguments[ c_arg-if_empty ].
+
+        " INCLUDE must be one dimension and span over either one row or one column of ARRAY:
+        "   - vertical search if INCLUDE is one column,
+        "   - horizontal search if INCLUDE is one row.
+        IF    (     filter_condition_aka_include->column_count <> 1
+                AND filter_condition_aka_include->row_count    <> 1 )
+           OR (     filter_condition_aka_include->column_count  = 1
+                AND filter_condition_aka_include->row_count    <> lookup_array->row_count )
+           OR (     filter_condition_aka_include->row_count     = 1
+                AND filter_condition_aka_include->column_count <> lookup_array->column_count ).
+          result = zcl_xlom__va_error=>value_cannot_be_calculated.
+        ELSE.
+
+          DATA(result_rows) = VALUE zif_xlom__va_array=>tt_row( ).
+          DATA(result_row_count) = 0.
+          DATA(result_column_count) = 0.
+
+          DATA(optimized_lookup_array) = zcl_xlom_range=>optimize_array_if_range( lookup_array ).
+          " If outside the used range (initial) -> result is not found
+          IF optimized_lookup_array IS NOT INITIAL.
+
+            DATA(row_number) = 1.
+            WHILE row_number <= filter_condition_aka_include->row_count.
+              DATA(column_number) = 1.
+              WHILE column_number <= filter_condition_aka_include->column_count.
+
+                DATA(filter_condition_one_cell_valu) = zcl_xlom__va=>to_boolean(
+                    filter_condition_aka_include->get_cell_value( column = column_number
+                                                                  row    = row_number ) )->boolean_value.
+
+                IF filter_condition_one_cell_valu = abap_true.
+                  IF filter_condition_aka_include->column_count = 1.
+                    " Case of a vertical search to extract whole rows from ARRAY.
+                    """"""""""""""""""""""""""""""""""""""""""""""""""
+
+                    " First time, count the columns.
+                    IF result_rows IS INITIAL.
+                      result_column_count = lookup_array->column_count.
+                    ENDIF.
+
+                    DATA(lookup_array_one_row) = lookup_array->get_array_value(
+                                                     top_left     = VALUE #( column = 1
+                                                                             row    = row_number )
+                                                     bottom_right = VALUE #( column = lookup_array->column_count
+                                                                             row    = row_number ) ).
+
+                    DATA(row) = VALUE zif_xlom__va_array=>ts_row( ).
+                    DATA(column_number_2) = 1.
+                    WHILE column_number_2 <= result_column_count.
+                      INSERT lookup_array_one_row->get_cell_value( column = column_number_2
+                                                                   row    = row_number )
+                             INTO TABLE row-columns_of_row.
+                      column_number_2 = column_number_2 + 1.
+                    ENDWHILE.
+
+                    INSERT row INTO TABLE result_rows.
+                    result_row_count = result_row_count + 1.
+
+                  ELSE.
+                    " Case of a horizontal search to extract whole columns from ARRAY.
+                    """"""""""""""""""""""""""""""""""""""""""""""""""
+
+                    " First time, add the rows.
+                    IF result_rows IS INITIAL.
+                      result_row_count = lookup_array->row_count.
+                      DO result_row_count TIMES.
+                        INSERT INITIAL LINE INTO TABLE result_rows.
+                      ENDDO.
+                    ENDIF.
+
+                    DATA(lookup_array_one_column) = lookup_array->get_array_value(
+                                                        top_left     = VALUE #( column = column_number
+                                                                                row    = 1 )
+                                                        bottom_right = VALUE #( column = column_number
+                                                                                row    = lookup_array->row_count ) ).
+                    DATA(row_number_2) = 1.
+                    WHILE row_number_2 <= result_row_count.
+                      DATA(row_2) = REF #( result_rows[ sy-index ] ).
+                      INSERT lookup_array_one_column->get_cell_value( column = column_number
+                                                                      row    = row_number_2 )
+                             INTO TABLE row_2->columns_of_row.
+                      row_number_2 = row_number_2 + 1.
+                    ENDWHILE.
+
+                    result_column_count = result_column_count + 1.
+                  ENDIF.
+                ENDIF.
+
+                column_number = column_number + 1.
+              ENDWHILE.
+              row_number = row_number + 1.
+            ENDWHILE.
+          ENDIF.
+
+          IF result_rows IS NOT INITIAL.
+            result = zcl_xlom__va_array=>create_initial( row_count    = result_row_count
+                                                         column_count = result_column_count
+                                                         rows         = result_rows ).
+          ELSE.
+            " no match found
+            IF if_empty->type = if_empty->c_type-empty.
+              result = zcl_xlom__va_error=>calc.
+            ELSE.
+              result = if_empty.
+            ENDIF.
+          ENDIF.
+        ENDIF.
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
     ENDTRY.

@@ -35,26 +35,33 @@ CLASS zcl_xlom__va_error DEFINITION
 
     TYPES ty_error_number TYPE i.
 
+    "! #BLOCKED!
     CLASS-DATA blocked                    TYPE REF TO zcl_xlom__va_error READ-ONLY.
+    "! #CALC! Is produced by filter(A1:A2;A1="a") if not found
     CLASS-DATA calc                       TYPE REF TO zcl_xlom__va_error READ-ONLY.
+    "! #CONNECT!
     CLASS-DATA connect                    TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #DIV/0! Is produced by =1/0
     CLASS-DATA division_by_zero           TYPE REF TO zcl_xlom__va_error READ-ONLY.
+    "! #FIELD!
     CLASS-DATA field                      TYPE REF TO zcl_xlom__va_error READ-ONLY.
+    "! #GETTING_DATA!
     CLASS-DATA getting_data               TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #N/A. Is produced by =ERROR.TYPE(1) or if C1 contains =A1:A2+B1:B3 -> C3=#N/A.
     CLASS-DATA na_not_applicable          TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #NAME! Is produced by =XXXX if XXXX is not an existing range name.
     CLASS-DATA name                       TYPE REF TO zcl_xlom__va_error READ-ONLY.
+    "! #NULL!
     CLASS-DATA null                       TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #NUM! Is produced by =1E+240*1E+240
     CLASS-DATA num                        TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! TODO #PYTHON! internal error number is not 2222, what is it?
+    "! #PYTHON! TODO: internal error number is not 2222, what is it?
     CLASS-DATA python                     TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #REF! Is produced by =INDEX(A1,2,1)
     CLASS-DATA ref                        TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #SPILL! Is produced by A1 containing ={1,2} and B1 containing a value -> A1=#SPILL!
     CLASS-DATA spill                      TYPE REF TO zcl_xlom__va_error READ-ONLY.
+    "! #UNKNOWN!
     CLASS-DATA unknown                    TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #VALUE! Is produced by =1+"a". #VALUE! in English, #VALEUR! in French.
     CLASS-DATA value_cannot_be_calculated TYPE REF TO zcl_xlom__va_error READ-ONLY.
