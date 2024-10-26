@@ -5,13 +5,15 @@ INTERFACE zif_xlom__va
 
   CONSTANTS:
     BEGIN OF c_type,
-      boolean TYPE ty_type VALUE 1,
-      array   TYPE ty_type VALUE 2,
-      empty   TYPE ty_type VALUE 3,
-      error   TYPE ty_type VALUE 4,
-      number  TYPE ty_type VALUE 5,
-      range   TYPE ty_type VALUE 6,
-      string  TYPE ty_type VALUE 7,
+      boolean       TYPE ty_type VALUE 1,
+      array         TYPE ty_type VALUE 2,
+      empty         TYPE ty_type VALUE 3,
+      error         TYPE ty_type VALUE 4,
+      "! Dummy value which is used internally in optional variadic parameters in case there is no argument passed.
+      none_argument TYPE ty_type VALUE 5,
+      number        TYPE ty_type VALUE 6,
+      range         TYPE ty_type VALUE 7,
+      string        TYPE ty_type VALUE 8,
     END OF c_type.
   DATA type TYPE ty_type READ-ONLY.
 

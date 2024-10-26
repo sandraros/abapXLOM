@@ -27,7 +27,7 @@ CLASS zcl_xlom__ex_fu_and IMPLEMENTATION.
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-and.
     zif_xlom__ex~parameters = VALUE #( ( name = 'LOGICAL1' )
                                        ( name = 'LOGICAL2' )
-                                       ( name = 'LOGICALS' variadic = abap_true ) ).
+                                       ( name = 'LOGICALS' variadic = abap_true optional = abap_true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -42,7 +42,8 @@ CLASS zcl_xlom__ex_fu_and IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     result = zcl_xlom__va_boolean=>true.
-    LOOP AT arguments INTO DATA(argument).
+    LOOP AT arguments INTO DATA(argument)
+        WHERE table_line <> zcl_xlom__va_none_argument=>singleton.
       IF zcl_xlom__va=>to_boolean( argument ) = zcl_xlom__va_boolean=>false.
         result = zcl_xlom__va_boolean=>false.
         EXIT.

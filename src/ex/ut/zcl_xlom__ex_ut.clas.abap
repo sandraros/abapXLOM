@@ -24,22 +24,33 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
             AND expression_2 IS BOUND )
        OR (     expression_1 IS BOUND
             AND expression_2 IS NOT BOUND ).
+      result = abap_false.
       RETURN.
     ELSEIF     expression_1 IS BOUND
            AND expression_2 IS BOUND.
       IF expression_1->type <> expression_2->type.
+        result = abap_false.
         RETURN.
       ENDIF.
       IF lines( expression_1->arguments_or_operands ) <> lines( expression_2->arguments_or_operands ).
+        result = abap_false.
         RETURN.
       ENDIF.
       LOOP AT expression_1->arguments_or_operands INTO DATA(expression_1_argument_or_opera).
+        IF expression_1_argument_or_opera IS NOT BOUND.
+          RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+        ENDIF.
         DATA(expression_2_argument_or_opera) = VALUE #( expression_2->arguments_or_operands[ sy-tabix ] ).
+        IF expression_2_argument_or_opera IS NOT BOUND.
+          RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+        ENDIF.
         IF expression_1_argument_or_opera->type <> expression_2_argument_or_opera->type.
+          result = abap_false.
           RETURN.
         ENDIF.
         IF NOT are_equal( expression_1 = expression_1_argument_or_opera
                           expression_2 = expression_2_argument_or_opera ).
+          result = abap_true.
           RETURN.
         ENDIF.
       ENDLOOP.
@@ -55,15 +66,17 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
 
+    DATA(count_last_arguments_not_bound) = 0.
     DATA(parameter_number) = 0.
     LOOP AT expression->parameters REFERENCE INTO DATA(parameter).
       parameter_number = parameter_number + 1.
 
-      " Check that for a mandatory parameter, an argument is passed
       DATA(argument_or_operand) = REF #( arguments_or_operands[ parameter_number ] OPTIONAL ).
-      IF     argument_or_operand IS NOT BOUND
-         AND parameter->default  IS NOT BOUND
-         AND parameter->variadic = abap_false.
+
+      " Check that for a mandatory parameter, an argument is passed.
+      IF     parameter->default  IS NOT BOUND
+         AND parameter->optional  = abap_false
+         AND argument_or_operand IS NOT BOUND.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
       ENDIF.
 
@@ -72,12 +85,22 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
       " (different behavior in at least RIGHT and LEFT functions).
       IF     parameter->default  IS BOUND
          AND argument_or_operand IS NOT BOUND.
-*        IF argument_or_operand IS NOT BOUND.
-        INSERT parameter->default INTO arguments_or_operands INDEX parameter_number.
-*        ELSEIF argument_or_operand->*->type = argument_or_operand->*->c_type-empty_argument.
-*          argument_or_operand->* = parameter->default.
-*        ENDIF.
+        INSERT parameter->default INTO arguments_or_operands INDEX parameter_number REFERENCE INTO argument_or_operand.
+      ENDIF.
+
+      IF argument_or_operand IS BOUND
+          AND argument_or_operand->* IS NOT BOUND.
+        count_last_arguments_not_bound = count_last_arguments_not_bound + 1.
+      ELSE.
+        count_last_arguments_not_bound = 0.
       ENDIF.
     ENDLOOP.
+
+    IF count_last_arguments_not_bound > 0.
+      DELETE arguments_or_operands FROM lines( arguments_or_operands ) - count_last_arguments_not_bound + 1.
+    ENDIF.
+    DO lines( expression->parameters ) - lines( arguments_or_operands ) TIMES.
+      INSERT zcl_xlom__ex_el_none_argument=>singleton INTO TABLE arguments_or_operands.
+    ENDDO.
   ENDMETHOD.
 ENDCLASS.

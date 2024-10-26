@@ -27,7 +27,7 @@ CLASS zcl_xlom__ex_fu_row IMPLEMENTATION.
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-row.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'REFERENCE' default = zcl_xlom__ex_el_empty_arg=>create( ) ) ).
+    zif_xlom__ex~parameters = VALUE #( ( name = 'REFERENCE' default = zcl_xlom__ex_el_empty_argument=>singleton ) ).
   ENDMETHOD.
 
   METHOD create.

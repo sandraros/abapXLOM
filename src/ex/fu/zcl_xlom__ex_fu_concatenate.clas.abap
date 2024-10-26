@@ -25,7 +25,7 @@ CLASS zcl_xlom__ex_fu_concatenate IMPLEMENTATION.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-concatenate.
     zif_xlom__ex~parameters = VALUE #( ( name = 'TEXT' )
-                                       ( name = 'TEXTS' variadic = abap_true ) ).
+                                       ( name = 'TEXTS' variadic = abap_true optional = abap_true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -39,7 +39,8 @@ CLASS zcl_xlom__ex_fu_concatenate IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     DATA(string) = VALUE string( ).
-    LOOP AT arguments INTO DATA(argument).
+    LOOP AT arguments INTO DATA(argument)
+        WHERE table_line <> zcl_xlom__va_none_argument=>singleton.
       string = string && zcl_xlom__va=>to_string( argument )->get_string( ).
     ENDLOOP.
     result = zcl_xlom__va_string=>get( string ).

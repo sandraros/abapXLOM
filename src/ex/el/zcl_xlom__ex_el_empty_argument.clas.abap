@@ -1,27 +1,20 @@
-CLASS zcl_xlom__ex_el_empty_arg DEFINITION
+CLASS zcl_xlom__ex_el_empty_argument DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ex.
 
-    CLASS-DATA singleton TYPE REF TO zcl_xlom__ex_el_empty_arg READ-ONLY.
+    CLASS-DATA singleton TYPE REF TO zcl_xlom__ex_el_empty_argument READ-ONLY.
 
     CLASS-METHODS class_constructor.
-
-    CLASS-METHODS create
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_empty_arg.
 ENDCLASS.
 
 
-CLASS zcl_xlom__ex_el_empty_arg IMPLEMENTATION.
+CLASS zcl_xlom__ex_el_empty_argument IMPLEMENTATION.
   METHOD class_constructor.
-    singleton = NEW zcl_xlom__ex_el_empty_arg( ).
+    singleton = NEW zcl_xlom__ex_el_empty_argument( ).
     singleton->zif_xlom__ex~type = zif_xlom__ex=>c_type-empty_argument.
-  ENDMETHOD.
-
-  METHOD create.
-    result = singleton.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.

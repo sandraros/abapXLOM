@@ -39,8 +39,8 @@ CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
     zif_xlom__ex~parameters = VALUE #( ( name = 'REFERENCE' not_part_of_result_array = abap_true )
                                        ( name = 'ROWS     ' )
                                        ( name = 'COLS     ' default = zcl_xlom__ex_el_number=>create( 1 ) )
-                                       ( name = 'HEIGHT   ' default = zcl_xlom__ex_el_empty_arg=>singleton )
-                                       ( name = 'WIDTH    ' default = zcl_xlom__ex_el_empty_arg=>singleton ) ).
+                                       ( name = 'HEIGHT   ' optional = abap_true )
+                                       ( name = 'WIDTH    ' optional = abap_true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -57,23 +57,31 @@ CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     TRY.
-        DATA(rows_result) = zcl_xlom__va=>to_number( arguments[ c_arg-rows ] )->get_integer( ).
-        DATA(cols_result) = zcl_xlom__va=>to_number( arguments[ c_arg-cols ] )->get_integer( ).
-        DATA(reference_result) = CAST zcl_xlom_range( arguments[ c_arg-reference ] ).
+        DATA(rows) = zcl_xlom__va=>to_number( arguments[ c_arg-rows ] )->get_integer( ).
+        DATA(cols) = zcl_xlom__va=>to_number( arguments[ c_arg-cols ] )->get_integer( ).
+        DATA(reference) = CAST zcl_xlom_range( arguments[ c_arg-reference ] ).
         DATA(height) = arguments[ c_arg-height ].
         DATA(width) = arguments[ c_arg-width ].
-        DATA(height_result) = COND #( WHEN height       IS BOUND
-                                       AND height->type <> height->c_type-empty
+
+        DATA(adjusted_height) = COND #( WHEN height <> zcl_xlom__va_none_argument=>singleton
+                                       and height <> zcl_xlom__va_empty=>get_singleton( )
                                       THEN zcl_xlom__va=>to_number( arguments[ c_arg-height ] )->get_integer( )
-                                      ELSE reference_result->rows( )->count( ) ).
-        DATA(width_result) = COND #( WHEN width       IS BOUND
-                                      AND width->type <> width->c_type-empty
+                                      ELSE reference->rows( )->count( ) ).
+        DATA(adjusted_width) = COND #( WHEN width <> zcl_xlom__va_none_argument=>singleton
+                                      and width <> zcl_xlom__va_empty=>get_singleton( )
                                      THEN zcl_xlom__va=>to_number( arguments[ c_arg-width ] )->get_integer( )
-                                     ELSE reference_result->columns( )->count( ) ).
-        result = reference_result->offset( row_offset    = rows_result
-                                           column_offset = cols_result
-                                         )->resize( row_size    = height_result
-                                                    column_size = width_result ).
+                                     ELSE reference->columns( )->count( ) ).
+
+        IF    adjusted_height = 0
+           OR adjusted_width  = 0.
+          result = zcl_xlom__va_error=>ref.
+        ELSE.
+          result = reference->offset( row_offset    = rows
+                                      column_offset = cols
+                                           )->resize( row_size    = adjusted_height
+                                                      column_size = adjusted_width ).
+        ENDIF.
+
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
     ENDTRY.

@@ -7,6 +7,7 @@ CLASS ltc_parser DEFINITION FINAL
     METHODS array                          FOR TESTING RAISING cx_static_check.
     METHODS array_two_rows                 FOR TESTING RAISING cx_static_check.
     METHODS function_argument_minus_unary  FOR TESTING RAISING cx_static_check.
+    METHODS function_default_argument      FOR TESTING RAISING cx_static_check.
     METHODS function_function              FOR TESTING RAISING cx_static_check.
     METHODS function_optional_argument     FOR TESTING RAISING cx_static_check.
     METHODS if                             FOR TESTING RAISING cx_static_check.
@@ -77,7 +78,7 @@ CLASS ltc_parser IMPLEMENTATION.
 
   METHOD function_argument_minus_unary.
     DATA(act) = parse( tokens = VALUE #( ( value = `OFFSET` type = c_type-function_name )
-                                         ( value = `B2`     type = c_type-text_literal )
+                                         ( value = `B2`     type = c_type-symbol_name )
                                          ( value = `,`      type = c_type-comma )
                                          ( value = `-`      type = c_type-operator )
                                          ( value = `1`      type = c_type-number )
@@ -88,7 +89,7 @@ CLASS ltc_parser IMPLEMENTATION.
     assert_equals(
         act = act
         exp = zcl_xlom__ex_fu_offset=>create(
-                  reference = zcl_xlom__ex_el_string=>create( text = 'B2' )
+                  reference = zcl_xlom__ex_el_range=>create( address_or_name = 'B2' )
                   rows      = zcl_xlom__ex_op_minus_unary=>create( operand = zcl_xlom__ex_el_number=>create( 1 ) )
                   cols      = zcl_xlom__ex_op_minus_unary=>create( operand = zcl_xlom__ex_el_number=>create( 1 ) ) ) ).
   ENDMETHOD.
@@ -107,14 +108,26 @@ CLASS ltc_parser IMPLEMENTATION.
                                                                  num_chars = zcl_xlom__ex_el_number=>create( 2 ) ) ) ).
   ENDMETHOD.
 
+  METHOD function_default_argument.
+    " RIGHT(text) is the same as RIGHT(text,1)
+    DATA(act) = parse( tokens = VALUE #( ( value = `RIGHT` type = c_type-function_name )
+                                         ( value = `text`  type = c_type-text_literal )
+                                         ( value = `)`     type = c_type-parenthesis_close ) ) ).
+    assert_equals( act = act
+                   exp = zcl_xlom__ex_fu_right=>create( text      = zcl_xlom__ex_el_string=>create( 'text' )
+                                                        num_chars = zcl_xlom__ex_el_number=>create( 1 ) ) ).
+  ENDMETHOD.
+
   METHOD function_optional_argument.
+    " RIGHT(text,) is the same as RIGHT(text,0) ie. the empty string.
+    " RIGHT(text,) must be handled differently from RIGHT(text) which means RIGHT(text,1).
     DATA(act) = parse( tokens = VALUE #( ( value = `RIGHT` type = c_type-function_name )
                                          ( value = `text`  type = c_type-text_literal )
                                          ( value = `,`     type = c_type-comma )
                                          ( value = `)`     type = c_type-parenthesis_close ) ) ).
     assert_equals( act = act
                    exp = zcl_xlom__ex_fu_right=>create( text      = zcl_xlom__ex_el_string=>create( 'text' )
-                                                        num_chars = zcl_xlom__ex_el_empty_arg=>create( ) ) ).
+                                                        num_chars = zcl_xlom__ex_el_empty_argument=>singleton ) ).
   ENDMETHOD.
 
   METHOD if.

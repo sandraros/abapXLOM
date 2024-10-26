@@ -55,7 +55,7 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
     zif_xlom__ex~parameters = VALUE #( not_part_of_result_array = abap_true
                                        ( name = 'ARRAY   ' )
                                        ( name = 'INCLUDE ' )
-                                       ( name = 'IF_EMPTY' default = zcl_xlom__ex_el_empty_arg=>singleton ) ).
+                                       ( name = 'IF_EMPTY' default = zcl_xlom__ex_el_empty_argument=>singleton ) ).
   ENDMETHOD.
 
   METHOD create.

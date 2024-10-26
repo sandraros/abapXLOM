@@ -32,6 +32,9 @@ INTERFACE zif_xlom__ex
       "! If DEFAULT is bound, the parameter is mandatory, otherwise it's optional.
       "! The DEFAULT value is assigned by the method ZCL_XLOM__EX_UT=>CHECK_ARGUMENTS_OR_OPERANDS.
       default                  TYPE REF TO zif_xlom__ex,
+      "! Optional is to be used only if the parameter is optional and has no default
+      "! value: a parameter is optional if default is bound or optional = abap_true.
+      optional                 TYPE abap_bool,
       not_part_of_result_array TYPE abap_bool,
       "! Variadic function. Only the last parameter can be assigned the variadic flag, and it is
       "! always optional.
@@ -46,9 +49,10 @@ INTERFACE zif_xlom__ex
       boolean        TYPE ty_expression_type VALUE 2,
       empty_argument TYPE ty_expression_type VALUE 3,
       error          TYPE ty_expression_type VALUE 4,
-      number         TYPE ty_expression_type VALUE 5,
-      range          TYPE ty_expression_type VALUE 6,
-      string         TYPE ty_expression_type VALUE 7,
+      no_argument    TYPE ty_expression_type VALUE 5,
+      number         TYPE ty_expression_type VALUE 6,
+      range          TYPE ty_expression_type VALUE 7,
+      string         TYPE ty_expression_type VALUE 8,
       BEGIN OF operation,
         ampersand        TYPE ty_expression_type VALUE 100,
         colon            TYPE ty_expression_type VALUE 101,

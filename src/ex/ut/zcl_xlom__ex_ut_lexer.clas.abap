@@ -1,34 +1,30 @@
-class ZCL_XLOM__EX_UT_LEXER definition
-  public
-  final
-  create private .
+CLASS zcl_xlom__ex_ut_lexer DEFINITION
+  PUBLIC FINAL
+  CREATE PRIVATE.
 
-public section.
-
-  types TY_TOKEN_TYPE type STRING .
-  types:
-    BEGIN OF ts_token,
+  PUBLIC SECTION.
+    TYPES ty_token_type TYPE string.
+    TYPES:
+      BEGIN OF ts_token,
         value TYPE string,
         type  TYPE ty_token_type,
-      END OF ts_token .
-  types:
-    tt_token TYPE STANDARD TABLE OF ts_token WITH EMPTY KEY .
-  types:
-    BEGIN OF ts_parenthesis_group,
+      END OF ts_token.
+    TYPES tt_token TYPE STANDARD TABLE OF ts_token WITH EMPTY KEY.
+    TYPES:
+      BEGIN OF ts_parenthesis_group,
         from_token          TYPE i,
         to_token            TYPE i,
         level               TYPE i,
         last_subgroup_token TYPE i,
-      END OF ts_parenthesis_group .
-  types:
-    tt_parenthesis_group TYPE STANDARD TABLE OF ts_parenthesis_group WITH EMPTY KEY .
-  types:
-    BEGIN OF ts_result_lexe,
+      END OF ts_parenthesis_group.
+    TYPES tt_parenthesis_group TYPE STANDARD TABLE OF ts_parenthesis_group WITH EMPTY KEY.
+    TYPES:
+      BEGIN OF ts_result_lexe,
         tokens TYPE tt_token,
-      END OF ts_result_lexe .
+      END OF ts_result_lexe.
 
-  constants:
-    BEGIN OF c_type,
+    CONSTANTS:
+      BEGIN OF c_type,
         comma                      TYPE ty_token_type VALUE ',',
         comma_space                TYPE ty_token_type VALUE `, `,
         curly_bracket_close        TYPE ty_token_type VALUE '}',
@@ -53,28 +49,27 @@ public section.
         symbol_name                TYPE ty_token_type VALUE 'W',
         table_name                 TYPE ty_token_type VALUE 'T',
         text_literal               TYPE ty_token_type VALUE '"',
-      END OF c_type .
+      END OF c_type.
 
-  class-methods CREATE
-    returning
-      value(RESULT) type ref to ZCL_XLOM__EX_UT_LEXER .
-  methods LEXE
-    importing
-      !TEXT type CSEQUENCE
-    returning
-      value(RESULT) type TT_TOKEN .
+    CLASS-METHODS create
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_ut_lexer.
+
+    METHODS lexe
+      IMPORTING !text         TYPE csequence
+      RETURNING VALUE(result) TYPE tt_token.
+
   PRIVATE SECTION.
     "! Insert the parts of the text in "FIND ... IN text ..." for which there was no match.
+    "!
+    "! @parameter i_string |
+    "! @parameter c_matches |
     METHODS complete_with_non_matches
       IMPORTING i_string  TYPE string
       CHANGING  c_matches TYPE match_result_tab.
 ENDCLASS.
 
 
-
-CLASS ZCL_XLOM__EX_UT_LEXER IMPLEMENTATION.
-
-
+CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
   METHOD complete_with_non_matches.
     DATA(last_offset) = 0.
     LOOP AT c_matches ASSIGNING FIELD-SYMBOL(<match>).
@@ -90,11 +85,9 @@ CLASS ZCL_XLOM__EX_UT_LEXER IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-
   METHOD create.
     result = NEW zcl_xlom__ex_ut_lexer( ).
   ENDMETHOD.
-
 
   METHOD lexe.
     TYPES ty_ref_to_parenthesis_group TYPE REF TO ts_parenthesis_group.

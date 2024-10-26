@@ -57,7 +57,7 @@ CLASS zcl_xlom__va_error DEFINITION
     CLASS-DATA num                        TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #PYTHON! TODO: internal error number is not 2222, what is it?
     CLASS-DATA python                     TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #REF! Is produced by =INDEX(A1,2,1)
+    "! #REF! Is produced by =INDEX(A1,2,1), =OFFSET(A1,,,0), etc.
     CLASS-DATA ref                        TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #SPILL! Is produced by A1 containing ={1,2} and B1 containing a value -> A1=#SPILL!
     CLASS-DATA spill                      TYPE REF TO zcl_xlom__va_error READ-ONLY.

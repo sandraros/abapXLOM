@@ -28,11 +28,6 @@ CLASS zcl_xlom__ex_ut_parser DEFINITION
       IMPORTING error_name    TYPE string
       RETURNING VALUE(result) TYPE REF TO zif_xlom__ex.
 
-*    METHODS get_expression_from_function
-*      IMPORTING function_name TYPE string
-*                arguments     TYPE tt_expr
-*      RETURNING VALUE(result) TYPE REF TO zif_xlom__ex.
-
     METHODS get_expression_from_operator
       IMPORTING operator      TYPE string
                 arguments     TYPE tt_expr
@@ -82,70 +77,6 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
 
   METHOD get_expression_from_error.
     result = zcl_xlom__ex_el_error=>get_from_error_name( error_name ).
-*  ENDMETHOD.
-*
-*  METHOD get_expression_from_function.
-*    CASE function_name.
-*      WHEN 'ADDRESS'.
-*        result = zcl_xlom__ex_fu_address=>create(
-*                     row_num    = arguments[ 1 ]
-*                     column_num = arguments[ 2 ]
-*                     abs_num    = COND #( WHEN line_exists( arguments[ 3 ] ) THEN CAST #( arguments[ 3 ] ) )
-*                     a1         = COND #( WHEN line_exists( arguments[ 4 ] ) THEN CAST #( arguments[ 4 ] ) )
-*                     sheet_text = COND #( WHEN line_exists( arguments[ 5 ] ) THEN CAST #( arguments[ 5 ] ) ) ).
-*      WHEN 'CELL'.
-*        result = zcl_xlom__ex_fu_cell=>create(
-*                     info_type = CAST #( arguments[ 1 ] )
-*                     reference = COND #( WHEN line_exists( arguments[ 2 ] ) THEN CAST #( arguments[ 2 ] ) ) ).
-*      WHEN 'COUNTIF'.
-*        result = zcl_xlom__ex_fu_countif=>create( range    = arguments[ 1 ]
-*                                                  criteria = arguments[ 2 ] ).
-*      WHEN 'FIND'.
-*        result = zcl_xlom__ex_fu_find=>create(
-*                     find_text   = arguments[ 1 ]
-*                     within_text = arguments[ 2 ]
-*                     start_num   = COND #( WHEN line_exists( arguments[ 3 ] ) THEN arguments[ 3 ] ) ).
-*      WHEN 'IF'.
-*        result = zcl_xlom__ex_fu_if=>create( condition     = arguments[ 1 ]
-*                                             expr_if_true  = arguments[ 2 ]
-*                                             expr_if_false = arguments[ 3 ] ).
-*      WHEN 'IFERROR'.
-*        result = zcl_xlom__ex_fu_iferror=>create( value          = arguments[ 1 ]
-*                                                  value_if_error = arguments[ 2 ] ).
-*      WHEN 'INDEX'.
-*        result = zcl_xlom__ex_fu_index=>create( array      = arguments[ 1 ]
-*                                                row_num    = arguments[ 2 ]
-*                                                column_num = arguments[ 3 ] ).
-*      WHEN 'INDIRECT'.
-*        result = zcl_xlom__ex_fu_indirect=>create(
-*                     ref_text = arguments[ 1 ]
-*                     a1       = COND #( WHEN line_exists( arguments[ 2 ] ) THEN arguments[ 2 ] ) ).
-*      WHEN 'LEN'.
-*        result = zcl_xlom__ex_fu_len=>create( text = arguments[ 1 ] ).
-*      WHEN 'MATCH'.
-*        result = zcl_xlom__ex_fu_match=>create(
-*                     lookup_value = arguments[ 1 ]
-*                     lookup_array = arguments[ 2 ]
-*                     match_type   = COND #( WHEN line_exists( arguments[ 3 ] ) THEN arguments[ 3 ] ) ).
-*      WHEN 'OFFSET'.
-*        result = zcl_xlom__ex_fu_offset=>create(
-*                     reference = arguments[ 1 ]
-*                     rows      = arguments[ 2 ]
-*                     cols      = arguments[ 3 ]
-*                     height    = COND #( WHEN line_exists( arguments[ 4 ] ) THEN arguments[ 4 ] )
-*                     width     = COND #( WHEN line_exists( arguments[ 5 ] ) THEN arguments[ 5 ] ) ).
-*      WHEN 'RIGHT'.
-*        result = zcl_xlom__ex_fu_right=>create(
-*                     text      = arguments[ 1 ]
-*                     num_chars = COND #( WHEN line_exists( arguments[ 2 ] ) THEN arguments[ 2 ] ) ).
-*      WHEN 'ROW'.
-*        result = zcl_xlom__ex_fu_row=>create(
-*                     reference = COND #( WHEN line_exists( arguments[ 1 ] ) THEN arguments[ 1 ] ) ).
-*      WHEN 'T'.
-*        result = zcl_xlom__ex_fu_t=>create( value = arguments[ 1 ] ).
-*      WHEN OTHERS.
-*        RAISE EXCEPTION TYPE zcx_xlom_todo.
-*    ENDCASE.
   ENDMETHOD.
 
   METHOD get_expression_from_operator.
@@ -378,7 +309,7 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
       WHEN zcl_xlom__ex_ut_lexer=>c_type-curly_bracket_open.
         item->expression = get_expression_from_curly_brac( arguments = item->subitems ).
       WHEN zcl_xlom__ex_ut_lexer=>c_type-empty_argument.
-        item->expression = zcl_xlom__ex_el_empty_arg=>create( ).
+        item->expression = zcl_xlom__ex_el_empty_argument=>singleton.
       WHEN zcl_xlom__ex_ut_lexer=>c_type-error_name.
         item->expression = get_expression_from_error( error_name = item->value ).
       WHEN zcl_xlom__ex_ut_lexer=>c_type-function_name.
@@ -386,9 +317,6 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
         item->expression = zcl_xlom__ex_fu=>create_dynamic( function_name = item->value
                                                             arguments     = VALUE #( FOR <subitem> IN item->subitems
                                                                                      ( <subitem>->expression ) ) ).
-*        item->expression = get_expression_from_function( function_name = item->value
-*                                                         arguments     = VALUE #( FOR <subitem> IN item->subitems
-*                                                                                  ( <subitem>->expression ) ) ).
       WHEN zcl_xlom__ex_ut_lexer=>c_type-number.
         " NUMBER
         item->expression = zcl_xlom__ex_el_number=>create( CONV #( item->value ) ).
@@ -397,11 +325,6 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
         item->expression = get_expression_from_operator( operator  = item->value
                                                          arguments = VALUE #( FOR <subitem> IN item->subitems
                                                                               ( <subitem>->expression ) ) ).
-*        item->expression = zcl_xlom__ex_ut_operator=>get(
-*                               operator = item->value
-*                               unary    = xsdbool( lines( item->subitems ) = 1 ) )->create_expression(
-*                                   operands = VALUE #( FOR <subitem> IN item->subitems
-*                                                       ( <subitem>->expression ) ) ).
       WHEN zcl_xlom__ex_ut_lexer=>c_type-semicolon.
         " Array row separator. No special processing, it's handled inside curly brackets.
         ASSERT 1 = 1. " Debug helper to set a break-point

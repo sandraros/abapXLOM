@@ -9,6 +9,7 @@ CLASS ltc_lexer DEFINITION FINAL
     METHODS array_two_rows                 FOR TESTING RAISING cx_static_check.
     METHODS error_name                     FOR TESTING RAISING cx_static_check.
     METHODS function                       FOR TESTING RAISING cx_static_check.
+    METHODS function_argument_minus_unary  FOR TESTING RAISING cx_static_check.
     METHODS function_function              FOR TESTING RAISING cx_static_check.
     METHODS function_optional_argument     FOR TESTING RAISING cx_static_check.
     METHODS number                         FOR TESTING RAISING cx_static_check.
@@ -94,6 +95,19 @@ CLASS ltc_lexer IMPLEMENTATION.
                                                               ( value = `,`  type = ',' )
                                                               ( value = `1`  type = c_type-number )
                                                               ( value = `)`  type = ')' ) ) ).
+  ENDMETHOD.
+
+  METHOD function_argument_minus_unary.
+    cl_abap_unit_assert=>assert_equals( act = lexe( 'OFFSET(B2,-1,-1)' )
+                                        exp = VALUE tt_token( ( value = `OFFSET` type = c_type-function_name )
+                                                              ( value = `B2`     type = c_type-symbol_name )
+                                                              ( value = `,`      type = c_type-comma )
+                                                              ( value = `-`      type = c_type-operator )
+                                                              ( value = `1`      type = c_type-number )
+                                                              ( value = `,`      type = c_type-comma )
+                                                              ( value = `-`      type = c_type-operator )
+                                                              ( value = `1`      type = c_type-number )
+                                                              ( value = `)`      type = c_type-parenthesis_close ) ) ).
   ENDMETHOD.
 
   METHOD function_function.
