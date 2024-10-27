@@ -1,36 +1,27 @@
-class ZCL_XLOM__EX_EL_RANGE definition
-  public
-  final
-  create private
+CLASS zcl_xlom__ex_el_range DEFINITION
+  PUBLIC FINAL
+  CREATE PRIVATE
+  GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
-  global friends ZIF_XLOM__UT_ALL_FRIENDS .
+  PUBLIC SECTION.
+    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_array.
 
-public section.
+    DATA _address_or_name TYPE string READ-ONLY.
 
-  interfaces ZIF_XLOM__UT_ALL_FRIENDS .
-  interfaces ZIF_XLOM__EX .
-  interfaces ZIF_XLOM__EX_ARRAY .
-
-  class-methods CREATE
-    importing
-      !ADDRESS_OR_NAME type STRING
-    returning
-      value(RESULT) type ref to ZCL_XLOM__EX_EL_RANGE .
-  PRIVATE SECTION.
-    DATA _address_or_name TYPE string.
+    CLASS-METHODS create
+      IMPORTING address_or_name TYPE string
+      RETURNING VALUE(result)   TYPE REF TO zcl_xlom__ex_el_range.
 ENDCLASS.
 
 
-
-CLASS ZCL_XLOM__EX_EL_RANGE IMPLEMENTATION.
-
-
+CLASS zcl_xlom__ex_el_range IMPLEMENTATION.
   METHOD create.
     result = NEW zcl_xlom__ex_el_range( ).
     result->_address_or_name  = address_or_name.
     result->zif_xlom__ex~type = zif_xlom__ex=>c_type-range.
   ENDMETHOD.
-
 
   METHOD zif_xlom__ex~evaluate.
     TRY.

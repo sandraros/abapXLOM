@@ -18,6 +18,7 @@ CLASS ltc_lexer DEFINITION FINAL
     METHODS smart_table                    FOR TESTING RAISING cx_static_check.
     METHODS smart_table_all                FOR TESTING RAISING cx_static_check.
     METHODS smart_table_column             FOR TESTING RAISING cx_static_check.
+    METHODS smart_table_column_2           FOR TESTING RAISING cx_static_check.
     METHODS smart_table_no_space           FOR TESTING RAISING cx_static_check.
     METHODS smart_table_space_separator    FOR TESTING RAISING cx_static_check.
     METHODS smart_table_space_boundaries   FOR TESTING RAISING cx_static_check.
@@ -175,9 +176,17 @@ CLASS ltc_lexer IMPLEMENTATION.
   METHOD smart_table_column.
     cl_abap_unit_assert=>assert_equals(
         act = lexe( 'Table1[Column1]' )
-        exp = VALUE tt_token( ( value = `Table1`  type = c_type-table_name )
+        exp = VALUE tt_token( ( value = `Table1`    type = c_type-table_name )
                               ( value = `[Column1]` type = c_type-square_bracket_open )
-                              ( value = `]`      type = c_type-square_bracket_close ) ) ).
+                              ( value = `]`         type = c_type-square_bracket_close ) ) ).
+  ENDMETHOD.
+
+  METHOD smart_table_column_2.
+    cl_abap_unit_assert=>assert_equals(
+        act = lexe( `Table1[[Info '[1']]]` )
+        exp = VALUE tt_token( ( value = `Table1`       type = c_type-table_name )
+                              ( value = `[Info '[1']]` type = c_type-square_bracket_open )
+                              ( value = `]`            type = c_type-square_bracket_close ) ) ).
   ENDMETHOD.
 
   METHOD smart_table_no_space.

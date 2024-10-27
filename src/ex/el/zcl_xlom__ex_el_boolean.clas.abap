@@ -8,6 +8,8 @@ CLASS zcl_xlom__ex_el_boolean DEFINITION
     CLASS-DATA false TYPE REF TO zcl_xlom__ex_el_boolean.
     CLASS-DATA true  TYPE REF TO zcl_xlom__ex_el_boolean.
 
+    DATA boolean_value TYPE abap_bool READ-ONLY.
+
     CLASS-METHODS class_constructor.
 
     METHODS constructor.
@@ -17,7 +19,6 @@ CLASS zcl_xlom__ex_el_boolean DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_boolean.
 
   PRIVATE SECTION.
-    DATA boolean_value TYPE abap_bool.
 
     CLASS-METHODS _create
       IMPORTING boolean_value TYPE abap_bool

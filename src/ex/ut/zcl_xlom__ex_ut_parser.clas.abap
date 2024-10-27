@@ -108,6 +108,9 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
       WHEN ':'.
         result = zcl_xlom__ex_op_colon=>create( left_operand  = arguments[ 1 ]
                                                 right_operand = arguments[ 2 ] ).
+      WHEN '<>'.
+        result = zcl_xlom__ex_op_not_equal=>create( left_operand  = arguments[ 1 ]
+                                                right_operand = arguments[ 2 ] ).
       WHEN OTHERS.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDCASE.
@@ -308,10 +311,13 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
     CASE item->type.
       WHEN zcl_xlom__ex_ut_lexer=>c_type-curly_bracket_open.
         item->expression = get_expression_from_curly_brac( arguments = item->subitems ).
+
       WHEN zcl_xlom__ex_ut_lexer=>c_type-empty_argument.
         item->expression = zcl_xlom__ex_el_empty_argument=>singleton.
+
       WHEN zcl_xlom__ex_ut_lexer=>c_type-error_name.
         item->expression = get_expression_from_error( error_name = item->value ).
+
       WHEN zcl_xlom__ex_ut_lexer=>c_type-function_name.
         " FUNCTION NAME
         item->expression = zcl_xlom__ex_fu=>create_dynamic( function_name = item->value
@@ -320,6 +326,7 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
       WHEN zcl_xlom__ex_ut_lexer=>c_type-number.
         " NUMBER
         item->expression = zcl_xlom__ex_el_number=>create( CONV #( item->value ) ).
+
       WHEN zcl_xlom__ex_ut_lexer=>c_type-operator.
         " OPERATOR
         item->expression = get_expression_from_operator( operator  = item->value
@@ -328,12 +335,72 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
       WHEN zcl_xlom__ex_ut_lexer=>c_type-semicolon.
         " Array row separator. No special processing, it's handled inside curly brackets.
         ASSERT 1 = 1. " Debug helper to set a break-point
+
+      WHEN zcl_xlom__ex_ut_lexer=>c_type-square_bracket_open.
+        CASE item->value.
+          WHEN `[#All]`.
+            item->expression = zcl_xlom__ex_el_table_item_spe=>all.
+          WHEN `[#Data]`.
+            item->expression = zcl_xlom__ex_el_table_item_spe=>data.
+          WHEN `[#Headers]`.
+            item->expression = zcl_xlom__ex_el_table_item_spe=>headers.
+          WHEN `[#This Row]`.
+            item->expression = zcl_xlom__ex_el_table_item_spe=>this_row.
+          WHEN `[#Totals]`.
+            item->expression = zcl_xlom__ex_el_table_item_spe=>totals.
+          WHEN OTHERS.
+            " https://support.microsoft.com/en-us/office/using-structured-references-with-excel-tables-f5ed2452-2337-4f71-bed3-c8ae6d2b276e
+            " Use an escape character for some special characters in column headers
+            " Some characters have special meaning and require the use of a single quotation mark (')
+            " as an escape character. For example: =DeptSalesFYSummary['#OfItems]
+            " Here’s the list of special characters that need an escape character (') in the formula:
+            "   - Left bracket ([)
+            "   - Right bracket (])
+            "   - Pound sign(#)
+            "   - Single quotation mark (')
+            "   - At sign (@)
+            DATA(table_column_name) = replace( val   = item->value
+                                               regex = `^\[|'(?!')|\]$`
+                                               with  = ''
+                                               occ   = 0 ).
+            item->expression = zcl_xlom__ex_el_table_column=>create( table_column_name ).
+        ENDCASE.
+
       WHEN zcl_xlom__ex_ut_lexer=>c_type-symbol_name.
         " SYMBOL NAME (range address, range name, boolean constant)
         item->expression = get_expression_from_symbol_nam( item->value ).
+
+      WHEN zcl_xlom__ex_ut_lexer=>c_type-table_name.
+        DATA column TYPE REF TO zcl_xlom__ex_el_table_column.
+        DATA(item_specifier) = VALUE zcl_xlom__ex_el_table=>ty_row_specifier( ).
+        LOOP AT item->subitems INTO subitem.
+          CASE subitem->expression.
+            WHEN zcl_xlom__ex_el_table_item_spe=>all.
+              item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-all.
+            WHEN zcl_xlom__ex_el_table_item_spe=>data.
+              item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-data.
+            WHEN zcl_xlom__ex_el_table_item_spe=>headers.
+              item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-headers.
+            WHEN zcl_xlom__ex_el_table_item_spe=>this_row.
+              item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-this_row.
+            WHEN zcl_xlom__ex_el_table_item_spe=>totals.
+              item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-totals.
+            WHEN OTHERS.
+              TRY.
+                  column ?= subitem->expression.
+                CATCH cx_root.
+                  RAISE EXCEPTION TYPE zcx_xlom_todo.
+              ENDTRY.
+          ENDCASE.
+        ENDLOOP.
+        item->expression = zcl_xlom__ex_el_table=>create( name   = EXACT #( item->value )
+                                                          column = column
+                                                          rows   = item_specifier ).
+
       WHEN zcl_xlom__ex_ut_lexer=>c_type-text_literal.
         " TEXT LITERAL
         item->expression = zcl_xlom__ex_el_string=>create( item->value ).
+
       WHEN OTHERS.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDCASE.

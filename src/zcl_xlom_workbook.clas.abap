@@ -1,7 +1,7 @@
 "! https://learn.microsoft.com/en-us/office/vba/api/excel.workbook
 CLASS zcl_xlom_workbook DEFINITION
   PUBLIC
-  CREATE PUBLIC
+  CREATE PRIVATE
   GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
   PUBLIC SECTION.
@@ -9,6 +9,7 @@ CLASS zcl_xlom_workbook DEFINITION
 
     TYPES ty_name TYPE string.
 
+    DATA active_sheet TYPE REF TO zcl_xlom_sheet READ-ONLY.
     DATA application TYPE REF TO zcl_xlom_application READ-ONLY.
     "! workbook name
     DATA name        TYPE string                      READ-ONLY.
@@ -42,12 +43,11 @@ CLASS zcl_xlom_workbook IMPLEMENTATION.
     result = NEW zcl_xlom_workbook( ).
     result->application = application.
     result->worksheets  = zcl_xlom_worksheets=>create( workbook = result ).
-    result->worksheets->add( name = 'Sheet1' ).
+    result->active_sheet = result->worksheets->add( name = 'Sheet1' ).
   ENDMETHOD.
 
   METHOD save_as.
-    " TODO: parameter FILE_NAME is never used (ABAP cleaner)
-
+    path = file_name.
     RAISE EVENT saved.
   ENDMETHOD.
 ENDCLASS.

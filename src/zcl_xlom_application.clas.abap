@@ -1,6 +1,6 @@
 CLASS zcl_xlom_application DEFINITION
   PUBLIC
-  CREATE PUBLIC
+  CREATE PRIVATE
   GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
   PUBLIC SECTION.

@@ -5,6 +5,12 @@ CLASS zcl_xlom__va DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
+    CLASS-METHODS compare
+      IMPORTING operand_1 TYPE REF TO zif_xlom__va
+       operator type csequence
+       operand_2 TYPE REF TO zif_xlom__va
+      returning value(result) type REF TO zif_xlom__va.
+
     CLASS-METHODS to_boolean
       IMPORTING !input        TYPE REF TO zif_xlom__va
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_boolean.
@@ -37,6 +43,75 @@ ENDCLASS.
 
 
 CLASS zcl_xlom__va IMPLEMENTATION.
+  METHOD compare.
+    FIELD-SYMBOLS <operand_1> TYPE simple.
+    FIELD-SYMBOLS <operand_2> TYPE simple.
+
+    IF operand_1->type = zif_xlom__va=>c_type-error.
+      result = operand_1.
+    ELSEIF operand_2->type = zif_xlom__va=>c_type-error.
+      result = operand_2.
+    ELSEIF operand_1->type = operand_2->type.
+      CASE operand_1->type.
+        WHEN zif_xlom__va=>c_type-boolean.
+          ASSIGN CAST zcl_xlom__va_boolean( operand_1 )->boolean_value TO <operand_1>.
+          ASSIGN CAST zcl_xlom__va_boolean( operand_2 )->boolean_value TO <operand_2>.
+        WHEN zif_xlom__va=>c_type-number.
+          DATA(operand_1_number) = CAST zcl_xlom__va_number( operand_1 )->get_number( ).
+          DATA(operand_2_number) = CAST zcl_xlom__va_number( operand_2 )->get_number( ).
+          ASSIGN operand_1_number TO <operand_1>.
+          ASSIGN operand_2_number TO <operand_2>.
+        WHEN zif_xlom__va=>c_type-string.
+          DATA(operand_1_string) = CAST zcl_xlom__va_string( operand_1 )->get_string( ).
+          DATA(operand_2_string) = CAST zcl_xlom__va_string( operand_2 )->get_string( ).
+          ASSIGN operand_1_string TO <operand_1>.
+          ASSIGN operand_2_string TO <operand_2>.
+        WHEN OTHERS.
+          RAISE EXCEPTION TYPE zcx_xlom_todo.
+      ENDCASE.
+      CASE operator.
+        WHEN '='.
+          result = zcl_xlom__va_boolean=>get( xsdbool( <operand_1> = <operand_2> ) ).
+        WHEN '<'.
+          result = zcl_xlom__va_boolean=>get( xsdbool( <operand_1> < <operand_2> ) ).
+        WHEN '>'.
+          result = zcl_xlom__va_boolean=>get( xsdbool( <operand_1> > <operand_2> ) ).
+        WHEN '>='.
+          result = zcl_xlom__va_boolean=>get( xsdbool( <operand_1> >= <operand_2> ) ).
+        WHEN '<='.
+          result = zcl_xlom__va_boolean=>get( xsdbool( <operand_1> <= <operand_2> ) ).
+        WHEN '<>'.
+          result = zcl_xlom__va_boolean=>get( xsdbool( <operand_1> <> <operand_2> ) ).
+        WHEN OTHERS.
+          RAISE EXCEPTION TYPE zcx_xlom_todo.
+      ENDCASE.
+    ELSE.
+      CASE operator.
+        WHEN '='.
+          result = zcl_xlom__va_boolean=>false.
+        WHEN '<>'.
+          result = zcl_xlom__va_boolean=>true.
+        WHEN OTHERS.
+          DATA(operand_1_greater_th_operand_2) = COND #(
+            WHEN operand_1->type = zif_xlom__va=>c_type-string THEN abap_true
+            WHEN operand_2->type = zif_xlom__va=>c_type-string THEN abap_false
+            WHEN operand_1->type = zif_xlom__va=>c_type-number THEN abap_true
+            WHEN operand_2->type = zif_xlom__va=>c_type-number THEN abap_false
+            ELSE                                                    THROW zcx_xlom_todo( ) ).
+          CASE operator.
+            WHEN '<'
+              OR '<='.
+              result = zcl_xlom__va_boolean=>get( xsdbool( operand_1_greater_th_operand_2 = abap_false ) ).
+            WHEN '>'
+              OR '>='.
+              result = zcl_xlom__va_boolean=>get( xsdbool( operand_1_greater_th_operand_2 = abap_true ) ).
+            WHEN OTHERS.
+              RAISE EXCEPTION TYPE zcx_xlom_todo.
+          ENDCASE.
+      ENDCASE.
+    ENDIF.
+  ENDMETHOD.
+
   METHOD to_array.
     CASE input->type.
       WHEN input->c_type-array
@@ -100,11 +175,9 @@ CLASS zcl_xlom__va IMPLEMENTATION.
        AND input->type <> input->c_type-range.
       DATA(cell) = input.
     ELSE.
-*      DATA(range) = CAST ZCL_xlom_range( input ).
       DATA(range) = CAST zif_xlom__va_array( input ).
       IF    range->column_count <> 1
          OR range->row_count    <> 1.
-*      IF range->top_left <> range->_address-bottom_right.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
       ENDIF.
       cell = range->get_cell_value( column = 1

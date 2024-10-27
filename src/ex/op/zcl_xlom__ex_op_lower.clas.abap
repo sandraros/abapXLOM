@@ -1,4 +1,4 @@
-CLASS zcl_xlom__ex_op_equal DEFINITION
+CLASS zcl_xlom__ex_op_lower DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE
   GLOBAL FRIENDS zcl_xlom__ex_op.
@@ -9,7 +9,7 @@ CLASS zcl_xlom__ex_op_equal DEFINITION
     CLASS-METHODS create
       IMPORTING left_operand  TYPE REF TO zif_xlom__ex
                 right_operand TYPE REF TO zif_xlom__ex
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_op_equal.
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_op_lower.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -22,15 +22,15 @@ CLASS zcl_xlom__ex_op_equal DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_xlom__ex_op_equal IMPLEMENTATION.
+CLASS zcl_xlom__ex_op_lower IMPLEMENTATION.
   METHOD constructor.
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-equal.
+    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-lower.
     zif_xlom__ex~parameters = VALUE #( ( name = 'LEFT_OPERAND'  )
                                        ( name = 'RIGHT_OPERAND' ) ).
   ENDMETHOD.
 
   METHOD create.
-    result = NEW zcl_xlom__ex_op_equal( ).
+    result = NEW zcl_xlom__ex_op_lower( ).
     result->zif_xlom__ex~arguments_or_operands = VALUE #( ( left_operand  )
                                                           ( right_operand ) ).
 *    zcl_xlom__ex_ut=>check_arguments_or_operands(
@@ -43,7 +43,7 @@ CLASS zcl_xlom__ex_op_equal IMPLEMENTATION.
     DATA(right_operand) = arguments[ c_arg-right_operand ].
     result = zcl_xlom__va=>compare(
                operand_1 = left_operand
-               operator  = '='
+               operator  = '<'
                operand_2 = right_operand ).
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.

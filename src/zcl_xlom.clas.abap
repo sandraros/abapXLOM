@@ -5,19 +5,25 @@ CLASS zcl_xlom DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
-    "! xlApplicationInternational
+    "! xlApplicationInternational enumeration
     TYPES ty_application_international TYPE i.
-    "! xlCalculation
+    "! xlCalculation enumeration
     TYPES ty_calculation               TYPE i.
-    "! not an Excel constant
+    "! not an Excel constant (Windows)
     TYPES ty_country                   TYPE i.
-    "! xlReferenceType
+    "! xlListObjectSourceType enumeration
+    TYPES ty_list_object_source_type   TYPE i.
+    "! xlReferenceType enumeration
     TYPES ty_reference_style           TYPE i.
+    "! XlYesNoGuess enumeration
+    TYPES ty_yes_no_guess              TYPE i.
+
     TYPES:
       BEGIN OF ts_range_address_one_cell,
         column TYPE i,
         row    TYPE i,
       END OF ts_range_address_one_cell.
+
     TYPES:
       BEGIN OF ts_range_address,
         top_left     TYPE ts_range_address_one_cell,
@@ -28,12 +34,14 @@ CLASS zcl_xlom DEFINITION
       BEGIN OF c_application_international,
         country_code TYPE ty_application_international VALUE 1,
       END OF c_application_international.
+
     CONSTANTS:
       BEGIN OF c_calculation,
         automatic     TYPE ty_calculation VALUE -4105,
         manual        TYPE ty_calculation VALUE -4135,
         semiautomatic TYPE ty_calculation VALUE 2,
       END OF c_calculation.
+
     CONSTANTS:
       BEGIN OF c_country,
         brazil         TYPE ty_country VALUE 55,
@@ -61,11 +69,40 @@ CLASS zcl_xlom DEFINITION
         ukraine        TYPE ty_country VALUE 380,
         usa            TYPE ty_country VALUE 1,
       END OF c_country.
+
+    CONSTANTS:
+      "! XlListObjectSourceType enumeration
+      "! https://learn.microsoft.com/en-us/office/vba/api/excel.xllistobjectsourcetype
+      BEGIN OF c_list_object_source_type,
+        "! xlSrcExternal    0   External data source (Microsoft SharePoint Foundation site).
+        external TYPE ty_list_object_source_type VALUE 0,
+        "! xlSrcModel       4   PowerPivot Model
+        model    TYPE ty_list_object_source_type VALUE 4,
+        "! xlSrcQuery       3   Query
+        query    TYPE ty_list_object_source_type VALUE 3,
+        "! xlSrcRange       1   Range
+        range    TYPE ty_list_object_source_type VALUE 1,
+        "! xlSrcXml         2   XML
+        xml      TYPE ty_list_object_source_type VALUE 2,
+      END OF c_list_object_source_type.
+
     CONSTANTS:
       BEGIN OF c_reference_style,
         a1    TYPE ty_reference_style VALUE 1,
         r1_c1 TYPE ty_reference_style VALUE -4150,
       END OF c_reference_style.
+
+    CONSTANTS:
+      "! XlYesNoGuess enumeration
+      "! https://learn.microsoft.com/en-us/office/vba/api/excel.xlyesnoguess
+      BEGIN OF c_yes_no_guess,
+        "! xlGuess  0   Excel determines whether there is a header, and where it is, if there is one.
+        guess TYPE ty_yes_no_guess VALUE 0,
+        "! xlNo     2   Default. The entire range should be sorted.
+        no    TYPE ty_yes_no_guess VALUE 2,
+        "! xlYes    1   The entire range should not be sorted.
+        yes   TYPE ty_yes_no_guess VALUE 1,
+      END OF c_yes_no_guess.
 
   PROTECTED SECTION.
 

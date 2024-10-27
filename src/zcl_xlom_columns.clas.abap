@@ -1,7 +1,7 @@
 CLASS zcl_xlom_columns DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom_range FINAL
-  CREATE PUBLIC
+  CREATE PRIVATE
   GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
   PUBLIC SECTION.

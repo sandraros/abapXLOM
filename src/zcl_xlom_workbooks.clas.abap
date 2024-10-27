@@ -1,7 +1,7 @@
 "! https://learn.microsoft.com/en-us/office/vba/api/excel.workbooks
 CLASS zcl_xlom_workbooks DEFINITION
   PUBLIC
-  CREATE PUBLIC
+  CREATE PRIVATE
   GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
   PUBLIC SECTION.

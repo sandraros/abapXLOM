@@ -10,10 +10,11 @@ CLASS zcl_xlom_worksheet DEFINITION
 
     TYPES ty_name TYPE c LENGTH 31.
 
-    DATA application TYPE REF TO zcl_xlom_application READ-ONLY.
+    DATA application  TYPE REF TO zcl_xlom_application  READ-ONLY.
+    DATA list_objects TYPE REF TO zcl_xlom_list_objects READ-ONLY.
     "! worksheet name
-    DATA name        TYPE ty_name                     READ-ONLY.
-    DATA parent      TYPE REF TO zcl_xlom_workbook    READ-ONLY.
+    DATA name         TYPE ty_name                      READ-ONLY.
+    DATA parent       TYPE REF TO zcl_xlom_workbook     READ-ONLY.
 
     "! Worksheet.Calculate method (Excel).
     "! Calculates all open workbooks, a specific worksheet in a workbook, or a specified range of cells on a worksheet, as shown in the following table.
@@ -22,10 +23,11 @@ CLASS zcl_xlom_worksheet DEFINITION
     "! https://learn.microsoft.com/en-us/office/vba/api/excel.worksheet.calculate(method)
     METHODS calculate.
 
-    "! Use either both row and column, or item alone.
-    "! @parameter row | Start from 1
+    "! Use either both row and column, or item alone (cells(16385) is the same as cells(2,1)).
+    "! @parameter row    | Start from 1
     "! @parameter column | Start from 1.
-    "! @parameter item | Item number from 1, 16385 is the same as row = 2 column = 1.
+    "! @parameter item   | TODO Item number from 1. cells(16385) is the same as cells(2,1).
+    "! @parameter result |
     METHODS cells
       IMPORTING !row          TYPE i    OPTIONAL
                 !column       TYPE i    OPTIONAL
@@ -59,9 +61,10 @@ CLASS zcl_xlom_worksheet DEFINITION
     "! Worksheet.Range property. Returns a Range object that represents a cell or a range of cells.
     "! <p>expression.Range (Cell1, Cell2)</p>
     "! expression A variable that represents a Worksheet object.
-    "! @parameter cell1  | Required    Variant A String that is a range reference when one argument is used. Either a String that is a range reference or a Range object when two arguments are used.
-    "! @parameter cell2  | Optional    Variant Either a String that is a range reference or a Range object. Cell2 defines another extremity of the range returned by the property.
-    "! @parameter result | .
+    "! @parameter cell1        | Required    Variant A String that is a range reference when one argument is used. Either a String that is a range reference or a Range object when two arguments are used.
+    "! @parameter cell2        | Optional    Variant Either a String that is a range reference or a Range object. Cell2 defines another extremity of the range returned by the property.
+    "! @parameter result       | .
+    "! @raising zcx_xlom__va | <p></p>
     METHODS range_from_address
       IMPORTING cell1         TYPE string
                 cell2         TYPE string OPTIONAL
@@ -83,7 +86,6 @@ ENDCLASS.
 
 CLASS zcl_xlom_worksheet IMPLEMENTATION.
   METHOD calculate.
-*    RAISE EXCEPTION TYPE ZCX_xlom_to_do.
     " TODO the containing cell shouldn't be A1, it should vary for
     "      each cell where the formula is to be calculated.
     "      Solution: maybe store the range object within each cell
@@ -96,15 +98,17 @@ CLASS zcl_xlom_worksheet IMPLEMENTATION.
                AND calculated  = abap_false.
       context->set_containing_cell( VALUE #( row    = cell->row
                                              column = cell->column ) ).
-      cell->value = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-                      expression = cell->formula
-                      context    = context ).
-*      cell->formula->evaluate( context ).
+      cell->value = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = cell->formula
+                                                                   context    = context ).
     ENDLOOP.
   ENDMETHOD.
 
   METHOD cells.
-    " TODO: parameter ITEM is never used (ABAP cleaner)
+    IF    ( row IS NOT INITIAL AND column IS INITIAL )
+       OR ( row IS INITIAL     AND column IS NOT INITIAL )
+       OR ( row IS INITIAL     AND column IS INITIAL AND item IS INITIAL ).
+      RAISE EXCEPTION TYPE zcx_xlom_todo.
+    ENDIF.
 
     " This will change Z20:
     " Range("Z20:AA25").Cells(1, 1) = "C"
@@ -115,11 +119,12 @@ CLASS zcl_xlom_worksheet IMPLEMENTATION.
 
   METHOD create.
     result = NEW zcl_xlom_worksheet( ).
-    result->name        = name.
-    result->parent      = workbook.
-    result->application = workbook->application.
-    result->_array      = zcl_xlom__va_array=>create_initial( row_count    = max_rows
-                                                              column_count = max_columns ).
+    result->name         = name.
+    result->parent       = workbook.
+    result->application  = workbook->application.
+    result->list_objects = zcl_xlom_list_objects=>create( parent = result ).
+    result->_array       = zcl_xlom__va_array=>create_initial( row_count    = max_rows
+                                                               column_count = max_columns ).
   ENDMETHOD.
 
   METHOD range.

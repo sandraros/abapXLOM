@@ -18,6 +18,7 @@ CLASS ltc_parser DEFINITION FINAL
     METHODS parentheses_arithmetic         FOR TESTING RAISING cx_static_check.
     METHODS parentheses_arithmetic_complex FOR TESTING RAISING cx_static_check.
     METHODS priority                       FOR TESTING RAISING cx_static_check.
+    METHODS table                          FOR TESTING RAISING cx_static_check.
 
     TYPES tt_token       TYPE zcl_xlom__ex_ut_lexer=>tt_token.
     TYPES ts_result_lexe TYPE zcl_xlom__ex_ut_lexer=>ts_result_lexe.
@@ -260,6 +261,17 @@ CLASS ltc_parser IMPLEMENTATION.
                                               right_operand = zcl_xlom__ex_op_mult=>create(
                                                   left_operand  = zcl_xlom__ex_el_number=>create( 2 )
                                                   right_operand = zcl_xlom__ex_el_number=>create( 3 ) ) ).
+    assert_equals( act = act
+                   exp = exp ).
+  ENDMETHOD.
+
+  METHOD table.
+    DATA(act) = parse( VALUE #( ( value = `Table1`       type = c_type-table_name )
+                                ( value = `[Info '[1']]` type = c_type-square_bracket_open )
+                                ( value = `]`            type = c_type-square_bracket_close ) ) ).
+    DATA(exp) = zcl_xlom__ex_el_table=>create( name   = 'Table1'
+                                               rows   = zcl_xlom__ex_el_table=>c_rows-data
+                                               column = zcl_xlom__ex_el_table_column=>create( 'Info [1]' ) ).
     assert_equals( act = act
                    exp = exp ).
   ENDMETHOD.

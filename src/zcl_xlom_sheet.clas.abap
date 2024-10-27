@@ -1,7 +1,8 @@
 "! Has child class ZCL_XLOM_WORKSHEET.
 CLASS zcl_xlom_sheet DEFINITION
   PUBLIC
-  CREATE PROTECTED.
+  CREATE PRIVATE
+  GLOBAL FRIENDS zcl_xlom_worksheet.
 
   PUBLIC SECTION.
 

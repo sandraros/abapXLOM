@@ -5,7 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_FU</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>All functions</DESCRIPT>
+    <DESCRIPT>Superclass of all functions</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

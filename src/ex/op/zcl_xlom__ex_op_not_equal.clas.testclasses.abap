@@ -14,7 +14,7 @@ CLASS ltc_app IMPLEMENTATION.
     setup_default_xlom_objects( ).
   ENDMETHOD.
   METHOD test.
-    DATA(value) = application->evaluate( `1=1` ).
+    DATA(value) = application->evaluate( `1<>2` ).
     cl_abap_unit_assert=>assert_true( CAST zcl_xlom__va_boolean( value )->boolean_value ).
   ENDMETHOD.
 ENDCLASS.

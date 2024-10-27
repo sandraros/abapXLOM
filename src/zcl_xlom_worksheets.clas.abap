@@ -1,7 +1,7 @@
 "! https://learn.microsoft.com/en-us/office/vba/api/excel.worksheets
 CLASS zcl_xlom_worksheets DEFINITION
   PUBLIC
-  CREATE PUBLIC
+  CREATE PRIVATE
   GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
   PUBLIC SECTION.
@@ -54,7 +54,9 @@ CLASS zcl_xlom_worksheets IMPLEMENTATION.
     ASSERT sy-subrc = 0.
     count = count + 1.
 
+    " TODO to get rid of the friends in XLOM, replace here by "RAISE EVENT sheet_added" and handle it by application and workbook.
     application->active_sheet = worksheet-object.
+    parent->active_sheet = worksheet-object.
 
     result = worksheet-object.
   ENDMETHOD.

@@ -24,13 +24,22 @@ ENDCLASS.
 
 CLASS zcl_xlom__ex_fu IMPLEMENTATION.
   METHOD adjust_evaluated_operands.
-    " TO BE REDEFINED IN FUNCTIONS (e.g. VLOOKUP)
+    " TO BE REDEFINED IN FUNCTIONS IF NEEDED (e.g. VLOOKUP)
   ENDMETHOD.
 
   METHOD create_dynamic.
-    data function TYPE REF TO ZCL_xlom__ex_fu.
+    DATA function TYPE REF TO zcl_xlom__ex_fu.
 
-    CASE function_name.
+    "    _xlfn.FILTER
+    " OR _xlfn._xlws.FILTER
+    DATA(function_name_2) = EXACT string( function_name ).
+    WHILE function_name_2 CP '_xl++.*'.
+      function_name_2 = substring( val = function_name_2
+                                   off = 6 ).
+    ENDWHILE.
+
+    " Please indicate all functions statically. The goal is only to have an up-to-date where-used list.
+    CASE function_name_2.
       WHEN 'ADDRESS'.     result = NEW zcl_xlom__ex_fu_address( ).
       WHEN 'AND'.         result = NEW zcl_xlom__ex_fu_and( ).
       WHEN 'CELL'.        result = NEW zcl_xlom__ex_fu_cell( ).
@@ -58,7 +67,7 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
       WHEN 'VLOOKUP'.     result = NEW zcl_xlom__ex_fu_vlookup( ).
       WHEN OTHERS.
         TRY.
-            DATA(function_class_name) = |ZCL_XLOM__EX_FU_{ function_name }|.
+            DATA(function_class_name) = |ZCL_XLOM__EX_FU_{ function_name_2 }|.
             CREATE OBJECT result TYPE (function_class_name).
           CATCH cx_root.
             RAISE EXCEPTION TYPE zcx_xlom_todo.
