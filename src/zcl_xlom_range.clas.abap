@@ -10,7 +10,9 @@ CLASS zcl_xlom_range DEFINITION
     INTERFACES zif_xlom__va_array.
 
     DATA application TYPE REF TO zcl_xlom_application READ-ONLY.
+    DATA column      TYPE i                           READ-ONLY.
     DATA parent      TYPE REF TO zcl_xlom_worksheet   READ-ONLY.
+    DATA row         TYPE i                           READ-ONLY.
 
     "! Address (RowAbsolute, ColumnAbsolute, ReferenceStyle, External, RelativeTo)
     "! https://learn.microsoft.com/en-us/office/vba/api/excel.range.address
@@ -41,9 +43,6 @@ CLASS zcl_xlom_range DEFINITION
                 !column       TYPE i    OPTIONAL
                 item          TYPE int8 OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
-
-    METHODS column
-      RETURNING VALUE(result) TYPE i.
 
     METHODS columns
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
@@ -102,9 +101,6 @@ CLASS zcl_xlom_range DEFINITION
       IMPORTING row_size      TYPE i
                 column_size   TYPE i
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
-
-    METHODS row
-      RETURNING VALUE(result) TYPE i.
 
     "! Rows ([item])
     "! - Rows() all rows
@@ -290,10 +286,6 @@ CLASS zcl_xlom_range IMPLEMENTATION.
                                                      column    = _address-top_left-column + column - 1 ).
   ENDMETHOD.
 
-  METHOD column.
-    result = _address-top_left-column.
-  ENDMETHOD.
-
   METHOD columns.
     result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
                                                              top_left              = _address-top_left
@@ -422,12 +414,16 @@ CLASS zcl_xlom_range IMPLEMENTATION.
         WHEN OTHERS.
           RAISE EXCEPTION TYPE zcx_xlom_unexpected.
       ENDCASE.
+
       range->zif_xlom__va~type               = zif_xlom__va=>c_type-range.
       range->application                     = worksheet->application.
       range->parent                          = worksheet.
       range->_address                        = address.
+      range->column                         = range->_address-top_left-column.
+      range->row                            = range->_address-top_left-row.
       range->zif_xlom__va_array~row_count    = address-bottom_right-row - address-top_left-row + 1.
       range->zif_xlom__va_array~column_count = address-bottom_right-column - address-top_left-column + 1.
+
       INSERT VALUE #( worksheet             = worksheet
                       address               = address
                       column_row_collection = column_row_collection
@@ -659,11 +655,48 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 
+  METHOD get_correctly_ordered_address.
+    result-top_left     = top_left.
+    result-bottom_right = bottom_right.
+    IF top_left-column > bottom_right-column.
+      result-top_left-column = bottom_right-column.
+      result-bottom_right-column = top_left-column.
+    ENDIF.
+    IF top_left-row > bottom_right-row.
+      result-top_left-row = bottom_right-row.
+      result-bottom_right-row = top_left-row.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD get_correctly_ordered_address2.
+    result = address.
+    IF address-top_left-column > address-bottom_right-column.
+      result-top_left-column       = address-bottom_right-column.
+      result-top_left-column_fixed = address-bottom_right-column_fixed.
+      result-bottom_right-column       = address-top_left-column.
+      result-bottom_right-column_fixed = address-top_left-column_fixed.
+    ENDIF.
+    IF address-top_left-row > address-bottom_right-row.
+      result-top_left-row       = address-bottom_right-row.
+      result-top_left-row_fixed = address-bottom_right-row_fixed.
+      result-bottom_right-row       = address-top_left-row.
+      result-bottom_right-row_fixed = address-top_left-row_fixed.
+    ENDIF.
+  ENDMETHOD.
+
   METHOD offset.
     result = _offset_resize( row_offset    = row_offset
                              column_offset = column_offset
                              row_size      = _address-bottom_right-row - _address-top_left-row + 1
                              column_size   = _address-bottom_right-column - _address-top_left-column + 1 ).
+  ENDMETHOD.
+
+  METHOD _offset_resize.
+    result = create_from_row_column( worksheet   = parent
+                                     row         = _address-top_left-row + row_offset
+                                     column      = _address-top_left-column + column_offset
+                                     row_size    = row_size
+                                     column_size = column_size ).
   ENDMETHOD.
 
   METHOD optimize_array_if_range.
@@ -688,10 +721,6 @@ CLASS zcl_xlom_range IMPLEMENTATION.
                              column_offset = 0
                              row_size      = row_size
                              column_size   = column_size ).
-  ENDMETHOD.
-
-  METHOD row.
-    result = _address-top_left-row.
   ENDMETHOD.
 
   METHOD rows.
@@ -833,51 +862,5 @@ CLASS zcl_xlom_range IMPLEMENTATION.
 
   METHOD zif_xlom__va~is_string.
     RAISE EXCEPTION TYPE zcx_xlom_todo.
-  ENDMETHOD.
-
-  METHOD _offset_resize.
-    result = create_from_row_column( worksheet   = parent
-                                     row         = _address-top_left-row + row_offset
-                                     column      = _address-top_left-column + column_offset
-                                     row_size    = row_size
-                                     column_size = column_size ).
-  ENDMETHOD.
-
-  METHOD get_correctly_ordered_address.
-    result-top_left     = top_left.
-    result-bottom_right = bottom_right.
-    IF top_left-column > bottom_right-column.
-      result-top_left-column = bottom_right-column.
-      result-bottom_right-column = top_left-column.
-    ENDIF.
-    IF top_left-row > bottom_right-row.
-      result-top_left-row = bottom_right-row.
-      result-bottom_right-row = top_left-row.
-    ENDIF.
-*    result = value #(
-*        top_left     = VALUE #( column = nmin( val1 = top_left-column
-*                                               val2 = bottom_right-column )
-*                                row    = nmin( val1 = top_left-row
-*                                               val2 = bottom_right-row ) )
-*        bottom_right = VALUE #( column = nmax( val1 = top_left-column
-*                                               val2 = bottom_right-column )
-*                                row    = nmax( val1 = top_left-row
-*                                               val2 = bottom_right-row ) ) ).
-  ENDMETHOD.
-
-  METHOD get_correctly_ordered_address2.
-    result = address.
-    IF address-top_left-column > address-bottom_right-column.
-      result-top_left-column       = address-bottom_right-column.
-      result-top_left-column_fixed = address-bottom_right-column_fixed.
-      result-bottom_right-column       = address-top_left-column.
-      result-bottom_right-column_fixed = address-top_left-column_fixed.
-    ENDIF.
-    IF address-top_left-row > address-bottom_right-row.
-      result-top_left-row       = address-bottom_right-row.
-      result-top_left-row_fixed = address-bottom_right-row_fixed.
-      result-bottom_right-row       = address-top_left-row.
-      result-bottom_right-row_fixed = address-top_left-row_fixed.
-    ENDIF.
   ENDMETHOD.
 ENDCLASS.

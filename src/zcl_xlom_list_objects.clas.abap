@@ -1,10 +1,11 @@
+"! https://learn.microsoft.com/en-us/office/vba/api/excel.listobjects
 CLASS zcl_xlom_list_objects DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    "! In my tests, the parent was always ZCL_XLOM_WORKSHEET (ListObject from Range and from Model).
-    DATA parent TYPE REF TO zcl_xlom_sheet READ-ONLY.
+    "! In my tests with ListObject created from Range and from Model, the parent was Worksheet.
+    DATA parent TYPE REF TO zcl_xlom_worksheet READ-ONLY.
 
     "! Add (SourceType, Source, LinkSource, XlListObjectHasHeaders, Destination, TableStyleName)
     "! https://learn.microsoft.com/en-us/office/vba/api/excel.listobjects.add
@@ -29,13 +30,13 @@ CLASS zcl_xlom_list_objects DEFINITION
       IMPORTING source_type      TYPE zcl_xlom=>ty_list_object_source_type OPTIONAL
                 !source          TYPE any                                  OPTIONAL
                 link_source      TYPE abap_bool                            OPTIONAL
-                has_headers      TYPE zcl_xlom=>ty_yes_no_guess            OPTIONAL
+                has_headers      TYPE zcl_xlom=>ty_yes_no_guess            DEFAULT zcl_xlom=>c_yes_no_guess-guess
                 !destination     TYPE REF TO zcl_xlom_range                OPTIONAL
                 table_style_name TYPE string                               OPTIONAL
       RETURNING VALUE(result)    TYPE REF TO zcl_xlom_LIST_object.
 
     CLASS-METHODS create
-      IMPORTING !parent       TYPE REF TO zcl_xlom_sheet
+      IMPORTING !parent       TYPE REF TO zcl_xlom_worksheet
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_list_objects.
 
   PRIVATE SECTION.

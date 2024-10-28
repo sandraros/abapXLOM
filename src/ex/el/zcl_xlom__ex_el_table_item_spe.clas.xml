@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_EL_TABLE_ITEM_SPE</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Table item specifiers [#This Row], [#All], etc.</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

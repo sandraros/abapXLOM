@@ -43,7 +43,7 @@ CLASS zcl_xlom__ex_fu_column IMPLEMENTATION.
     IF reference->type = reference->c_type-empty.
       result = zcl_xlom__va_number=>create( EXACT #( context->containing_cell-column ) ).
     ELSE.
-      result = zcl_xlom__va_number=>create( ( CAST zcl_xlom_range( reference )->column( ) ) ).
+      result = zcl_xlom__va_number=>create( ( CAST zcl_xlom_range( reference )->column ) ).
     ENDIF.
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.

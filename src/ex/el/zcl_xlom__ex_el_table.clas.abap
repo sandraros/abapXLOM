@@ -87,6 +87,10 @@ CLASS zcl_xlom__ex_el_table IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
+    data(containing_cell) = context->worksheet->cells( row    = context->containing_cell-row
+                                  column = context->containing_cell-column ).
+*    if containing_cell->current_region IS BOUND.
+*    ENDIF.
     RAISE EXCEPTION TYPE zcx_xlom_todo.
 *    result = zcl_xlom__va_string=>get( string ).
 *    zif_xlom__ex~result_of_evaluation = result.
