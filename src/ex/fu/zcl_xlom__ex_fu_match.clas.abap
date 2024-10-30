@@ -47,6 +47,21 @@ CLASS zcl_xlom__ex_fu_match DEFINITION
     METHODS constructor.
 
   PRIVATE SECTION.
+    TYPES:
+      BEGIN OF ty_hashed_string,
+        string TYPE string,
+        row    TYPE i,
+        column TYPE i,
+      END OF ty_hashed_string.
+    TYPES ty_hashed_strings TYPE HASHED TABLE OF ty_hashed_string WITH UNIQUE KEY string.
+    TYPES:
+      BEGIN OF ty_lookup_range,
+        lookup_range_array  TYPE REF TO zif_xlom__va_array,
+        optimized_addresses TYPE zcl_xlom=>ts_range_address,
+        hashed_strings      TYPE ty_hashed_strings,
+      END OF ty_lookup_range.
+    TYPES ty_lookup_ranges TYPE HASHED TABLE OF ty_lookup_range WITH UNIQUE KEY lookup_range_array optimized_addresses.
+
     CONSTANTS:
       BEGIN OF c_arg,
         lookup_value TYPE i VALUE 1,
@@ -58,6 +73,13 @@ CLASS zcl_xlom__ex_fu_match DEFINITION
       BEGIN OF c_match_type,
         exact_match TYPE i VALUE 0,
       END OF c_match_type.
+
+    CLASS-DATA lookup_ranges TYPE ty_lookup_ranges.
+
+    METHODS get_lookup_range
+      IMPORTING lookup_range_array  TYPE REF TO zif_xlom__va_array
+                optimized_addresses TYPE zcl_xlom=>ts_range_address
+      RETURNING VALUE(result)       TYPE REF TO ty_lookup_range.
 ENDCLASS.
 
 
@@ -80,75 +102,132 @@ CLASS zcl_xlom__ex_fu_match IMPLEMENTATION.
       CHANGING  arguments_or_operands = result->zif_xlom__ex~arguments_or_operands ).
   ENDMETHOD.
 
+  METHOD get_lookup_range.
+    result = REF #( lookup_ranges[ lookup_range_array  = lookup_range_array
+                                               optimized_addresses = optimized_addresses ] OPTIONAL ).
+    IF result IS BOUND.
+      RETURN.
+    ENDIF.
+
+    INSERT VALUE #( lookup_range_array  = lookup_range_array
+                    optimized_addresses = optimized_addresses )
+           INTO TABLE lookup_ranges
+           REFERENCE INTO result.
+
+    DATA(row_number) = optimized_addresses-top_left-row.
+    WHILE row_number <= optimized_addresses-bottom_right-row.
+
+      DATA(column_number) = optimized_addresses-top_left-column.
+      WHILE column_number <= optimized_addresses-bottom_right-column.
+
+        DATA(cell_value) = zcl_xlom__va=>to_string( lookup_range_array->get_cell_value( column = column_number
+                                                                                        row    = row_number )
+                                                  )->get_string( ).
+
+        INSERT VALUE #( string = cell_value
+                        row    = row_number
+                        column = column_number )
+               INTO TABLE result->hashed_strings.
+
+        column_number = column_number + 1.
+      ENDWHILE.
+
+      row_number = row_number + 1.
+    ENDWHILE.
+  ENDMETHOD.
+
   METHOD zif_xlom__ex~evaluate.
     TRY.
         DATA(lookup_value_result) = arguments[ c_arg-lookup_value ].
-        DATA(lookup_array_result) = zcl_xlom__va=>to_array( arguments[ c_arg-lookup_array ] ).
+        DATA(lookup_range_array) = zcl_xlom__va=>to_array( arguments[ c_arg-lookup_array ] ).
         DATA(match_type_result) = COND i( LET result_num_chars = arguments[ c_arg-match_type ] IN
                                           WHEN result_num_chars IS BOUND
                                           THEN COND #( WHEN result_num_chars->type = result_num_chars->c_type-empty
                                                        THEN 1
                                                        ELSE zcl_xlom__va=>to_number( result_num_chars )->get_integer( ) ) ).
+
         IF match_type_result <> c_match_type-exact_match.
           RAISE EXCEPTION TYPE zcx_xlom_todo.
         ENDIF.
-        IF     lookup_array_result->row_count    > 1
-           AND lookup_array_result->column_count > 1.
+
+        IF     lookup_range_array->row_count    > 1
+           AND lookup_range_array->column_count > 1.
           " MATCH cannot lookup a two-dimension array, it can search either one row or one column.
           result = zcl_xlom__va_error=>na_not_applicable.
         ELSE.
-          DATA(optimized_lookup_array) = zcl_xlom_range=>optimize_array_if_range( lookup_array_result ).
-          IF optimized_lookup_array IS NOT INITIAL.
-            DATA(row_number) = optimized_lookup_array-top_left-row.
-            WHILE row_number <= optimized_lookup_array-bottom_right-row.
-              DATA(column_number) = optimized_lookup_array-top_left-column.
-              WHILE column_number <= optimized_lookup_array-bottom_right-column.
-                DATA(cell_value) = lookup_array_result->get_cell_value( column = column_number
-                                                                        row    = row_number ).
-                DATA(equal) = abap_false.
-                DATA(lookup_value_result_2) = SWITCH #( lookup_value_result->type
-                                                        WHEN zif_xlom__va=>c_type-array
-                                                          OR zif_xlom__va=>c_type-range
-                                                        THEN CAST zif_xlom__va( CAST zif_xlom__va_array( lookup_value_result )->get_cell_value(
-                                                                                    column = 1
-                                                                                    row    = 1 ) )
-                                                        ELSE lookup_value_result ).
-                IF    lookup_value_result_2->type = zif_xlom__va=>c_type-string
-                   OR cell_value->type            = zif_xlom__va=>c_type-string.
-                  equal = xsdbool( zcl_xlom__va=>to_string( lookup_value_result_2 )->get_string( )
-                                   = zcl_xlom__va=>to_string( cell_value )->get_string( ) ).
-                ELSEIF    lookup_value_result_2->type = zif_xlom__va=>c_type-number
-                       OR cell_value->type            = zif_xlom__va=>c_type-number.
-                  equal = xsdbool( zcl_xlom__va=>to_number( lookup_value_result_2 )->get_number( )
-                                   = zcl_xlom__va=>to_number( cell_value )->get_number( ) ).
-                ELSEIF    lookup_value_result_2->type = zif_xlom__va=>c_type-boolean
-                       OR cell_value->type            = zif_xlom__va=>c_type-boolean.
-                  equal = xsdbool( zcl_xlom__va=>to_boolean( lookup_value_result_2 )->boolean_value
-                                   = zcl_xlom__va=>to_boolean( cell_value )->boolean_value ).
-                ELSEIF     lookup_value_result_2->type = zif_xlom__va=>c_type-empty
-                       AND cell_value->type            = zif_xlom__va=>c_type-empty.
-                  equal = abap_true.
-                ELSE.
-                  RAISE EXCEPTION TYPE zcx_xlom_todo.
-                ENDIF.
-                IF equal = abap_true.
-                  IF lookup_array_result->row_count > 1.
-                    result = zcl_xlom__va_number=>create( EXACT #( row_number ) ).
-                  ELSE.
-                    result = zcl_xlom__va_number=>create( EXACT #( column_number ) ).
-                  ENDIF.
-                  " Dummy code to exit the two loops
-                  row_number = lookup_array_result->row_count.
-                  column_number = lookup_array_result->column_count.
-                ENDIF.
-                column_number = column_number + 1.
-              ENDWHILE.
-              row_number = row_number + 1.
-            ENDWHILE.
-          ENDIF.
-          IF result IS NOT BOUND.
-            " no match found
+          DATA(optimized_addresses) = zcl_xlom_range=>optimize_array_if_range( lookup_range_array ).
+          IF optimized_addresses IS INITIAL.
+            " The range may be out of the bounds, so no match found.
             result = zcl_xlom__va_error=>na_not_applicable.
+          ELSE.
+            DATA(lookup_value_string) = zcl_xlom__va=>to_string(
+                SWITCH #( lookup_value_result->type
+                          WHEN zif_xlom__va=>c_type-array
+                            OR zif_xlom__va=>c_type-range
+                          THEN CAST zif_xlom__va_array( lookup_value_result )->get_cell_value( column = 1
+                                                                                               row    = 1 )
+                          ELSE lookup_value_result )
+                )->get_string( ).
+*            DATA(lookup_value_result_2) = SWITCH #( lookup_value_result->type
+*                                                    WHEN zif_xlom__va=>c_type-array
+*                                                      OR zif_xlom__va=>c_type-range
+*                                                    THEN CAST zif_xlom__va_array( lookup_value_result )->get_cell_value(
+*                                                                                                          column = 1
+*                                                                                                          row    = 1 )
+*                                                    ELSE lookup_value_result ).
+            DATA(lookup_range) = get_lookup_range( lookup_range_array  = lookup_range_array
+                                                   optimized_addresses = optimized_addresses ).
+            DATA(ref_hashed_string) = REF #( lookup_range->hashed_strings[ string = lookup_value_string ] OPTIONAL ).
+            IF ref_hashed_string IS BOUND.
+              IF lookup_range_array->row_count > 1.
+                result = zcl_xlom__va_number=>create( EXACT #( ref_hashed_string->row ) ).
+              ELSE.
+                result = zcl_xlom__va_number=>create( EXACT #( ref_hashed_string->column ) ).
+              ENDIF.
+            ENDIF.
+*            DATA(row_number) = optimized_lookup_array-top_left-row.
+*            WHILE row_number <= optimized_lookup_array-bottom_right-row.
+*              DATA(column_number) = optimized_lookup_array-top_left-column.
+*              WHILE column_number <= optimized_lookup_array-bottom_right-column.
+*                DATA(cell_value) = lookup_array_result->get_cell_value( column = column_number
+*                                                                        row    = row_number ).
+*                DATA(equal) = abap_false.
+*                IF    lookup_value_result_2->type = zif_xlom__va=>c_type-string
+*                   OR cell_value->type            = zif_xlom__va=>c_type-string.
+*                  equal = xsdbool( zcl_xlom__va=>to_string( lookup_value_result_2 )->get_string( )
+*                                   = zcl_xlom__va=>to_string( cell_value )->get_string( ) ).
+*                ELSEIF    lookup_value_result_2->type = zif_xlom__va=>c_type-number
+*                       OR cell_value->type            = zif_xlom__va=>c_type-number.
+*                  equal = xsdbool( zcl_xlom__va=>to_number( lookup_value_result_2 )->get_number( )
+*                                   = zcl_xlom__va=>to_number( cell_value )->get_number( ) ).
+*                ELSEIF    lookup_value_result_2->type = zif_xlom__va=>c_type-boolean
+*                       OR cell_value->type            = zif_xlom__va=>c_type-boolean.
+*                  equal = xsdbool( zcl_xlom__va=>to_boolean( lookup_value_result_2 )->boolean_value
+*                                   = zcl_xlom__va=>to_boolean( cell_value )->boolean_value ).
+*                ELSEIF     lookup_value_result_2->type = zif_xlom__va=>c_type-empty
+*                       AND cell_value->type            = zif_xlom__va=>c_type-empty.
+*                  equal = abap_true.
+*                ELSE.
+*                  RAISE EXCEPTION TYPE zcx_xlom_todo.
+*                ENDIF.
+*                IF equal = abap_true.
+*                  IF lookup_array_result->row_count > 1.
+*                    result = zcl_xlom__va_number=>create( EXACT #( row_number ) ).
+*                  ELSE.
+*                    result = zcl_xlom__va_number=>create( EXACT #( column_number ) ).
+*                  ENDIF.
+*                  " Dummy code to exit the two loops
+*                  row_number = lookup_array_result->row_count.
+*                  column_number = lookup_array_result->column_count.
+*                ENDIF.
+*                column_number = column_number + 1.
+*              ENDWHILE.
+*              row_number = row_number + 1.
+*            ENDWHILE.
+            IF result IS NOT BOUND.
+              " no match found
+              result = zcl_xlom__va_error=>na_not_applicable.
+            ENDIF.
           ENDIF.
         ENDIF.
       CATCH zcx_xlom__va INTO DATA(error).

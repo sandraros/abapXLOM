@@ -1,28 +1,24 @@
-class ZCL_XLOM__VA_NUMBER definition
-  public
-  final
-  create private .
+CLASS zcl_xlom__va_number DEFINITION
+  PUBLIC FINAL
+  CREATE PRIVATE.
 
-public section.
+  PUBLIC SECTION.
+    INTERFACES zif_xlom__va.
 
-  interfaces ZIF_XLOM__VA .
+    CLASS-METHODS create
+      IMPORTING !number       TYPE f
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_number.
 
-  class-methods CREATE
-    importing
-      !NUMBER type F
-    returning
-      value(RESULT) type ref to ZCL_XLOM__VA_NUMBER .
-  class-methods GET
-    importing
-      !NUMBER type F
-    returning
-      value(RESULT) type ref to ZCL_XLOM__VA_NUMBER .
-  methods GET_INTEGER
-    returning
-      value(RESULT) type I .
-  methods GET_NUMBER
-    returning
-      value(RESULT) type F .
+    CLASS-METHODS get
+      IMPORTING !number       TYPE f
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_number.
+
+    METHODS get_integer
+      RETURNING VALUE(result) TYPE i.
+
+    METHODS get_number
+      RETURNING VALUE(result) TYPE f.
+
   PRIVATE SECTION.
     TYPES:
       BEGIN OF ts_buffer_line,
@@ -34,24 +30,32 @@ public section.
     CLASS-DATA buffer TYPE tt_buffer.
 
     DATA number TYPE f.
+
+    CLASS-METHODS _create
+      IMPORTING !number       TYPE f
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_number.
 ENDCLASS.
 
 
-
-CLASS ZCL_XLOM__VA_NUMBER IMPLEMENTATION.
-
-
+CLASS zcl_xlom__va_number IMPLEMENTATION.
   METHOD create.
+    result = get( number ).
+*    result = NEW zcl_xlom__va_number( ).
+*    result->zif_xlom__va~type = zif_xlom__va=>c_type-number.
+*    result->number            = number.
+  ENDMETHOD.
+
+  METHOD _create.
     result = NEW zcl_xlom__va_number( ).
     result->zif_xlom__va~type = zif_xlom__va=>c_type-number.
     result->number            = number.
   ENDMETHOD.
 
-
   METHOD get.
     DATA(buffer_line) = REF #( buffer[ number = number ] OPTIONAL ).
     IF buffer_line IS NOT BOUND.
-      result = create( number ).
+      result = _create( number ).
+      " result = create( number ).
       INSERT VALUE #( number = number
                       object = result )
              INTO TABLE buffer
@@ -60,32 +64,26 @@ CLASS ZCL_XLOM__VA_NUMBER IMPLEMENTATION.
     result = buffer_line->object.
   ENDMETHOD.
 
-
   METHOD get_integer.
     " Excel rounding (1.99 -> 1, -1.99 -> -1)
     result = floor( number ).
   ENDMETHOD.
 
-
   METHOD get_number.
     result = number.
   ENDMETHOD.
-
 
   METHOD zif_xlom__va~get_value.
     result = REF #( number ).
   ENDMETHOD.
 
-
   METHOD zif_xlom__va~is_array.
     result = abap_false.
   ENDMETHOD.
 
-
   METHOD zif_xlom__va~is_boolean.
     result = abap_false.
   ENDMETHOD.
-
 
   METHOD zif_xlom__va~is_equal.
     IF input_result->type = zif_xlom__va=>c_type-number.
@@ -100,16 +98,13 @@ CLASS ZCL_XLOM__VA_NUMBER IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-
   METHOD zif_xlom__va~is_error.
     result = abap_false.
   ENDMETHOD.
 
-
   METHOD zif_xlom__va~is_number.
     result = abap_true.
   ENDMETHOD.
-
 
   METHOD zif_xlom__va~is_string.
     result = abap_false.

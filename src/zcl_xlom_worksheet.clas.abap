@@ -86,20 +86,26 @@ ENDCLASS.
 
 CLASS zcl_xlom_worksheet IMPLEMENTATION.
   METHOD calculate.
-    " TODO the containing cell shouldn't be A1, it should vary for
-    "      each cell where the formula is to be calculated.
-    "      Solution: maybe store the range object within each cell
-    "                to not recalculate it (performance).
     DATA(context) = zcl_xlom__ex_ut_eval_context=>create( worksheet       = me
-                                                          containing_cell = VALUE #( row    = 1
-                                                                                     column = 1 ) ).
+                                                          containing_cell = VALUE #( ) ).
+
     LOOP AT _array->_cells REFERENCE INTO DATA(cell)
          WHERE     formula    IS BOUND
                AND calculated  = abap_false.
+
       context->set_containing_cell( VALUE #( row    = cell->row
                                              column = cell->column ) ).
-      cell->value = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = cell->formula
-                                                                   context    = context ).
+      " BELOW CODE IS ALSO IN ZCL_XLOM_RANGE=>CALCULATE
+      DATA(cell_value) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = cell->formula
+                                                                        context    = context ).
+      cell->value = SWITCH #( cell_value->type
+                              WHEN cell_value->c_type-array THEN
+                                CAST zif_xlom__va_array( cell_value )->get_cell_value( column = 1
+                                                                                       row    = 1 )
+                              WHEN cell_value->c_type-range THEN
+                                CAST zcl_xlom_range( cell_value )->value( )
+                              ELSE
+                                cell_value ).
     ENDLOOP.
   ENDMETHOD.
 

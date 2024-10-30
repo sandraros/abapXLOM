@@ -31,9 +31,7 @@ CLASS zcl_xlom__ex_fu_if IMPLEMENTATION.
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-if.
     zif_xlom__ex~parameters = VALUE #( ( name = 'CONDITION    ' )
                                        ( name = 'EXPR_IF_TRUE ' )
-                                       ( name = 'EXPR_IF_FALSE' default = zcl_xlom__ex_el_number=>create( 1 ) )
-                                       ( name = 'A1        ' default = zcl_xlom__ex_el_boolean=>true )
-                                       ( name = 'SHEET_TEXT' default = zcl_xlom__ex_el_string=>create( '' ) ) ).
+                                       ( name = 'EXPR_IF_FALSE' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
   ENDMETHOD.
 
   METHOD create.

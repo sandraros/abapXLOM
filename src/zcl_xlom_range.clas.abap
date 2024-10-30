@@ -147,6 +147,12 @@ CLASS zcl_xlom_range DEFINITION
         column     TYPE i,
         row        TYPE i,
       END OF ts_range_name_or_coords.
+    TYPES:
+      BEGIN OF ty_address_buffer_line,
+        string     TYPE string,
+        structured TYPE zif_xlom__va_array=>ts_address,
+      END OF ty_address_buffer_line.
+    TYPES ty_address_buffer TYPE HASHED TABLE OF ty_address_buffer_line WITH UNIQUE KEY string.
 
     CONSTANTS:
       "! By default, the "count" method counts the number of cells.
@@ -160,6 +166,7 @@ CLASS zcl_xlom_range DEFINITION
 
     CLASS-DATA _formula_buffer TYPE tt_formula_buffer.
     CLASS-DATA _range_buffer   TYPE tt_range_buffer.
+    CLASS-DATA _address_buffer TYPE ty_address_buffer.
 
     DATA _address TYPE zcl_xlom=>ts_range_address.
 
@@ -261,18 +268,31 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     IF _address-top_left <> _address-bottom_right.
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
+
     DATA(cell) = REF #( parent->_array->_cells[ column = _address-top_left-column
                                                 row    = _address-top_left-row ] OPTIONAL ).
     IF cell IS NOT BOUND.
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
-    DATA(context) = zcl_xlom__ex_ut_eval_context=>create(
-                        worksheet       = parent
-                        containing_cell = VALUE #( row    = _address-top_left-row
-                                                   column = _address-top_left-column ) ).
-    zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = cell->formula
-                                                   context    = context ).
-*    cell->formula->evaluate( context ).
+
+    IF cell->formula IS BOUND.
+      DATA(context) = zcl_xlom__ex_ut_eval_context=>create(
+                          worksheet       = parent
+                          containing_cell = VALUE #( row    = _address-top_left-row
+                                                     column = _address-top_left-column ) ).
+
+      " BELOW CODE IS ALSO IN ZCL_XLOM_WORKSHEET=>CALCULATE
+      DATA(cell_value) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = cell->formula
+                                                                        context    = context ).
+      cell->value = SWITCH #( cell_value->type
+                              WHEN cell_value->c_type-array THEN
+                                CAST zif_xlom__va_array( cell_value )->get_cell_value( column = 1
+                                                                                       row    = 1 )
+                              WHEN cell_value->c_type-range THEN
+                                CAST zcl_xlom_range( cell_value )->value( )
+                              ELSE
+                                cell_value ).
+    ENDIF.
   ENDMETHOD.
 
   METHOD cells.
@@ -446,6 +466,16 @@ CLASS zcl_xlom_range IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD decode_range_address_a1.
+    DATA(ref_address_buffer_line) = REF #( _address_buffer[ string = address ] OPTIONAL ).
+    IF ref_address_buffer_line IS BOUND.
+      result = ref_address_buffer_line->structured.
+      RETURN.
+    ENDIF.
+
+    INSERT VALUE #( string = address )
+           INTO TABLE _address_buffer
+           REFERENCE INTO ref_address_buffer_line.
+
     " Special characters are ":", "$", "!", "'", "[" and "]".
     " When "'" is found, all characters till the next "'" form
     "   one word or two words if there are "[" and "]".
@@ -601,6 +631,8 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     ENDIF.
 
     result = get_correctly_ordered_address2( result ).
+
+    ref_address_buffer_line->structured = result.
   ENDMETHOD.
 
   METHOD decode_range_coords.
