@@ -7,6 +7,8 @@ CLASS zcl_xlom__ex_op_minus_unary DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ex.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING operand       TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_op_minus_unary.
@@ -17,14 +19,19 @@ CLASS zcl_xlom__ex_op_minus_unary DEFINITION
         operand TYPE i VALUE 1,
       END OF c_arg.
 
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
+
     METHODS constructor.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_op_minus_unary IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'OPERAND' ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-minus_unary.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'OPERAND' ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -44,5 +51,9 @@ CLASS zcl_xlom__ex_op_minus_unary IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

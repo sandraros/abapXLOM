@@ -22,9 +22,9 @@ CLASS ltc_app IMPLEMENTATION.
                                                                         address     = 'A1:B2'
                                                                         relative_to = worksheet )
                                                       has_headers = zcl_xlom=>c_yes_no_guess-yes ).
-    range_a1->set_value( zcl_xlom__va_number=>get( 5 ) ).
-    range_a2->set_formula2( value = `Table1[Column1]*2` ).
-    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_a2->value( ) )->get_number( )
+    range_a2->set_value( zcl_xlom__va_number=>get( 5 ) ).
+    range_b2->set_formula2( value = `Table1[[#This Row][Column1]]*2` ).
+    cl_abap_unit_assert=>assert_equals( act = CAST zcl_xlom__va_number( range_b2->value( ) )->get_number( )
                                         exp = 10 ).
   ENDMETHOD.
 ENDCLASS.

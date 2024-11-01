@@ -8,6 +8,8 @@ CLASS zcl_xlom__ex_fu_choose DEFINITION
   PUBLIC SECTION.
     TYPES tt_value TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING index_num     TYPE REF TO zif_xlom__ex
                 value1        TYPE REF TO zif_xlom__ex
@@ -15,6 +17,7 @@ CLASS zcl_xlom__ex_fu_choose DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_choose.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -25,17 +28,21 @@ CLASS zcl_xlom__ex_fu_choose DEFINITION
         index_num TYPE i VALUE 1,
         value1    TYPE i VALUE 2,
       END OF c_arg.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_choose IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'INDEX_NUM' )
+                          ( name = 'VALUE1   ' )
+                          ( name = 'VALUES   ' variadic = abap_true ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-choose.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'INDEX_NUM' )
-                                       ( name = 'VALUE1   ' )
-                                       ( name = 'VALUES   ' variadic = abap_true ) ).
-*    zif_xlom__ex~endless_number_of_parameters = abap_true.
   ENDMETHOD.
 
   METHOD create.
@@ -56,5 +63,9 @@ CLASS zcl_xlom__ex_fu_choose IMPLEMENTATION.
       result = zcl_xlom__va_error=>value_cannot_be_calculated.
     ENDIF.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

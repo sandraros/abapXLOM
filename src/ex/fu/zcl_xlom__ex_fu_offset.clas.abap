@@ -7,6 +7,8 @@ CLASS zcl_xlom__ex_fu_offset DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING !reference    TYPE REF TO zif_xlom__ex
                 !rows         TYPE REF TO zif_xlom__ex
@@ -16,6 +18,7 @@ CLASS zcl_xlom__ex_fu_offset DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_offset.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -29,18 +32,23 @@ CLASS zcl_xlom__ex_fu_offset DEFINITION
         height    TYPE i VALUE 4,
         width     TYPE i VALUE 5,
       END OF c_arg.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'REFERENCE' not_part_of_result_array = abap_true )
+                          ( name = 'ROWS     ' )
+                          ( name = 'COLS     ' default = zcl_xlom__ex_el_number=>create( 1 ) )
+                          ( name = 'HEIGHT   ' optional = abap_true )
+                          ( name = 'WIDTH    ' optional = abap_true ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-offset.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'REFERENCE' not_part_of_result_array = abap_true )
-                                       ( name = 'ROWS     ' )
-                                       ( name = 'COLS     ' default = zcl_xlom__ex_el_number=>create( 1 ) )
-                                       ( name = 'HEIGHT   ' optional = abap_true )
-                                       ( name = 'WIDTH    ' optional = abap_true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -57,9 +65,9 @@ CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     TRY.
+        DATA(reference) = CAST zcl_xlom_range( arguments[ c_arg-reference ] ).
         DATA(rows) = zcl_xlom__va=>to_number( arguments[ c_arg-rows ] )->get_integer( ).
         DATA(cols) = zcl_xlom__va=>to_number( arguments[ c_arg-cols ] )->get_integer( ).
-        DATA(reference) = CAST zcl_xlom_range( arguments[ c_arg-reference ] ).
         DATA(height) = arguments[ c_arg-height ].
         DATA(width) = arguments[ c_arg-width ].
 
@@ -86,5 +94,9 @@ CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

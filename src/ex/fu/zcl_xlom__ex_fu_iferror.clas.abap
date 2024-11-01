@@ -7,12 +7,15 @@ CLASS zcl_xlom__ex_fu_iferror DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING !value         TYPE REF TO zif_xlom__ex
                 value_if_error TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result)  TYPE REF TO zcl_xlom__ex_fu_iferror.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -23,15 +26,20 @@ CLASS zcl_xlom__ex_fu_iferror DEFINITION
         value          TYPE i VALUE 1,
         value_if_error TYPE i VALUE 2,
       END OF c_arg.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_iferror IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'VALUE         ' error_accepted = abap_true )
+                          ( name = 'VALUE_IF_ERROR' ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-iferror.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'VALUE         ' )
-                                       ( name = 'VALUE_IF_ERROR' ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -50,5 +58,9 @@ CLASS zcl_xlom__ex_fu_iferror IMPLEMENTATION.
                      THEN arguments[ c_arg-value_if_error ]
                      ELSE value_result ).
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

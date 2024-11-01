@@ -6,6 +6,8 @@ CLASS zcl_xlom__ex_fu_mid DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING !text         TYPE REF TO zif_xlom__ex
                 start_num     TYPE REF TO zif_xlom__ex
@@ -13,6 +15,7 @@ CLASS zcl_xlom__ex_fu_mid DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_mid.
 
     METHODs zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -24,17 +27,21 @@ CLASS zcl_xlom__ex_fu_mid DEFINITION
         start_num TYPE i VALUE 2,
         num_chars TYPE i VALUE 3,
       END OF c_arg.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_mid IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'TEXT     ' )
+                          ( name = 'START_NUM' )
+                          ( name = 'NUM_CHARS' ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-mid.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'TEXT     ' )
-                                       ( name = 'START_NUM' )
-                                       ( name = 'NUM_CHARS' ) ).
-
   ENDMETHOD.
 
   METHOD create.
@@ -71,5 +78,9 @@ CLASS zcl_xlom__ex_fu_mid IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

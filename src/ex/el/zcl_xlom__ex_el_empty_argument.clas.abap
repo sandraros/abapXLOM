@@ -21,4 +21,8 @@ CLASS zcl_xlom__ex_el_empty_argument IMPLEMENTATION.
     result = zcl_xlom__va_empty=>get_singleton( ).
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
 ENDCLASS.

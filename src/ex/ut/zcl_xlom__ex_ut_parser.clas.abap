@@ -349,6 +349,11 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
           WHEN `[#Totals]`.
             item->expression = zcl_xlom__ex_el_table_item_spe=>totals.
           WHEN OTHERS.
+            " [@column]
+            " https://support.microsoft.com/en-us/office/implicit-intersection-operator-ce3be07b-0101-4450-a24e-c1c999be2b34
+            "
+            " Table[[][column]]
+            "
             " https://support.microsoft.com/en-us/office/using-structured-references-with-excel-tables-f5ed2452-2337-4f71-bed3-c8ae6d2b276e
             " Use an escape character for some special characters in column headers
             " Some characters have special meaning and require the use of a single quotation mark (')
@@ -374,16 +379,16 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
         DATA column TYPE REF TO zcl_xlom__ex_el_table_column.
         DATA(item_specifier) = VALUE zcl_xlom__ex_el_table=>ty_row_specifier( ).
         LOOP AT item->subitems INTO subitem.
-          CASE subitem->expression.
-            WHEN zcl_xlom__ex_el_table_item_spe=>all.
+          CASE subitem->value.
+            WHEN '[#All]'.
               item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-all.
-            WHEN zcl_xlom__ex_el_table_item_spe=>data.
+            WHEN '[#Data]'.
               item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-data.
-            WHEN zcl_xlom__ex_el_table_item_spe=>headers.
+            WHEN '[#Headers]'.
               item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-headers.
-            WHEN zcl_xlom__ex_el_table_item_spe=>this_row.
+            WHEN '[#This Row]'.
               item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-this_row.
-            WHEN zcl_xlom__ex_el_table_item_spe=>totals.
+            WHEN '[#Totals]'.
               item_specifier = item_specifier + zcl_xlom__ex_el_table=>c_rows-totals.
             WHEN OTHERS.
               TRY.
@@ -393,6 +398,9 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
               ENDTRY.
           ENDCASE.
         ENDLOOP.
+        IF item_specifier IS INITIAL.
+          item_specifier = zcl_xlom__ex_el_table=>c_rows-data.
+        ENDIF.
         item->expression = zcl_xlom__ex_el_table=>create( name   = EXACT #( item->value )
                                                           column = column
                                                           rows   = item_specifier ).

@@ -8,6 +8,8 @@ CLASS zcl_xlom__ex_fu_ifs DEFINITION
   PUBLIC SECTION.
     TYPES tt_logical_test_and_value TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING logical_test1            TYPE REF TO zif_xlom__ex
                 value_if_true1           TYPE REF TO zif_xlom__ex
@@ -15,6 +17,7 @@ CLASS zcl_xlom__ex_fu_ifs DEFINITION
       RETURNING VALUE(result)            TYPE REF TO zcl_xlom__ex_fu_ifs.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -26,16 +29,21 @@ CLASS zcl_xlom__ex_fu_ifs DEFINITION
         value_if_true1           TYPE i VALUE 2,
         logical_tests_and_values TYPE i VALUE 3,
       END OF c_arg.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_ifs IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'LOGICAL_TEST1           ' )
+                          ( name = 'VALUE_IF_TRUE1          ' )
+                          ( name = 'LOGICAL_TESTS_AND_VALUES' variadic = abap_true ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-ifs.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'LOGICAL_TEST1           ' )
-                                       ( name = 'VALUE_IF_TRUE1          ' )
-                                       ( name = 'LOGICAL_TESTS_AND_VALUES' variadic = abap_true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -66,5 +74,9 @@ CLASS zcl_xlom__ex_fu_ifs IMPLEMENTATION.
       argument_number = argument_number + 2.
     ENDDO.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

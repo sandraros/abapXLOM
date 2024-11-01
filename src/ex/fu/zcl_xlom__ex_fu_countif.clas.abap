@@ -8,12 +8,15 @@ CLASS zcl_xlom__ex_fu_countif DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING !range        TYPE REF TO zif_xlom__ex
                 criteria      TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_countif.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -24,15 +27,20 @@ CLASS zcl_xlom__ex_fu_countif DEFINITION
         range    TYPE i VALUE 1,
         criteria TYPE i VALUE 2,
       END OF c_arg.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_countif IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'RANGE   ' not_part_of_result_array = abap_true )
+                          ( name = 'CRITERIA' ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-countif.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'RANGE   ' not_part_of_result_array = abap_true )
-                                       ( name = 'CRITERIA' ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -80,5 +88,9 @@ CLASS zcl_xlom__ex_fu_countif IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

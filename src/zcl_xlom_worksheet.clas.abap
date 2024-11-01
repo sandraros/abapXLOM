@@ -3,7 +3,8 @@ CLASS zcl_xlom_worksheet DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom_sheet FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  GLOBAL FRIENDS zif_xlom__ut_all_friends
+                 zcl_xlom__ut_om_worksheet.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
@@ -27,7 +28,6 @@ CLASS zcl_xlom_worksheet DEFINITION
     "! @parameter row    | Start from 1
     "! @parameter column | Start from 1.
     "! @parameter item   | TODO Item number from 1. cells(16385) is the same as cells(2,1).
-    "! @parameter result |
     METHODS cells
       IMPORTING !row          TYPE i    OPTIONAL
                 !column       TYPE i    OPTIONAL

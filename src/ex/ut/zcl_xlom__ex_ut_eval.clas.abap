@@ -91,20 +91,38 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
     "  d | e            l | o | r              d op l | e op o | #N/A
     "  g | h                                   #N/A   | #N/A   | #N/A
 
+    IF expression->type BETWEEN 1 AND 99.
+      result = expression->evaluate( arguments = VALUE #( )
+                                     context   = context ).
+      RETURN.
+    ENDIF.
+
+    DATA(parameters) = expression->get_parameters( ).
     DATA(at_least_one_array_or_range) = abap_false.
     DATA(operand_results) = VALUE zif_xlom__ex=>tt_operand_result( ).
+
     LOOP AT expression->arguments_or_operands INTO DATA(operand).
       IF operand IS NOT BOUND.
         RAISE EXCEPTION TYPE zcx_xlom_unexpected.
       ENDIF.
 
+      " OPTIONAL because there can be an operand but no parameter in case the parameter is an endless
+      " list of parameters, like in the AND function, only the 2 first parameters are defined.
+      DATA(parameter) = REF #( parameters[ sy-tabix ] OPTIONAL ).
+
+      " EVALUATE
       DATA(operand_result) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = operand
                                                                             context    = context ).
+
+      IF parameter->error_accepted = abap_false
+          AND operand_result->type = operand_result->c_type-error.
+        " e.g. the result of =OFFSET(INDIRECT("aa"&#VALUE!),#N/A,1) is #VALUE!
+        result = operand_result.
+        RETURN.
+      ENDIF.
+
       INSERT operand_result INTO TABLE operand_results.
 
-      " There can be an operand but no parameter in case the parameter is an endless list
-      " of parameters, like in the AND function, only the 2 first parameters are defined.
-      DATA(parameter) = REF #( expression->parameters[ sy-tabix ] OPTIONAL ).
       IF     parameter IS BOUND
          AND parameter->not_part_of_result_array  = abap_false
          AND (    operand_result->type = operand_result->c_type-array
@@ -133,7 +151,7 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
       LOOP AT operand_results INTO operand_result.
         " There can be an operand but no parameter in case the parameter is an endless list
         " of parameters, like in the AND function, only the 2 first parameters are defined.
-        parameter = REF #( expression->parameters[ sy-tabix ] OPTIONAL ).
+        parameter = REF #( parameters[ sy-tabix ] OPTIONAL ).
         IF    parameter->not_part_of_result_array  = abap_true
            OR operand_result IS NOT BOUND.
           CONTINUE.
@@ -158,7 +176,7 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
 
           DATA(single_cell_operands) = VALUE zif_xlom__ex=>tt_operand_result( ).
           LOOP AT operand_results INTO operand_result.
-            parameter = REF #( expression->parameters[ sy-tabix ] ).
+            parameter = REF #( parameters[ sy-tabix ] ).
             IF     parameter->not_part_of_result_array  = abap_false
                AND operand_result IS BOUND.
               CASE operand_result->type.

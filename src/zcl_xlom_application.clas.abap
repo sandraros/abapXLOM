@@ -74,10 +74,6 @@ CLASS zcl_xlom_application DEFINITION
       IMPORTING arg1          TYPE zcl_xlom=>ts_range_address
                 arg2          TYPE zcl_xlom=>ts_range_address
       RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
-
-    CLASS-METHODS type
-      IMPORTING any_data_object TYPE any
-      RETURNING VALUE(result)   TYPE abap_typekind.
 ENDCLASS.
 
 
@@ -195,10 +191,6 @@ CLASS zcl_xlom_application IMPLEMENTATION.
 
   METHOD set_calculation.
     calculation = value.
-  ENDMETHOD.
-
-  METHOD type.
-    DESCRIBE FIELD any_data_object TYPE result.
   ENDMETHOD.
 
   METHOD _intersect_2.

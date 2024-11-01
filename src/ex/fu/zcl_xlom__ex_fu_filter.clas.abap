@@ -22,6 +22,8 @@ CLASS zcl_xlom__ex_fu_filter DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING array         TYPE REF TO zif_xlom__ex
                 !include      TYPE REF TO zif_xlom__ex
@@ -29,6 +31,7 @@ CLASS zcl_xlom__ex_fu_filter DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_filter.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -45,17 +48,22 @@ CLASS zcl_xlom__ex_fu_filter DEFINITION
       BEGIN OF c_match_type,
         exact_match TYPE i VALUE 0,
       END OF c_match_type.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( not_part_of_result_array = abap_true
+                          ( name = 'ARRAY   ' )
+                          ( name = 'INCLUDE ' )
+                          ( name = 'IF_EMPTY' default = zcl_xlom__ex_el_empty_argument=>singleton ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-match.
-    zif_xlom__ex~parameters = VALUE #( not_part_of_result_array = abap_true
-                                       ( name = 'ARRAY   ' )
-                                       ( name = 'INCLUDE ' )
-                                       ( name = 'IF_EMPTY' default = zcl_xlom__ex_el_empty_argument=>singleton ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -90,7 +98,7 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
           DATA(result_row_count) = 0.
           DATA(result_column_count) = 0.
 
-          DATA(optimized_lookup_array) = zcl_xlom_range=>optimize_array_if_range( lookup_array ).
+          DATA(optimized_lookup_array) = zcl_xlom__ut_om_range=>optimize_array_if_range( lookup_array ).
           " If outside the used range (initial) -> result is not found
           IF optimized_lookup_array IS NOT INITIAL.
 
@@ -184,5 +192,9 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

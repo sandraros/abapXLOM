@@ -8,6 +8,8 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
+    CLASS-METHODS class_constructor.
+
     "! @parameter row_num    | Required. A numeric value that specifies the row number to use in the cell reference.
     "! @parameter column_num    | Required. A numeric value that specifies the column number to use in the cell reference.
     "! @parameter abs_num    | Optional. A numeric value that specifies the type of reference to return.
@@ -38,7 +40,8 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
                 sheet_text    TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_address.
 
-    METHODs zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -60,18 +63,23 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
         relative_row_absolute_column TYPE i VALUE 3,
         relative                     TYPE i VALUE 4,
       END OF c_abs.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'ROW_NUM   ' )
+                          ( name = 'COLUMN_NUM' )
+                          ( name = 'ABS_NUM   ' default = zcl_xlom__ex_el_number=>create( 1 ) )
+                          ( name = 'A1        ' default = zcl_xlom__ex_el_boolean=>true )
+                          ( name = 'SHEET_TEXT' default = zcl_xlom__ex_el_string=>create( '' ) ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-address.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'ROW_NUM   ' )
-                                       ( name = 'COLUMN_NUM' )
-                                       ( name = 'ABS_NUM   ' default = zcl_xlom__ex_el_number=>create( 1 ) )
-                                       ( name = 'A1        ' default = zcl_xlom__ex_el_boolean=>true )
-                                       ( name = 'SHEET_TEXT' default = zcl_xlom__ex_el_string=>create( '' ) ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -99,8 +107,8 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
           RAISE EXCEPTION TYPE zcx_xlom_todo EXPORTING text = 'The function ADDRESS currently only supports the A1 reference style'.
         ENDIF.
 
-        IF    row_num    NOT BETWEEN 1 AND zcl_xlom_worksheet=>max_rows
-           OR column_num NOT BETWEEN 1 AND zcl_xlom_worksheet=>max_columns
+        IF    row_num    NOT BETWEEN 1 AND zcl_xlom__ut_om_worksheet=>max_rows
+           OR column_num NOT BETWEEN 1 AND zcl_xlom__ut_om_worksheet=>max_columns
            OR abs_num    NOT BETWEEN c_abs-absolute AND c_abs-relative.
           result = zcl_xlom__va_error=>value_cannot_be_calculated.
           RETURN.
@@ -121,5 +129,9 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

@@ -5,7 +5,10 @@
 *&---------------------------------------------------------------------*
 REPORT z_xlom_demo_over_abap2xlsx.
 
-TYPES ty_unique_strings TYPE HASHED TABLE OF string WITH UNIQUE KEY table_line.
+PARAMETERS xlsxpath TYPE string LOWER CASE DEFAULT 'C:\...\name.xlsx'.
+
+START-OF-SELECTION.
+*TYPES ty_unique_strings TYPE HASHED TABLE OF string WITH UNIQUE KEY table_line.
 
 TRY.
 
@@ -14,13 +17,9 @@ TRY.
 
     DATA(xlom_workbook) = xlom_application->workbooks->add( ).
 
-    DATA(formulas) = VALUE ty_unique_strings( ).
+*    DATA(formulas) = VALUE ty_unique_strings( ).
     DATA(reader) = NEW zcl_excel_reader_2007( ).
-*    DATA(reader) = NEW zcl_excel_reader_huge_file( ).
-    DATA(workbook) = reader->zif_excel_reader~load_file(
-        'C:\Users\sandra.rossi\OneDrive - Accenture\Innovation\DDT\Full SAP\UserGuides\BP-RFC_CVI_EI_INBOUND_MAIN-S4.xlsx' ).
-*DATA(workbook_user_guide) = reader_user_guide->zif_excel_reader~load_file(
-*    'C:\Users\sandra.rossi\OneDrive - Accenture\Innovation\DDT\Full SAP\UserGuides\FI01-BAPI_BANK_CREATE-S4.xlsx' ).
+    DATA(workbook) = reader->zif_excel_reader~load_file( xlsxpath ).
     DATA(worksheets_iterator) = workbook->get_worksheets_iterator( ).
     WHILE worksheets_iterator->has_next( ).
       DATA(worksheet) = CAST zcl_excel_worksheet( worksheets_iterator->get_next( ) ).
@@ -30,7 +29,7 @@ TRY.
 
       LOOP AT worksheet->sheet_content REFERENCE INTO DATA(cell).
         IF cell->cell_formula IS NOT INITIAL.
-          INSERT cell->cell_formula INTO TABLE formulas.
+*          INSERT cell->cell_formula INTO TABLE formulas.
           xlom_worksheet->range( cell1_string = cell->cell_coords )->set_formula2( cell->cell_formula ).
         ELSEIF cell->data_type = 's'.
           xlom_worksheet->range( cell1_string = cell->cell_coords )->set_value(

@@ -59,4 +59,8 @@ CLASS zcl_xlom__ex_el_boolean IMPLEMENTATION.
     result = zcl_xlom__va_boolean=>get( boolean_value ).
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
 ENDCLASS.

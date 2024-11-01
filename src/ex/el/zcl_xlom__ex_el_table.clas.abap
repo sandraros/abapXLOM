@@ -9,10 +9,14 @@ CLASS zcl_xlom__ex_el_table DEFINITION
     TYPES ty_row_specifier TYPE i.
 
     CONSTANTS:
-      "! Possible item specifiers, [#All] and [#This Row] can be specified only alone,
-      "! [#Headers] and [#Totals] can be specified alone or with [#Data], [#Data] can
-      "! be also specified alone. No specifier is the same as [#Data].
-      "! Note that [#All] has the same meaning as the combination of [#Headers], [#Data] and [#Totals].
+      "! Possible item specifiers
+      "! <ul>
+      "! <li>[#All] and [#This Row] can be specified only alone,</li>
+      "! <li>[#Headers] and [#Totals] can be specified alone or with [#Data], [#Data] can be also specified alone.</li>
+      "! <li>No specifier is the same as [#Data].</li>
+      "! <li>Note that [#All] has the same meaning as the combination of [#Headers], [#Data] and [#Totals].</li>
+      "! <li>In all cases, the item specifier(s) must be used with a column name or an interval of columns.</li>
+      "! </ul>
       BEGIN OF c_rows,
         all          TYPE ty_row_specifier VALUE 1,
         data         TYPE ty_row_specifier VALUE 2,
@@ -46,7 +50,7 @@ CLASS zcl_xlom__ex_el_table DEFINITION
     CLASS-METHODS create
       IMPORTING !name         TYPE ty_table_name
                 !column       TYPE REF TO zcl_xlom__ex_el_table_column   OPTIONAL
-                !rows         TYPE ty_row_specifier                      OPTIONAL
+                !rows         TYPE ty_row_specifier                      DEFAULT c_rows-data
                 column_range  TYPE REF TO zcl_xlom__ex_el_table_col_rang OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_table.
 ENDCLASS.
@@ -54,45 +58,44 @@ ENDCLASS.
 
 CLASS zcl_xlom__ex_el_table IMPLEMENTATION.
   METHOD create.
+    IF    column_range IS BOUND
+       OR (     rows <> c_rows-data
+            AND rows <> c_rows-headers
+            AND rows <> c_rows-this_row ).
+      RAISE EXCEPTION TYPE zcx_xlom_todo.
+    ENDIF.
+
     result = NEW zcl_xlom__ex_el_table( ).
     result->name              = name.
     result->column            = column.
-    result->rows              = COND #( WHEN rows <> 0
-                                        THEN rows
-                                        ELSE c_rows-data ).
+    result->rows              = rows.
     result->column_range      = column_range.
     result->zif_xlom__ex~type = zif_xlom__ex=>c_type-table.
-*    result->_all  = boolc( rows = c_rows-all ).
-*    result->_data = boolc(    rows = c_rows-all
-*                           OR rows = c_rows-data
-*                           OR rows = c_rows-data_totals
-*                           OR rows = c_rows-headers_data ).
-*    result->_headers = boolc(    rows = c_rows-all
-*                           OR rows = c_rows-headers
-*                           OR rows = c_rows-headers_data ).
-*    result->_this_row = boolc( rows = c_rows-this_row ).
-*    result->_this_row = boolc( rows = c_rows-this_row ).
-*  METHOD class_constructor.
-*    all = NEW zcl_xlom__ex_el_table( ).
-*    all->_all = abap_true.
-*    data = NEW zcl_xlom__ex_el_table( ).
-*    data->_data = abap_true.
-*    headers = NEW zcl_xlom__ex_el_table( ).
-*    headers->_headers = abap_true.
-*    this_row = NEW zcl_xlom__ex_el_table( ).
-*    this_row->_this_row = abap_true.
-*    totals = NEW zcl_xlom__ex_el_table( ).
-*    totals->_totals = abap_true.
-*  ENDMETHOD.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
-    data(containing_cell) = context->worksheet->cells( row    = context->containing_cell-row
-                                  column = context->containing_cell-column ).
-*    if containing_cell->current_region IS BOUND.
-*    ENDIF.
-    RAISE EXCEPTION TYPE zcx_xlom_todo.
-*    result = zcl_xlom__va_string=>get( string ).
-*    zif_xlom__ex~result_of_evaluation = result.
+    DATA(list_object) = context->worksheet->list_objects->item( name ).
+    CASE rows.
+      WHEN c_rows-data.
+        result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
+                                                         row         = list_object->range->row + 1
+                                                         column      = list_object->range->column
+                                                         row_size    = list_object->range->zif_xlom__va_array~row_count
+                                                         column_size = 1 ).
+      WHEN c_rows-headers.
+        result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
+                                                         row         = list_object->range->row
+                                                         column      = list_object->range->column
+                                                         row_size    = 1
+                                                         column_size = 1 ).
+      WHEN c_rows-this_row.
+        DATA(list_column) = list_object->list_columns->item( column->name ).
+        result = context->worksheet->cells( row    = context->containing_cell-row
+                                            column = list_object->range->column + list_column->index - 1 ).
+    ENDCASE.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
   ENDMETHOD.
 ENDCLASS.

@@ -12,6 +12,7 @@ CLASS ltc_app DEFINITION
     METHODS complex_1                  FOR TESTING RAISING cx_static_check.
     METHODS complex_2                  FOR TESTING RAISING cx_static_check.
     METHODS function_optional_argument FOR TESTING RAISING cx_static_check.
+    METHODS operand_is_an_error        FOR TESTING RAISING cx_static_check.
     METHODS range_a1_plus_one          FOR TESTING RAISING cx_static_check.
     METHODS range_two_sheets           FOR TESTING RAISING cx_static_check.
 
@@ -85,6 +86,12 @@ CLASS ltc_app IMPLEMENTATION.
     range_a1->set_formula2( value = `RIGHT("hello",)` ).
     cl_abap_unit_assert=>assert_equals( act = zcl_xlom__va=>to_string( range_a1->value( ) )->get_string( )
                                         exp = '' ).
+  ENDMETHOD.
+
+  METHOD operand_is_an_error.
+    DATA(value) = application->evaluate( `OFFSET(INDIRECT("aa"&#VALUE!),#N/A,1)` ).
+    cl_abap_unit_assert=>assert_equals( act = value
+                                        exp = zcl_xlom__va_error=>value_cannot_be_calculated ).
   ENDMETHOD.
 
   METHOD range_a1_plus_one.

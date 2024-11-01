@@ -1,5 +1,6 @@
 CLASS zcl_xlom__ex_fu DEFINITION
   PUBLIC
+  ABSTRACT
   CREATE PROTECTED .
 
   PUBLIC SECTION.
@@ -63,6 +64,7 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
       WHEN 'OFFSET'.      result = NEW zcl_xlom__ex_fu_offset( ).
       WHEN 'RIGHT'.       result = NEW zcl_xlom__ex_fu_right( ).
       WHEN 'ROW'.         result = NEW zcl_xlom__ex_fu_row( ).
+      WHEN 'SINGLE'.      result = NEW zcl_xlom__ex_fu_single( ).
       WHEN 'T'.           result = NEW zcl_xlom__ex_fu_t( ).
       WHEN 'VLOOKUP'.     result = NEW zcl_xlom__ex_fu_vlookup( ).
       WHEN OTHERS.
@@ -88,6 +90,12 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~evaluate.
+    " Must be redefined by each function class.
+    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    " Must be redefined by each function class.
     RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.

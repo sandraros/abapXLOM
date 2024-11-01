@@ -59,10 +59,16 @@ CLASS zcl_xlom__ex_ut_lexer DEFINITION
       RETURNING VALUE(result) TYPE tt_token.
 
   PRIVATE SECTION.
+    TYPES:
+      BEGIN OF ty_buffer_line,
+        text   TYPE string,
+        tokens TYPE tt_token,
+      END OF ty_buffer_line.
+    TYPES ty_buffer TYPE HASHED TABLE OF ty_buffer_line WITH UNIQUE KEY text.
+
+    DATA buffer TYPE ty_buffer.
+
     "! Insert the parts of the text in "FIND ... IN text ..." for which there was no match.
-    "!
-    "! @parameter i_string |
-    "! @parameter c_matches |
     METHODS complete_with_non_matches
       IMPORTING i_string  TYPE string
       CHANGING  c_matches TYPE match_result_tab.
@@ -91,6 +97,14 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
 
   METHOD lexe.
     TYPES ty_ref_to_parenthesis_group TYPE REF TO ts_parenthesis_group.
+
+    DATA(buffer_line) = REF #( buffer[ text = text ] OPTIONAL ).
+    IF buffer_line IS BOUND.
+      result = buffer_line->tokens.
+      RETURN.
+    ENDIF.
+
+    INSERT VALUE #( text = text ) INTO TABLE buffer REFERENCE INTO buffer_line.
 
     " Note about `[ ` and ` ]` (https://support.microsoft.com/en-us/office/using-structured-references-with-excel-tables-f5ed2452-2337-4f71-bed3-c8ae6d2b276e):
     "   > Use the space character to improve readability in a structured reference
@@ -255,5 +269,7 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
       INSERT token INTO TABLE result.
       token_number = token_number + 1.
     ENDLOOP.
+
+    buffer_line->tokens = result.
   ENDMETHOD.
 ENDCLASS.

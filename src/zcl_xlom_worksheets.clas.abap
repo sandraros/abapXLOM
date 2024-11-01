@@ -35,7 +35,7 @@ CLASS zcl_xlom_worksheets DEFINITION
       END OF ty_worksheet.
     TYPES ty_worksheets TYPE SORTED TABLE OF ty_worksheet WITH UNIQUE KEY name.
 
-    DATA worksheets TYPE ty_worksheets.
+    DATA items TYPE ty_worksheets.
 ENDCLASS.
 
 
@@ -43,14 +43,14 @@ CLASS zcl_xlom_worksheets IMPLEMENTATION.
   METHOD add.
     DATA worksheet TYPE ty_worksheet.
 
-    IF line_exists( worksheets[ name = name ] ).
+    IF line_exists( items[ name = name ] ).
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
 
     worksheet-name   = name.
     worksheet-object = zcl_xlom_worksheet=>create( workbook = parent
                                                    name     = name ).
-    INSERT worksheet INTO TABLE worksheets.
+    INSERT worksheet INTO TABLE items.
     ASSERT sy-subrc = 0.
     count = count + 1.
 
@@ -69,12 +69,12 @@ CLASS zcl_xlom_worksheets IMPLEMENTATION.
 
   METHOD item.
     TRY.
-        CASE zcl_xlom_application=>type( index ).
+        CASE zcl_xlom__ut=>type( index ).
           WHEN cl_abap_typedescr=>typekind_string
             OR cl_abap_typedescr=>typekind_char.
-            result = worksheets[ name = index ]-object.
+            result = items[ name = index ]-object.
           WHEN cl_abap_typedescr=>typekind_int.
-            result = worksheets[ index ]-object.
+            result = items[ index ]-object.
           WHEN OTHERS.
             RAISE EXCEPTION TYPE zcx_xlom_todo.
         ENDCASE.

@@ -40,4 +40,8 @@ CLASS zcl_xlom__ex_el_number IMPLEMENTATION.
     result = zcl_xlom__va_number=>create( number ).
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
 ENDCLASS.

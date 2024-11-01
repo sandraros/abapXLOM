@@ -23,7 +23,9 @@ CLASS zcl_xlom_workbooks DEFINITION
     "! @parameter index  | Required    Variant The name or index number of the object.
     METHODS item
       IMPORTING !index        TYPE simple
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom_workbook.
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom_workbook
+      RAISING
+        zcx_xlom__va.
 
   PROTECTED SECTION.
 
@@ -36,7 +38,7 @@ CLASS zcl_xlom_workbooks DEFINITION
     TYPES ty_workbooks TYPE SORTED TABLE OF ty_workbook WITH NON-UNIQUE KEY name
                               WITH UNIQUE SORTED KEY by_object COMPONENTS object.
 
-    DATA workbooks TYPE ty_workbooks.
+    DATA items TYPE ty_workbooks.
 
     METHODS on_saved
       FOR EVENT saved OF zcl_xlom_workbook
@@ -51,7 +53,7 @@ CLASS zcl_xlom_workbooks IMPLEMENTATION.
     DATA workbook TYPE ty_workbook.
 
     workbook-object = zcl_xlom_workbook=>create( application ).
-    INSERT workbook INTO TABLE workbooks.
+    INSERT workbook INTO TABLE items.
     count = count + 1.
 
     SET HANDLER on_saved FOR workbook-object.
@@ -64,17 +66,23 @@ CLASS zcl_xlom_workbooks IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD item.
-    CASE zcl_xlom_application=>type( index ).
-      WHEN cl_abap_typedescr=>typekind_string.
-        result = workbooks[ name = index ]-object.
-      WHEN cl_abap_typedescr=>typekind_int.
-        result = workbooks[ index ]-object.
-      WHEN OTHERS.
-        " TODO
-    ENDCASE.
+    TRY.
+        CASE zcl_xlom__ut=>type( index ).
+          WHEN cl_abap_typedescr=>typekind_string
+              OR cl_abap_typedescr=>typekind_char.
+            result = items[ name = index ]-object.
+          WHEN cl_abap_typedescr=>typekind_int.
+            result = items[ index ]-object.
+          WHEN OTHERS.
+            RAISE EXCEPTION TYPE zcx_xlom_todo.
+        ENDCASE.
+      CATCH cx_sy_itab_line_not_found.
+        RAISE EXCEPTION TYPE zcx_xlom__va
+          EXPORTING result_error = zcl_xlom__va_error=>ref.
+    ENDTRY.
   ENDMETHOD.
 
   METHOD on_saved.
-    workbooks[ KEY by_object COMPONENTS object = sender ]-name = sender->name.
+    items[ KEY by_object COMPONENTS object = sender ]-name = sender->name.
   ENDMETHOD.
 ENDCLASS.

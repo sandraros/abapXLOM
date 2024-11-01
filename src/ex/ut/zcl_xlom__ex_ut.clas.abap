@@ -8,6 +8,10 @@ CLASS zcl_xlom__ex_ut DEFINITION
                 expression_2  TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE abap_bool.
 
+    "! Check if mandatory parameters receive arguments,
+    "! set default arguments for parameters which are optional with a default value but don't receive an argument,
+    "! check if too many arguments are passed,
+    "! accept many arguments if it's variadic.
     CLASS-METHODS check_arguments_or_operands
       IMPORTING expression            TYPE REF TO zif_xlom__ex
       CHANGING  arguments_or_operands TYPE zif_xlom__ex=>tt_argument_or_operand.
@@ -134,16 +138,18 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_arguments_or_operands.
+    DATA(parameters) = expression->get_parameters( ).
+
     " Only a variadic function may have more arguments than the number of parameters.
-    IF     expression->parameters IS NOT INITIAL
-       AND expression->parameters[ lines( expression->parameters ) ]-variadic  = abap_false
-       AND lines( arguments_or_operands ) > lines( expression->parameters ).
+    IF     parameters IS NOT INITIAL
+       AND lines( arguments_or_operands ) > lines( parameters )
+       AND parameters[ lines( parameters ) ]-variadic  = abap_false.
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
 
     DATA(count_last_arguments_not_bound) = 0.
     DATA(parameter_number) = 0.
-    LOOP AT expression->parameters REFERENCE INTO DATA(parameter).
+    LOOP AT parameters REFERENCE INTO DATA(parameter).
       parameter_number = parameter_number + 1.
 
       DATA(argument_or_operand) = REF #( arguments_or_operands[ parameter_number ] OPTIONAL ).
@@ -174,7 +180,7 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
     IF count_last_arguments_not_bound > 0.
       DELETE arguments_or_operands FROM lines( arguments_or_operands ) - count_last_arguments_not_bound + 1.
     ENDIF.
-    DO lines( expression->parameters ) - lines( arguments_or_operands ) TIMES.
+    DO lines( parameters ) - lines( arguments_or_operands ) TIMES.
       INSERT zcl_xlom__ex_el_none_argument=>singleton INTO TABLE arguments_or_operands.
     ENDDO.
   ENDMETHOD.

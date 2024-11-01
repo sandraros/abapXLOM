@@ -9,6 +9,8 @@ CLASS zcl_xlom__ex_op_colon DEFINITION
     INTERFACES zif_xlom__ex.
     INTERFACES zif_xlom__ex_array.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING left_operand  TYPE REF TO zif_xlom__ex
                 right_operand TYPE REF TO zif_xlom__ex
@@ -21,16 +23,21 @@ CLASS zcl_xlom__ex_op_colon DEFINITION
         right_operand TYPE i VALUE 2,
       END OF c_arg.
 
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
+
     METHODS constructor.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_op_colon IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( not_part_of_result_array = abap_true
+                          ( name = 'LEFT_OPERAND' )
+                          ( name = 'RIGHT_OPERAND' ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-colon.
-    zif_xlom__ex~parameters = VALUE #( not_part_of_result_array = abap_true
-                                       ( name = 'LEFT_OPERAND' )
-                                       ( name = 'RIGHT_OPERAND' ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -57,5 +64,9 @@ CLASS zcl_xlom__ex_op_colon IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

@@ -11,6 +11,8 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
 
+    CLASS-METHODS class_constructor.
+
     "! @parameter info_type | <ul>
     "!                        <li>"address": Reference of the first cell in reference, as text. </li>
     "!                        <li>"col": Column number of the cell in reference.</li>
@@ -59,6 +61,7 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_cell.
 
     METHODs zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -74,15 +77,20 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
       BEGIN OF c_info_type,
         filename TYPE string VALUE 'filename',
       END OF c_info_type.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_cell IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'INFO_TYPE' )
+                          ( name = 'REFERENCE' ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-cell.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'INFO_TYPE' )
-                                       ( name = 'REFERENCE' ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -112,5 +120,9 @@ CLASS zcl_xlom__ex_fu_cell IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

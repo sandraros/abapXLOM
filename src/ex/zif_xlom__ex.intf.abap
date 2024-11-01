@@ -39,6 +39,9 @@ INTERFACE zif_xlom__ex
       "! Variadic function. Only the last parameter can be assigned the variadic flag, and it is
       "! always optional.
       variadic                 TYPE abap_bool,
+      "! For most of the functions, if one argument is an error, the function returns this error.
+      "! There are exceptions like eg. IFERROR.
+      error_accepted           TYPE abap_bool,
     END OF ts_parameter.
   TYPES tt_parameter TYPE STANDARD TABLE OF ts_parameter WITH EMPTY KEY.
 
@@ -490,6 +493,8 @@ INTERFACE zif_xlom__ex
         sheets                   TYPE ty_expression_type VALUE 1410,
         sign                     TYPE ty_expression_type VALUE 1411,
         sin                      TYPE ty_expression_type VALUE 1412,
+        "! _xlfn.SINGLE which is represented by the &commat; in front of a function name eg. @COLUMN(B1:C1) (= 2, versus COLUMN(B1:C1) = {2,3})
+        single                   TYPE ty_expression_type VALUE 1413,
         sinh                     TYPE ty_expression_type VALUE 1413,
         skew                     TYPE ty_expression_type VALUE 1414,
         skew_p                   TYPE ty_expression_type VALUE 1415,
@@ -595,11 +600,15 @@ INTERFACE zif_xlom__ex
 
   DATA type                         TYPE ty_expression_type     READ-ONLY.
   DATA result_of_evaluation         TYPE REF TO zif_xlom__va    READ-ONLY.
-  DATA parameters                   TYPE tt_parameter           READ-ONLY.
+*  CLASS-DATA parameters                   TYPE tt_parameter           READ-ONLY.
+*  DATA parameters                   TYPE tt_parameter           READ-ONLY.
   DATA arguments_or_operands        TYPE tt_argument_or_operand READ-ONLY.
 
   METHODS evaluate
     IMPORTING arguments     TYPE tt_operand_result
               !context      TYPE REF TO zcl_xlom__ex_ut_eval_context
     RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
+
+  METHODS get_parameters
+    RETURNING VALUE(result) TYPE tt_parameter.
 ENDINTERFACE.

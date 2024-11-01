@@ -2,7 +2,8 @@
 CLASS zcl_xlom_range DEFINITION
   PUBLIC
   CREATE PROTECTED
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  GLOBAL FRIENDS zif_xlom__ut_all_friends
+                 zcl_xlom__ut_om_range.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
@@ -83,6 +84,9 @@ CLASS zcl_xlom_range DEFINITION
 
     METHODS formula2
       RETURNING VALUE(result) TYPE REF TO zif_xlom__ex.
+
+    METHODS list_object
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom_list_object.
 
     "! Offset (RowOffset, ColumnOffset)
     "! https://learn.microsoft.com/fr-fr/office/vba/api/excel.range.offset
@@ -714,6 +718,20 @@ CLASS zcl_xlom_range IMPLEMENTATION.
       result-bottom_right-row       = address-top_left-row.
       result-bottom_right-row_fixed = address-top_left-row_fixed.
     ENDIF.
+  ENDMETHOD.
+
+  METHOD list_object.
+    DATA(list_object_index) = 1.
+    WHILE list_object_index <= parent->list_objects->count.
+      DATA(list_object) = parent->list_objects->item( list_object_index ).
+      DATA(list_object_address) = zcl_xlom__ut_om_range=>get_address( list_object->range ).
+      IF     _address-top_left-column BETWEEN list_object_address-top_left-column AND list_object_address-bottom_right-column
+         AND _address-top_left-row    BETWEEN list_object_address-top_left-row    AND list_object_address-bottom_right-row.
+        result = list_object.
+        RETURN.
+      ENDIF.
+      list_object_index = list_object_index + 1.
+    ENDWHILE.
   ENDMETHOD.
 
   METHOD offset.

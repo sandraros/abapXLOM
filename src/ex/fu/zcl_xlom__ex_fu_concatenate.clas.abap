@@ -8,24 +8,33 @@ CLASS zcl_xlom__ex_fu_concatenate DEFINITION
   PUBLIC SECTION.
     TYPES tt_text TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 
+    CLASS-METHODS class_constructor.
+
     CLASS-METHODS create
       IMPORTING text1         TYPE REF TO zif_xlom__ex
                 texts         TYPE tt_text OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_concatenate.
 
     METHODs zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
+
+  PRIVATE SECTION.
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_fu_concatenate IMPLEMENTATION.
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'TEXT' )
+                          ( name = 'TEXTS' variadic = abap_true optional = abap_true ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-concatenate.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'TEXT' )
-                                       ( name = 'TEXTS' variadic = abap_true optional = abap_true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -45,5 +54,9 @@ CLASS zcl_xlom__ex_fu_concatenate IMPLEMENTATION.
     ENDLOOP.
     result = zcl_xlom__va_string=>get( string ).
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.

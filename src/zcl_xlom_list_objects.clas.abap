@@ -4,6 +4,7 @@ CLASS zcl_xlom_list_objects DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
+    DATA count TYPE i READ-ONLY.
     "! In my tests with ListObject created from Range and from Model, the parent was Worksheet.
     DATA parent TYPE REF TO zcl_xlom_worksheet READ-ONLY.
 
@@ -33,11 +34,16 @@ CLASS zcl_xlom_list_objects DEFINITION
                 has_headers      TYPE zcl_xlom=>ty_yes_no_guess            DEFAULT zcl_xlom=>c_yes_no_guess-guess
                 !destination     TYPE REF TO zcl_xlom_range                OPTIONAL
                 table_style_name TYPE string                               OPTIONAL
-      RETURNING VALUE(result)    TYPE REF TO zcl_xlom_LIST_object.
+      RETURNING VALUE(result)    TYPE REF TO zcl_xlom_list_object.
 
     CLASS-METHODS create
       IMPORTING !parent       TYPE REF TO zcl_xlom_worksheet
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_list_objects.
+
+    METHODS item
+      IMPORTING !index        TYPE simple
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom_list_object
+      RAISING   zcx_xlom__va.
 
   PRIVATE SECTION.
     TYPES:
@@ -47,7 +53,7 @@ CLASS zcl_xlom_list_objects DEFINITION
       END OF ty_list_object.
     TYPES ty_list_objects TYPE SORTED TABLE OF ty_list_object WITH UNIQUE KEY name.
 
-    DATA list_objects            TYPE ty_list_objects.
+    DATA items            TYPE ty_list_objects.
     DATA list_object_last_number TYPE i VALUE 0.
 ENDCLASS.
 
@@ -66,12 +72,31 @@ CLASS zcl_xlom_list_objects IMPLEMENTATION.
                                                       table_style_name = table_style_name ).
     INSERT VALUE #( name   = list_object_name
                     object = list_object )
-           INTO TABLE list_objects.
+           INTO TABLE items.
+    count = count + 1.
     result = list_object.
   ENDMETHOD.
 
   METHOD create.
     result = NEW zcl_xlom_list_objects( ).
     result->parent = parent.
+    result->count  = 0.
+  ENDMETHOD.
+
+  METHOD item.
+    TRY.
+        CASE zcl_xlom__ut=>type( index ).
+          WHEN cl_abap_typedescr=>typekind_string
+            OR cl_abap_typedescr=>typekind_char.
+            result = items[ name = index ]-object.
+          WHEN cl_abap_typedescr=>typekind_int.
+            result = items[ index ]-object.
+          WHEN OTHERS.
+            RAISE EXCEPTION TYPE zcx_xlom_todo.
+        ENDCASE.
+      CATCH cx_sy_itab_line_not_found.
+        RAISE EXCEPTION TYPE zcx_xlom__va
+          EXPORTING result_error = zcl_xlom__va_error=>ref.
+    ENDTRY.
   ENDMETHOD.
 ENDCLASS.

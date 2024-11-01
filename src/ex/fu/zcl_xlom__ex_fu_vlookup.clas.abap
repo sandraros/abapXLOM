@@ -10,6 +10,8 @@ CLASS zcl_xlom__ex_fu_vlookup DEFINITION
 
     METHODS adjust_evaluated_operands REDEFINITION.
 
+    CLASS-METHODS class_constructor.
+
     "! @parameter range_lookup | Approximate match (TRUE or omitted) or Exact match (FALSE)
     CLASS-METHODS create
       IMPORTING lookup_value  TYPE REF TO zif_xlom__ex
@@ -19,6 +21,7 @@ CLASS zcl_xlom__ex_fu_vlookup DEFINITION
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_vlookup.
 
     METHODS zif_xlom__ex~evaluate REDEFINITION.
+    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -37,6 +40,8 @@ CLASS zcl_xlom__ex_fu_vlookup DEFINITION
         approximate_match TYPE abap_bool VALUE abap_true,
         exact_match       TYPE abap_bool VALUE abap_false,
       END OF c_range_lookup.
+
+    CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 ENDCLASS.
 
 
@@ -62,13 +67,16 @@ CLASS zcl_xlom__ex_fu_vlookup IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
+  METHOD class_constructor.
+    parameters = VALUE #( ( name = 'LOOKUP_VALUE ' )
+                          ( name = 'TABLE_ARRAY  ' not_part_of_result_array = abap_true )
+                          ( name = 'COL_INDEX_NUM' )
+                          ( name = 'RANGE_LOOKUP ' default = zcl_xlom__ex_el_boolean=>true ) ).
+  ENDMETHOD.
+
   METHOD constructor.
     super->constructor( ).
     zif_xlom__ex~type = zif_xlom__ex=>c_type-function-match.
-    zif_xlom__ex~parameters = VALUE #( ( name = 'LOOKUP_VALUE ' )
-                                       ( name = 'TABLE_ARRAY  ' not_part_of_result_array = abap_true )
-                                       ( name = 'COL_INDEX_NUM' )
-                                       ( name = 'RANGE_LOOKUP ' default = zcl_xlom__ex_el_boolean=>true ) ).
   ENDMETHOD.
 
   METHOD create.
@@ -94,7 +102,7 @@ CLASS zcl_xlom__ex_fu_vlookup IMPLEMENTATION.
             EXPORTING text = 'Only an exact match is currently supported in VLOOKUP'.
         ENDIF.
 
-        DATA(optimized_table_array) = zcl_xlom_range=>optimize_array_if_range( table_array ).
+        DATA(optimized_table_array) = zcl_xlom__ut_om_range=>optimize_array_if_range( table_array ).
         IF optimized_table_array IS INITIAL.
           RAISE EXCEPTION TYPE zcx_xlom_todo
             EXPORTING text = ''.
@@ -124,5 +132,9 @@ CLASS zcl_xlom__ex_fu_vlookup IMPLEMENTATION.
         result = error->result_error.
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex~get_parameters.
+    result = parameters.
   ENDMETHOD.
 ENDCLASS.
