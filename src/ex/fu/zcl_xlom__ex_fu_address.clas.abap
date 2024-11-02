@@ -107,8 +107,8 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
           RAISE EXCEPTION TYPE zcx_xlom_todo EXPORTING text = 'The function ADDRESS currently only supports the A1 reference style'.
         ENDIF.
 
-        IF    row_num    NOT BETWEEN 1 AND zcl_xlom__ut_om_worksheet=>max_rows
-           OR column_num NOT BETWEEN 1 AND zcl_xlom__ut_om_worksheet=>max_columns
+        IF    row_num    NOT BETWEEN 1 AND zcl_xlom__ext_worksheet=>max_rows
+           OR column_num NOT BETWEEN 1 AND zcl_xlom__ext_worksheet=>max_columns
            OR abs_num    NOT BETWEEN c_abs-absolute AND c_abs-relative.
           result = zcl_xlom__va_error=>value_cannot_be_calculated.
           RETURN.

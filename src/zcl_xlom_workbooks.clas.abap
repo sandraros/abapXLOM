@@ -2,10 +2,12 @@
 CLASS zcl_xlom_workbooks DEFINITION
   PUBLIC
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+*  GLOBAL FRIENDS zif_xlom__ut_all_friends
+  GLOBAL FRIENDS zcl_xlom__pv_chg_workbook_name
+  .
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+*    INTERFACES zif_xlom__ut_all_friends.
 
     DATA application TYPE REF TO zcl_xlom_application READ-ONLY.
     DATA count       TYPE i                           READ-ONLY.
@@ -40,9 +42,12 @@ CLASS zcl_xlom_workbooks DEFINITION
 
     DATA items TYPE ty_workbooks.
 
-    METHODS on_saved
-      FOR EVENT saved OF zcl_xlom_workbook
-      IMPORTING sender.
+    METHODS change_workbook_name
+      IMPORTING workbook TYPE REF TO zcl_xlom_workbook.
+
+*    METHODS on_saved
+*      FOR EVENT saved OF zcl_xlom_workbook
+*      IMPORTING sender.
 ENDCLASS.
 
 
@@ -56,8 +61,12 @@ CLASS zcl_xlom_workbooks IMPLEMENTATION.
     INSERT workbook INTO TABLE items.
     count = count + 1.
 
-    SET HANDLER on_saved FOR workbook-object.
+*    SET HANDLER on_saved FOR workbook-object.
     result = workbook-object.
+  ENDMETHOD.
+
+  METHOD change_workbook_name.
+    items[ KEY by_object COMPONENTS object = workbook ]-name = workbook->name.
   ENDMETHOD.
 
   METHOD create.
@@ -80,9 +89,9 @@ CLASS zcl_xlom_workbooks IMPLEMENTATION.
         RAISE EXCEPTION TYPE zcx_xlom__va
           EXPORTING result_error = zcl_xlom__va_error=>ref.
     ENDTRY.
-  ENDMETHOD.
-
-  METHOD on_saved.
-    items[ KEY by_object COMPONENTS object = sender ]-name = sender->name.
+*  ENDMETHOD.
+*
+*  METHOD on_saved.
+*    items[ KEY by_object COMPONENTS object = sender ]-name = sender->name.
   ENDMETHOD.
 ENDCLASS.

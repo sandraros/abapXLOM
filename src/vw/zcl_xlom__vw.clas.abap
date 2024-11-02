@@ -69,8 +69,8 @@ CLASS zcl_xlom__vw IMPLEMENTATION.
     DATA(worksheet) = workbook->worksheets->item( 1 ).
 
     DATA(used_range) = worksheet->used_range( ).
-    DATA(row_count) = used_range->rows( )->count( ).
-    DATA(column_count) = used_range->columns( )->count( ).
+    DATA(row_count) = used_range->zif_xlom__va_array~row_count.
+    DATA(column_count) = used_range->zif_xlom__va_array~column_count.
 
     DATA(rtts_structure) = cl_abap_structdescr=>get(
                                p_components = VALUE #( FOR aux_column = 1 WHILE aux_column <= column_count

@@ -1,7 +1,7 @@
 CLASS zcl_xlom_list_column DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zcl_xlom__ut_om_list_column.
+  GLOBAL FRIENDS zcl_xlom__ext_list_column.
 
   PUBLIC SECTION.
     DATA index TYPE i READ-ONLY.

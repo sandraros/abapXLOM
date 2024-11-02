@@ -102,7 +102,7 @@ CLASS zcl_xlom__ex_fu_vlookup IMPLEMENTATION.
             EXPORTING text = 'Only an exact match is currently supported in VLOOKUP'.
         ENDIF.
 
-        DATA(optimized_table_array) = zcl_xlom__ut_om_range=>optimize_array_if_range( table_array ).
+        DATA(optimized_table_array) = zcl_xlom__ext_range=>optimize_array_if_range( table_array ).
         IF optimized_table_array IS INITIAL.
           RAISE EXCEPTION TYPE zcx_xlom_todo
             EXPORTING text = ''.

@@ -2,20 +2,23 @@
 CLASS zcl_xlom_workbook DEFINITION
   PUBLIC
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  GLOBAL FRIENDS "zcl_xlom_workbooks
+                 zcl_xlom__pv_worksheet_activtd.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-
     TYPES ty_name TYPE string.
 
-    DATA active_sheet TYPE REF TO zcl_xlom_sheet READ-ONLY.
-    DATA application TYPE REF TO zcl_xlom_application READ-ONLY.
+    DATA active_sheet TYPE REF TO zcl_xlom_sheet       READ-ONLY.
+
+    DATA application  TYPE REF TO zcl_xlom_application READ-ONLY.
+
     "! workbook name
-    DATA name        TYPE string                      READ-ONLY.
+    DATA name         TYPE ty_name                     READ-ONLY.
+
     "! workbook path
-    DATA path        TYPE string                      READ-ONLY.
-    DATA worksheets  TYPE REF TO zcl_xlom_worksheets  READ-ONLY.
+    DATA path         TYPE string                      READ-ONLY.
+
+    DATA worksheets   TYPE REF TO zcl_xlom_worksheets  READ-ONLY.
 
     CLASS-METHODS create
       IMPORTING !application  TYPE REF TO zcl_xlom_application
@@ -31,14 +34,19 @@ CLASS zcl_xlom_workbook DEFINITION
     METHODS save_as
       IMPORTING file_name TYPE csequence.
 
-  PROTECTED SECTION.
-
+*  PROTECTED SECTION.
   PRIVATE SECTION.
-    EVENTS saved.
+    METHODS activate_worksheet
+      IMPORTING worksheet TYPE REF TO zcl_xlom_worksheet.
+*    EVENTS saved.
 ENDCLASS.
 
 
 CLASS zcl_xlom_workbook IMPLEMENTATION.
+  METHOD activate_worksheet.
+    active_sheet = worksheet.
+  ENDMETHOD.
+
   METHOD create.
     result = NEW zcl_xlom_workbook( ).
     result->application = application.
@@ -48,6 +56,6 @@ CLASS zcl_xlom_workbook IMPLEMENTATION.
 
   METHOD save_as.
     path = file_name.
-    RAISE EVENT saved.
+    zcl_xlom__pv_chg_workbook_name=>change_workbook_name( me ).
   ENDMETHOD.
 ENDCLASS.

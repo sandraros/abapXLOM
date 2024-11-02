@@ -1,4 +1,4 @@
-CLASS zcl_xlom__ut_om_list_column DEFINITION
+CLASS zcl_xlom__ext_list_column DEFINITION
   PUBLIC
   FINAL
   CREATE PRIVATE .
@@ -12,7 +12,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_xlom__ut_om_list_column IMPLEMENTATION.
+CLASS zcl_xlom__ext_list_column IMPLEMENTATION.
   METHOD set_index.
     list_column->index = index.
   ENDMETHOD.

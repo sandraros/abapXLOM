@@ -4,7 +4,7 @@ CLASS zcl_xlom_worksheet DEFINITION
   INHERITING FROM zcl_xlom_sheet FINAL
   CREATE PRIVATE
   GLOBAL FRIENDS zif_xlom__ut_all_friends
-                 zcl_xlom__ut_om_worksheet.
+                 zcl_xlom__ext_worksheet.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.

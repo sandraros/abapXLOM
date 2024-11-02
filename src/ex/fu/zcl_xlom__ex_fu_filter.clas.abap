@@ -98,7 +98,7 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
           DATA(result_row_count) = 0.
           DATA(result_column_count) = 0.
 
-          DATA(optimized_lookup_array) = zcl_xlom__ut_om_range=>optimize_array_if_range( lookup_array ).
+          DATA(optimized_lookup_array) = zcl_xlom__ext_range=>optimize_array_if_range( lookup_array ).
           " If outside the used range (initial) -> result is not found
           IF optimized_lookup_array IS NOT INITIAL.
 

@@ -41,22 +41,21 @@ ENDCLASS.
 
 CLASS zcl_xlom_worksheets IMPLEMENTATION.
   METHOD add.
-    DATA worksheet TYPE ty_worksheet.
-
     IF line_exists( items[ name = name ] ).
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
 
-    worksheet-name   = name.
-    worksheet-object = zcl_xlom_worksheet=>create( workbook = parent
-                                                   name     = name ).
+    DATA(worksheet) = VALUE ty_worksheet( name   = name
+                                          object = zcl_xlom_worksheet=>create( workbook = parent
+                                                                               name     = name ) ).
     INSERT worksheet INTO TABLE items.
     ASSERT sy-subrc = 0.
     count = count + 1.
 
     " TODO to get rid of the friends in XLOM, replace here by "RAISE EVENT sheet_added" and handle it by application and workbook.
-    application->active_sheet = worksheet-object.
-    parent->active_sheet = worksheet-object.
+    zcl_xlom__pv_worksheet_activtd=>activate_worksheet( worksheet-object ).
+*    application->active_sheet = worksheet-object.
+*    parent->active_sheet = worksheet-object.
 
     result = worksheet-object.
   ENDMETHOD.

@@ -53,6 +53,13 @@ CLASS zcl_xlom__ex_el_table DEFINITION
                 !rows         TYPE ty_row_specifier                      DEFAULT c_rows-data
                 column_range  TYPE REF TO zcl_xlom__ex_el_table_col_rang OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_table.
+  PRIVATE SECTION.
+    METHODS find_table
+      IMPORTING
+        workbook      TYPE REF TO zcl_xlom_workbook
+        table_name    TYPE zcl_xlom__ex_el_table=>ty_table_name
+      RETURNING
+        value(result) TYPE REF TO zcl_xlom_list_object.
 ENDCLASS.
 
 
@@ -73,8 +80,27 @@ CLASS zcl_xlom__ex_el_table IMPLEMENTATION.
     result->zif_xlom__ex~type = zif_xlom__ex=>c_type-table.
   ENDMETHOD.
 
+  METHOD find_table.
+    DATA(worksheet_item) = 1.
+    WHILE worksheet_item <= workbook->worksheets->count.
+      DATA(worksheet) = workbook->worksheets->item( worksheet_item ).
+      DATA(list_object_item) = 1.
+      WHILE list_object_item <= worksheet->list_objects->count.
+        DATA(list_object) = worksheet->list_objects->item( list_object_item ).
+        IF list_object->name = table_name.
+          result = list_object.
+          RETURN.
+        ENDIF.
+        list_object_item = list_object_item + 1.
+      ENDWHILE.
+      worksheet_item = worksheet_item + 1.
+    ENDWHILE.
+  ENDMETHOD.
+
   METHOD zif_xlom__ex~evaluate.
-    DATA(list_object) = context->worksheet->list_objects->item( name ).
+    DATA(list_object) = find_table( workbook   = context->worksheet->parent
+                                    table_name = name ).
+*    DATA(list_object) = context->worksheet->list_objects->item( name ).
     CASE rows.
       WHEN c_rows-data.
         result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet

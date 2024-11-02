@@ -43,7 +43,7 @@ CLASS zcl_xlom_list_columns IMPLEMENTATION.
   METHOD create.
     result = NEW zcl_xlom_list_columns( ).
     result->parent = list_object.
-    DATA(address) = zcl_xlom__ut_om_range=>get_address( list_object->range ).
+    DATA(address) = zcl_xlom__ext_range=>get_address( list_object->range ).
     result->header_row = zcl_xlom_range=>create_from_row_column(
                            worksheet   = list_object->range->parent
                            row         = address-top_left-row
@@ -87,7 +87,7 @@ CLASS zcl_xlom_list_columns IMPLEMENTATION.
              INTO TABLE items
              REFERENCE INTO list_column.
     ENDIF.
-    zcl_xlom__ut_om_list_column=>set_index( list_column = list_column->object
+    zcl_xlom__ext_list_column=>set_index( list_column = list_column->object
                                             index       = index_2 ).
     result = list_column->object.
   ENDMETHOD.

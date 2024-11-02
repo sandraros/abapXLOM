@@ -1,7 +1,8 @@
-CLASS zcl_xlom_rows DEFINITION
+CLASS zcl_xlom_columns_obs DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom_range FINAL
-  CREATE PUBLIC.
+  CREATE PRIVATE
+  GLOBAL FRIENDS zif_xlom__ut_all_friends.
 
   PUBLIC SECTION.
     METHODS count REDEFINITION.
@@ -12,8 +13,8 @@ CLASS zcl_xlom_rows DEFINITION
 ENDCLASS.
 
 
-CLASS zcl_xlom_rows IMPLEMENTATION.
+CLASS zcl_xlom_columns_obs IMPLEMENTATION.
   METHOD count.
-    result = zif_xlom__va_array~row_count.
+    result = zif_xlom__va_array~column_count.
   ENDMETHOD.
 ENDCLASS.

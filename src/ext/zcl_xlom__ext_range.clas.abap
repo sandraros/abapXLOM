@@ -1,4 +1,4 @@
-CLASS zcl_xlom__ut_om_range DEFINITION
+CLASS zcl_xlom__ext_range DEFINITION
   PUBLIC
   FINAL
   CREATE PRIVATE .
@@ -15,8 +15,7 @@ CLASS zcl_xlom__ut_om_range DEFINITION
 ENDCLASS.
 
 
-
-CLASS zcl_xlom__ut_om_range IMPLEMENTATION.
+CLASS zcl_xlom__ext_range IMPLEMENTATION.
   METHOD get_address.
     result = range->_address.
   ENDMETHOD.
@@ -24,12 +23,12 @@ CLASS zcl_xlom__ut_om_range IMPLEMENTATION.
   METHOD optimize_array_if_range.
     IF array->zif_xlom__va~type = array->zif_xlom__va~c_type-range.
       DATA(range) = CAST zcl_xlom_range( array ).
-      result = zcl_xlom__ut=>_intersect_2_basis(
+      result = zcl_xlom__ext_application=>_intersect_2_basis(
                    arg1 = VALUE #( top_left-column     = range->_address-top_left-column
                                    top_left-row        = range->_address-top_left-row
                                    bottom_right-column = range->_address-bottom_right-column
                                    bottom_right-row    = range->_address-bottom_right-row )
-                   arg2 = zcl_xlom__ut_om_worksheet=>get_used_range( range->parent ) ).
+                   arg2 = zcl_xlom__ext_worksheet=>get_used_range( range->parent ) ).
     ELSE.
       result = VALUE #( top_left-column     = 1
                         top_left-row        = 1

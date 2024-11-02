@@ -74,11 +74,11 @@ CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
         DATA(adjusted_height) = COND #( WHEN height <> zcl_xlom__va_none_argument=>singleton
                                        and height <> zcl_xlom__va_empty=>get_singleton( )
                                       THEN zcl_xlom__va=>to_number( arguments[ c_arg-height ] )->get_integer( )
-                                      ELSE reference->rows( )->count( ) ).
+                                      ELSE reference->zif_xlom__va_array~row_count ).
         DATA(adjusted_width) = COND #( WHEN width <> zcl_xlom__va_none_argument=>singleton
                                       and width <> zcl_xlom__va_empty=>get_singleton( )
                                      THEN zcl_xlom__va=>to_number( arguments[ c_arg-width ] )->get_integer( )
-                                     ELSE reference->columns( )->count( ) ).
+                                     ELSE reference->zif_xlom__va_array~column_count ).
 
         IF    adjusted_height = 0
            OR adjusted_width  = 0.

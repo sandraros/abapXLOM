@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOCLASS>
-    <CLSNAME>ZCL_XLOM__UT_OM_LIST_COLUMN</CLSNAME>
+    <CLSNAME>ZCL_XLOM__EXT_WORKSHEET</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>Utility for ZCL_XLOM_LIST_COLUMN</DESCRIPT>
+    <DESCRIPT>Extension of ZCL_XLOM_WORKSHEET</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

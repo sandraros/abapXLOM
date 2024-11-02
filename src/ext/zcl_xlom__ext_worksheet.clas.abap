@@ -1,4 +1,4 @@
-CLASS zcl_xlom__ut_om_worksheet DEFINITION
+CLASS zcl_xlom__ext_worksheet DEFINITION
   PUBLIC
   FINAL
   CREATE PRIVATE .
@@ -14,7 +14,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_xlom__ut_om_worksheet IMPLEMENTATION.
+CLASS zcl_xlom__ext_worksheet IMPLEMENTATION.
   METHOD get_used_range.
     result = worksheet->_array->used_range.
   ENDMETHOD.

@@ -3,7 +3,7 @@ CLASS zcl_xlom_range DEFINITION
   PUBLIC
   CREATE PROTECTED
   GLOBAL FRIENDS zif_xlom__ut_all_friends
-                 zcl_xlom__ut_om_range.
+                 zcl_xlom__ext_range.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__ut_all_friends.
@@ -45,8 +45,8 @@ CLASS zcl_xlom_range DEFINITION
                 item          TYPE int8 OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
-    METHODS columns
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
+*    METHODS columns
+*      RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
     METHODS count
       RETURNING VALUE(result) TYPE i.
@@ -106,13 +106,13 @@ CLASS zcl_xlom_range DEFINITION
                 column_size   TYPE i
       RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
-    "! Rows ([item])
-    "! - Rows() all rows
-    "! - Rows(1) or Rows.Item(1) first row of the range
-    "! https://learn.microsoft.com/en-us/office/vba/api/excel.range.rows
-    METHODS rows
-      IMPORTING !index        TYPE i OPTIONAL
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
+*    "! Rows ([item])
+*    "! - Rows() all rows
+*    "! - Rows(1) or Rows.Item(1) first row of the range
+*    "! https://learn.microsoft.com/en-us/office/vba/api/excel.range.rows
+*    METHODS rows
+*      IMPORTING !index        TYPE i OPTIONAL
+*      RETURNING VALUE(result) TYPE REF TO zcl_xlom_range.
 
     METHODS set_formula2
       IMPORTING !value TYPE string
@@ -133,18 +133,19 @@ CLASS zcl_xlom_range DEFINITION
         object  TYPE REF TO zif_xlom__ex,
       END OF ts_formula_buffer_line.
     TYPES tt_formula_buffer        TYPE HASHED TABLE OF ts_formula_buffer_line WITH UNIQUE KEY formula.
-    "! By default, the "count" method counts the number of cells.
-    "! It's possible to make it count only the columns or rows
-    "! when the range is created by the methods "columns" or "rows".
-    TYPES ty_column_row_collection TYPE i.
+*    "! By default, the "count" method counts the number of cells.
+*    "! It's possible to make it count only the columns or rows
+*    "! when the range is created by the methods "columns" or "rows".
+*    TYPES ty_column_row_collection TYPE i.
     TYPES:
       BEGIN OF ts_range_buffer_line,
         worksheet             TYPE REF TO zcl_xlom_worksheet,
         address               TYPE zcl_xlom=>ts_range_address,
-        column_row_collection TYPE ty_column_row_collection,
+*        column_row_collection TYPE ty_column_row_collection,
         object                TYPE REF TO zcl_xlom_range,
       END OF ts_range_buffer_line.
-    TYPES tt_range_buffer TYPE HASHED TABLE OF ts_range_buffer_line WITH UNIQUE KEY worksheet address column_row_collection.
+    TYPES tt_range_buffer TYPE HASHED TABLE OF ts_range_buffer_line WITH UNIQUE KEY worksheet address.
+*    TYPES tt_range_buffer TYPE HASHED TABLE OF ts_range_buffer_line WITH UNIQUE KEY worksheet address column_row_collection.
     TYPES:
       BEGIN OF ts_range_name_or_coords,
         range_name TYPE string,
@@ -158,15 +159,15 @@ CLASS zcl_xlom_range DEFINITION
       END OF ty_address_buffer_line.
     TYPES ty_address_buffer TYPE HASHED TABLE OF ty_address_buffer_line WITH UNIQUE KEY string.
 
-    CONSTANTS:
-      "! By default, the "count" method counts the number of cells.
-      "! It's possible to make it count only the columns or rows
-      "! when the range is created by the methods "columns" or "rows".
-      BEGIN OF c_column_row_collection,
-        none    TYPE ty_column_row_collection VALUE 1,
-        columns TYPE ty_column_row_collection VALUE 2,
-        rows    TYPE ty_column_row_collection VALUE 3,
-      END OF c_column_row_collection.
+*    CONSTANTS:
+*      "! By default, the "count" method counts the number of cells.
+*      "! It's possible to make it count only the columns or rows
+*      "! when the range is created by the methods "columns" or "rows".
+*      BEGIN OF c_column_row_collection,
+*        none    TYPE ty_column_row_collection VALUE 1,
+*        columns TYPE ty_column_row_collection VALUE 2,
+*        rows    TYPE ty_column_row_collection VALUE 3,
+*      END OF c_column_row_collection.
 
     CLASS-DATA _formula_buffer TYPE tt_formula_buffer.
     CLASS-DATA _range_buffer   TYPE tt_range_buffer.
@@ -182,14 +183,14 @@ CLASS zcl_xlom_range DEFINITION
       IMPORTING !number       TYPE i
       RETURNING VALUE(result) TYPE string.
 
-    "! @parameter column_row_collection | By default, the "count" method counts the number of cells.
-    "!                                    It's possible to make it count only the columns or rows
-    "!                                    when the range is created by the methods "columns" or "rows".
+*    "! @parameter column_row_collection | By default, the "count" method counts the number of cells.
+*    "!                                    It's possible to make it count only the columns or rows
+*    "!                                    when the range is created by the methods "columns" or "rows".
     CLASS-METHODS create_from_top_left_bottom_ri
       IMPORTING worksheet             TYPE REF TO zcl_xlom_worksheet
                 top_left              TYPE zcl_xlom=>ts_range_address-top_left
                 bottom_right          TYPE zcl_xlom=>ts_range_address-bottom_right
-                column_row_collection TYPE ty_column_row_collection DEFAULT c_column_row_collection-none
+*                column_row_collection TYPE ty_column_row_collection DEFAULT c_column_row_collection-none
       RETURNING VALUE(result)         TYPE REF TO zcl_xlom_range.
 
     CLASS-METHODS decode_range_address
@@ -308,13 +309,13 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     result = zcl_xlom_range=>create_from_row_column( worksheet = parent
                                                      row       = _address-top_left-row + row - 1
                                                      column    = _address-top_left-column + column - 1 ).
-  ENDMETHOD.
-
-  METHOD columns.
-    result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
-                                                             top_left              = _address-top_left
-                                                             bottom_right          = _address-bottom_right
-                                                             column_row_collection = c_column_row_collection-columns ).
+*  ENDMETHOD.
+*
+*  METHOD columns.
+*    result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
+*                                                             top_left              = _address-top_left
+*                                                             bottom_right          = _address-bottom_right ).
+*                                                             column_row_collection = c_column_row_collection-columns ).
   ENDMETHOD.
 
   METHOD convert_column_a_xfd_to_number.
@@ -424,20 +425,21 @@ CLASS zcl_xlom_range IMPLEMENTATION.
                                                                        THEN correctly_ordered_address-bottom_right-column
                                                                        ELSE zcl_xlom_worksheet=>max_columns ) ) ).
 
-    DATA(range_buffer_line) = REF #( _range_buffer[ worksheet             = worksheet
-                                                    address               = address
-                                                    column_row_collection = column_row_collection ] OPTIONAL ).
+    DATA(range_buffer_line) = REF #( _range_buffer[ worksheet = worksheet
+                                                    address   = address ] OPTIONAL ).
+*                                                    column_row_collection = column_row_collection ] OPTIONAL ).
     IF range_buffer_line IS NOT BOUND.
-      CASE column_row_collection.
-        WHEN c_column_row_collection-columns.
-          range = NEW zcl_xlom_columns( ).
-        WHEN c_column_row_collection-rows.
-          range = NEW zcl_xlom_rows( ).
-        WHEN c_column_row_collection-none.
-          range = NEW zcl_xlom_range( ).
-        WHEN OTHERS.
-          RAISE EXCEPTION TYPE zcx_xlom_unexpected.
-      ENDCASE.
+      range = NEW zcl_xlom_range( ).
+*      CASE column_row_collection.
+*        WHEN c_column_row_collection-columns.
+*          range = NEW zcl_xlom_columns( ).
+*        WHEN c_column_row_collection-rows.
+*          range = NEW zcl_xlom_rows( ).
+*        WHEN c_column_row_collection-none.
+*          range = NEW zcl_xlom_range( ).
+*        WHEN OTHERS.
+*          RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+*      ENDCASE.
 
       range->zif_xlom__va~type               = zif_xlom__va=>c_type-range.
       range->application                     = worksheet->application.
@@ -450,7 +452,7 @@ CLASS zcl_xlom_range IMPLEMENTATION.
 
       INSERT VALUE #( worksheet             = worksheet
                       address               = address
-                      column_row_collection = column_row_collection
+*                      column_row_collection = column_row_collection
                       object                = range )
              INTO TABLE _range_buffer
              REFERENCE INTO range_buffer_line.
@@ -724,7 +726,7 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     DATA(list_object_index) = 1.
     WHILE list_object_index <= parent->list_objects->count.
       DATA(list_object) = parent->list_objects->item( list_object_index ).
-      DATA(list_object_address) = zcl_xlom__ut_om_range=>get_address( list_object->range ).
+      DATA(list_object_address) = zcl_xlom__ext_range=>get_address( list_object->range ).
       IF     _address-top_left-column BETWEEN list_object_address-top_left-column AND list_object_address-bottom_right-column
          AND _address-top_left-row    BETWEEN list_object_address-top_left-row    AND list_object_address-bottom_right-row.
         result = list_object.
@@ -752,7 +754,7 @@ CLASS zcl_xlom_range IMPLEMENTATION.
   METHOD optimize_array_if_range.
     IF array->zif_xlom__va~type = array->zif_xlom__va~c_type-range.
       DATA(range) = CAST zcl_xlom_range( array ).
-      result = range->application->_intersect_2_basis(
+      result = zcl_xlom__ext_application=>_intersect_2_basis(
                    arg1 = VALUE #( top_left-column     = range->_address-top_left-column
                                    top_left-row        = range->_address-top_left-row
                                    bottom_right-column = range->_address-bottom_right-column
@@ -771,22 +773,22 @@ CLASS zcl_xlom_range IMPLEMENTATION.
                              column_offset = 0
                              row_size      = row_size
                              column_size   = column_size ).
-  ENDMETHOD.
-
-  METHOD rows.
-    DATA(bottom_right) = COND zcl_xlom=>ts_range_address_one_cell( WHEN index = 0 THEN
-                                                                     _address-bottom_right
-                                                                   WHEN index >= 1
-                                                                    AND index <= ( _address-bottom_right-row - _address-top_left-row + 1 ) THEN
-                                                                     VALUE #(
-                                                                         column = _address-bottom_right-column
-                                                                         row    = _address-top_left-row + index - 1 )
-                                                                   ELSE
-                                                                     THROW zcx_xlom_todo( ) ).
-    result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
-                                                             top_left              = _address-top_left
-                                                             bottom_right          = bottom_right
-                                                             column_row_collection = c_column_row_collection-rows ).
+*  ENDMETHOD.
+*
+*  METHOD rows.
+*    DATA(bottom_right) = COND zcl_xlom=>ts_range_address_one_cell( WHEN index = 0 THEN
+*                                                                     _address-bottom_right
+*                                                                   WHEN index >= 1
+*                                                                    AND index <= ( _address-bottom_right-row - _address-top_left-row + 1 ) THEN
+*                                                                     VALUE #(
+*                                                                         column = _address-bottom_right-column
+*                                                                         row    = _address-top_left-row + index - 1 )
+*                                                                   ELSE
+*                                                                     THROW zcx_xlom_todo( ) ).
+*    result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
+*                                                             top_left              = _address-top_left
+*                                                             bottom_right          = bottom_right ).
+*                                                             column_row_collection = c_column_row_collection-rows ).
   ENDMETHOD.
 
   METHOD set_formula2.

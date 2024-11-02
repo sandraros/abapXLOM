@@ -4,6 +4,7 @@ CLASS zcl_xlom_list_objects DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
+
     DATA count TYPE i READ-ONLY.
     "! In my tests with ListObject created from Range and from Model, the parent was Worksheet.
     DATA parent TYPE REF TO zcl_xlom_worksheet READ-ONLY.
@@ -53,8 +54,9 @@ CLASS zcl_xlom_list_objects DEFINITION
       END OF ty_list_object.
     TYPES ty_list_objects TYPE SORTED TABLE OF ty_list_object WITH UNIQUE KEY name.
 
-    DATA items            TYPE ty_list_objects.
-    DATA list_object_last_number TYPE i VALUE 0.
+    CLASS-DATA list_object_last_number TYPE i VALUE 0.
+
+    DATA items TYPE ty_list_objects.
 ENDCLASS.
 
 
