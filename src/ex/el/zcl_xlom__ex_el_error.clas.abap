@@ -3,7 +3,7 @@ CLASS zcl_xlom__ex_el_error DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     TYPES ty_error_number TYPE i.
 
@@ -118,5 +118,9 @@ CLASS zcl_xlom__ex_el_error IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.

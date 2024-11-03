@@ -3,7 +3,7 @@ CLASS zcl_xlom__ex_el_table DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     TYPES ty_table_name    TYPE c LENGTH 255.
     TYPES ty_row_specifier TYPE i.
@@ -53,13 +53,12 @@ CLASS zcl_xlom__ex_el_table DEFINITION
                 !rows         TYPE ty_row_specifier                      DEFAULT c_rows-data
                 column_range  TYPE REF TO zcl_xlom__ex_el_table_col_rang OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_el_table.
+
   PRIVATE SECTION.
     METHODS find_table
-      IMPORTING
-        workbook      TYPE REF TO zcl_xlom_workbook
-        table_name    TYPE zcl_xlom__ex_el_table=>ty_table_name
-      RETURNING
-        value(result) TYPE REF TO zcl_xlom_list_object.
+      IMPORTING workbook      TYPE REF TO zcl_xlom_workbook
+                table_name    TYPE zcl_xlom__ex_el_table=>ty_table_name
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom_list_object.
 ENDCLASS.
 
 
@@ -100,7 +99,11 @@ CLASS zcl_xlom__ex_el_table IMPLEMENTATION.
   METHOD zif_xlom__ex~evaluate.
     DATA(list_object) = find_table( workbook   = context->worksheet->parent
                                     table_name = name ).
-*    DATA(list_object) = context->worksheet->list_objects->item( name ).
+    IF list_object IS NOT BOUND.
+      result = zcl_xlom__va_error=>ref.
+      RETURN.
+    ENDIF.
+
     CASE rows.
       WHEN c_rows-data.
         result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
@@ -123,5 +126,21 @@ CLASS zcl_xlom__ex_el_table IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    result = |{ name
+             }[{
+             SWITCH string( rows
+                            WHEN c_rows-data         THEN '[#Data]'
+                            WHEN c_rows-data_totals  THEN '[#Data],[#Totals]'
+                            WHEN c_rows-headers      THEN '[#Headers]'
+                            WHEN c_rows-headers_data THEN '[#Headers],[#Data]'
+                            WHEN c_rows-this_row     THEN '[#This Row]'
+                            WHEN c_rows-totals       THEN '[#Totals]'
+                            ELSE                          THROW zcx_xlom_todo( ) )
+             }{ COND #( WHEN column IS BOUND
+                        THEN |,[{ column->name }]| )
+             }]|.
   ENDMETHOD.
 ENDCLASS.

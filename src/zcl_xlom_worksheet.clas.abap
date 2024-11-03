@@ -3,11 +3,12 @@ CLASS zcl_xlom_worksheet DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom_sheet FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends
-                 zcl_xlom__ext_worksheet.
+  GLOBAL FRIENDS "zif_xlom__ut_all_friends
+                 zcl_xlom__ext_worksheet
+                 zcl_xlom__pv_worksheet_array.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+*    INTERFACES zif_xlom__ut_all_friends.
 
     TYPES ty_name TYPE c LENGTH 31.
 
@@ -53,9 +54,6 @@ CLASS zcl_xlom_worksheet DEFINITION
   PROTECTED SECTION.
 
   PRIVATE SECTION.
-    CONSTANTS max_rows    TYPE i VALUE 1048576 ##NO_TEXT.
-    CONSTANTS max_columns TYPE i VALUE 16384 ##NO_TEXT.
-
     DATA _array TYPE REF TO zcl_xlom__va_array.
 
     "! Worksheet.Range property. Returns a Range object that represents a cell or a range of cells.
@@ -89,23 +87,16 @@ CLASS zcl_xlom_worksheet IMPLEMENTATION.
     DATA(context) = zcl_xlom__ex_ut_eval_context=>create( worksheet       = me
                                                           containing_cell = VALUE #( ) ).
 
-    LOOP AT _array->_cells REFERENCE INTO DATA(cell)
+    DATA(cells) = zcl_xlom__pv_worksheet_array=>get_cells( me ).
+    LOOP AT cells->* REFERENCE INTO DATA(cell)
          WHERE     formula    IS BOUND
                AND calculated  = abap_false.
 
       context->set_containing_cell( VALUE #( row    = cell->row
                                              column = cell->column ) ).
-      " BELOW CODE IS ALSO IN ZCL_XLOM_RANGE=>CALCULATE
-      DATA(cell_value) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = cell->formula
-                                                                        context    = context ).
-      cell->value = SWITCH #( cell_value->type
-                              WHEN cell_value->c_type-array THEN
-                                CAST zif_xlom__va_array( cell_value )->get_cell_value( column = 1
-                                                                                       row    = 1 )
-                              WHEN cell_value->c_type-range THEN
-                                CAST zcl_xlom_range( cell_value )->value( )
-                              ELSE
-                                cell_value ).
+
+      cell->value = zcl_xlom__pv_range_calculate=>run( formula = cell->formula
+                                                       context = context ).
     ENDLOOP.
   ENDMETHOD.
 
@@ -129,8 +120,8 @@ CLASS zcl_xlom_worksheet IMPLEMENTATION.
     result->parent       = workbook.
     result->application  = workbook->application.
     result->list_objects = zcl_xlom_list_objects=>create( parent = result ).
-    result->_array       = zcl_xlom__va_array=>create_initial( row_count    = max_rows
-                                                               column_count = max_columns ).
+    result->_array       = zcl_xlom__va_array=>create_initial( row_count    = zcl_xlom__ext_worksheet=>max_rows
+                                                               column_count = zcl_xlom__ext_worksheet=>max_columns ).
   ENDMETHOD.
 
   METHOD range.

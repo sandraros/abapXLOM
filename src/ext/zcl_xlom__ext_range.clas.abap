@@ -4,36 +4,54 @@ CLASS zcl_xlom__ext_range DEFINITION
   CREATE PRIVATE .
 
   PUBLIC SECTION.
+
+    CLASS-METHODS convert_column_a_xfd_to_number
+      IMPORTING roman_letters TYPE csequence
+      RETURNING VALUE(result) TYPE i.
+
+    CLASS-METHODS convert_column_number_to_a_xfd
+      IMPORTING !number       TYPE i
+      RETURNING VALUE(result) TYPE string.
+
     CLASS-METHODS get_address
       IMPORTING !range        TYPE REF TO zcl_xlom_range
-      RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
-
-    "! Intersection with the "used range" of the range worksheet to reduce the search area (to improve the performance).
-    CLASS-METHODS optimize_array_if_range
-      IMPORTING array         TYPE REF TO zif_xlom__va_array
       RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ext_range IMPLEMENTATION.
-  METHOD get_address.
-    result = range->_address.
+  METHOD convert_column_a_xfd_to_number.
+    DATA(offset) = 0.
+    WHILE offset < strlen( roman_letters ).
+      FIND roman_letters+offset(1) IN sy-abcde MATCH OFFSET DATA(offset_a_to_z).
+      IF sy-subrc <> 0.
+        RAISE EXCEPTION TYPE zcx_xlom_todo.
+      ENDIF.
+      result = ( result * 26 ) + offset_a_to_z + 1.
+      IF result > zcl_xlom__ext_worksheet=>max_columns.
+        RAISE EXCEPTION TYPE zcx_xlom_todo.
+      ENDIF.
+      offset = offset + 1.
+    ENDWHILE.
   ENDMETHOD.
 
-  METHOD optimize_array_if_range.
-    IF array->zif_xlom__va~type = array->zif_xlom__va~c_type-range.
-      DATA(range) = CAST zcl_xlom_range( array ).
-      result = zcl_xlom__ext_application=>_intersect_2_basis(
-                   arg1 = VALUE #( top_left-column     = range->_address-top_left-column
-                                   top_left-row        = range->_address-top_left-row
-                                   bottom_right-column = range->_address-bottom_right-column
-                                   bottom_right-row    = range->_address-bottom_right-row )
-                   arg2 = zcl_xlom__ext_worksheet=>get_used_range( range->parent ) ).
-    ELSE.
-      result = VALUE #( top_left-column     = 1
-                        top_left-row        = 1
-                        bottom_right-column = array->column_count
-                        bottom_right-row    = array->row_count ).
+  METHOD convert_column_number_to_a_xfd.
+    IF number NOT BETWEEN 1 AND zcl_xlom__ext_worksheet=>max_columns.
+      RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
+    DATA(work_number) = number.
+    DO.
+      DATA(lv_mod) = ( work_number - 1 ) MOD 26.
+      DATA(lv_div) = ( work_number - 1 ) DIV 26.
+      work_number = lv_div.
+      result = sy-abcde+lv_mod(1) && result.
+      IF work_number <= 0.
+        EXIT.
+      ENDIF.
+    ENDDO.
+  ENDMETHOD.
+
+  METHOD get_address.
+    result = range->_address.
   ENDMETHOD.
 ENDCLASS.

@@ -6,7 +6,7 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'ADDRESS'.
 
     CLASS-METHODS class_constructor.
 
@@ -40,8 +40,8 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
                 sheet_text    TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_address.
 
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODS zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -123,7 +123,7 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
                                           THEN '$' ).
 
         result = zcl_xlom__va_string=>get(
-            |{ sheet_and_excl_mark }{ column_prefix }{ zcl_xlom_range=>convert_column_number_to_a_xfd( column_num ) }{ row_prefix }{ row_num }| ).
+            |{ sheet_and_excl_mark }{ column_prefix }{ zcl_xlom__ext_range=>convert_column_number_to_a_xfd( column_num ) }{ row_prefix }{ row_num }| ).
 
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.

@@ -1,12 +1,9 @@
 CLASS zcl_xlom_application DEFINITION
   PUBLIC
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends
-                 zcl_xlom__pv_worksheet_activtd.
+  GLOBAL FRIENDS zcl_xlom__pv_worksheet_activtd.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-
     DATA active_sheet    TYPE REF TO zcl_xlom_sheet        READ-ONLY.
     DATA calculation     TYPE zcl_xlom=>ty_calculation     READ-ONLY VALUE zcl_xlom=>c_calculation-automatic ##NO_TEXT.
     DATA reference_style TYPE zcl_xlom=>ty_reference_style READ-ONLY VALUE zcl_xlom=>c_reference_style-a1 ##NO_TEXT.
@@ -85,7 +82,7 @@ CLASS zcl_xlom_application IMPLEMENTATION.
       WHILE worksheet_number <= workbook->worksheets->count.
         TRY.
             DATA(worksheet) = workbook->worksheets->item( worksheet_number ).
-          CATCH zcx_xlom__va INTO DATA(error). " TODO: variable is assigned but never used (ABAP cleaner)
+          CATCH zcx_xlom__va INTO DATA(error) ##NEEDED.
             RAISE EXCEPTION TYPE zcx_xlom_unexpected.
         ENDTRY.
         worksheet->calculate( ).
@@ -141,19 +138,20 @@ CLASS zcl_xlom_application IMPLEMENTATION.
     DATA(temp_intersect_range_address) = VALUE zcl_xlom=>ts_range_address( ).
     LOOP AT args INTO DATA(arg)
          WHERE table_line IS BOUND.
-      temp_intersect_range_address = zcl_xlom__ext_application=>_intersect_2_basis(
+      DATA(address) = zcl_xlom__ext_range=>get_address( arg ).
+      temp_intersect_range_address = zcl_xlom__ext_application=>intersect_2_low_level(
                                          arg1 = temp_intersect_range_address
-                                         arg2 = VALUE #( top_left-column     = arg->_address-top_left-column
-                                                         top_left-row        = arg->_address-top_left-row
-                                                         bottom_right-column = arg->_address-bottom_right-column
-                                                         bottom_right-row    = arg->_address-bottom_right-row ) ).
+                                         arg2 = VALUE #( top_left-column     = address-top_left-column
+                                                         top_left-row        = address-top_left-row
+                                                         bottom_right-column = address-bottom_right-column
+                                                         bottom_right-row    = address-bottom_right-row ) ).
       IF temp_intersect_range_address IS INITIAL.
         " Empty intersection
         RETURN.
       ENDIF.
     ENDLOOP.
 
-    result = zcl_xlom_range=>create_from_top_left_bottom_ri(
+    result = zcl_xlom__pv_range_create=>create_from_top_left_bottom_ri(
                  worksheet    = arg1->parent
                  top_left     = VALUE #( column = temp_intersect_range_address-top_left-column
                                          row    = temp_intersect_range_address-top_left-row )

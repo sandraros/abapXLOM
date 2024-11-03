@@ -3,8 +3,6 @@ CLASS zcl_xlom__vw DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-
     METHODS pai.
 
     METHODS pbo.
@@ -113,7 +111,7 @@ CLASS zcl_xlom__vw IMPLEMENTATION.
                                     FOR <component> IN rtts_structure->components INDEX INTO component_number
                                     ( fieldname  = |COMP_{ component_number }|
                                       colddictxt = 'L'
-                                      scrtext_l  = zcl_xlom_range=>convert_column_number_to_a_xfd( component_number ) ) ).
+                                      scrtext_l  = zcl_xlom__ext_range=>convert_column_number_to_a_xfd( component_number ) ) ).
     main_worksheet_alv->set_table_for_first_display(
       EXPORTING  is_layout                     = VALUE #( cwidth_opt = 'X'
                                                           grid_title = EXACT #( worksheet->name )

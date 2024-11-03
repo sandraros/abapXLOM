@@ -114,8 +114,9 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
       DATA(operand_result) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = operand
                                                                             context    = context ).
 
-      IF parameter->error_accepted = abap_false
-          AND operand_result->type = operand_result->c_type-error.
+      IF     parameter                 IS BOUND
+         AND parameter->error_accepted  = abap_false
+         AND operand_result->type       = operand_result->c_type-error.
         " e.g. the result of =OFFSET(INDIRECT("aa"&#VALUE!),#N/A,1) is #VALUE!
         result = operand_result.
         RETURN.

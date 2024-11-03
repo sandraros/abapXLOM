@@ -4,7 +4,7 @@ CLASS zcl_xlom__ex_op_lower DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_op.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex DATA VALUES name = '<'.
 
     CLASS-METHODS class_constructor.
 

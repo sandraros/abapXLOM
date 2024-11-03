@@ -4,7 +4,8 @@ CLASS zcl_xlom__ex_fu DEFINITION
   CREATE PROTECTED .
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    " NB: the interface ZIF_XLOM__EX is defined in subclasses to initialize the static variable NAME.
+*    INTERFACES zif_xlom__ex.
 
     METHODS adjust_evaluated_operands
       CHANGING evaluated_operands TYPE zif_xlom__ex=>tt_operand_result.
@@ -29,7 +30,7 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD create_dynamic.
-    DATA function TYPE REF TO zcl_xlom__ex_fu.
+*    DATA function TYPE REF TO zcl_xlom__ex_fu.
 
     "    _xlfn.FILTER
     " OR _xlfn._xlws.FILTER
@@ -76,26 +77,31 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
         ENDTRY.
     ENDCASE.
 
-    function ?= result.
-    function->zif_xlom__ex~arguments_or_operands = arguments.
+    data(function) = cast zif_xlom__ex( result ).
+    function->arguments_or_operands = arguments.
 
     zcl_xlom__ex_ut=>check_arguments_or_operands(
       EXPORTING expression            = result
-      CHANGING  arguments_or_operands = function->zif_xlom__ex~arguments_or_operands ).
+      CHANGING  arguments_or_operands = function->arguments_or_operands ).
   ENDMETHOD.
 
   METHOD evaluate.
-    result = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = me
+    result = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = CAST #( me )
                                                             context    = context ).
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~evaluate.
-    " Must be redefined by each function class.
-    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
-  ENDMETHOD.
-
-  METHOD zif_xlom__ex~get_parameters.
-    " Must be redefined by each function class.
-    RAISE EXCEPTION TYPE zcx_xlom_todo.
+*  ENDMETHOD.
+*
+*  METHOD zif_xlom__ex~evaluate.
+*    " Must be redefined by each function class.
+*    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+*  ENDMETHOD.
+*
+*  METHOD zif_xlom__ex~get_name.
+*    " Must be redefined by each function class.
+*    RAISE EXCEPTION TYPE zcx_xlom_todo.
+*  ENDMETHOD.
+*
+*  METHOD zif_xlom__ex~get_parameters.
+*    " Must be redefined by each function class.
+*    RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.

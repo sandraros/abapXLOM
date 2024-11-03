@@ -1,7 +1,8 @@
 CLASS zcl_xlom__va_string DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+*  GLOBAL FRIENDS zif_xlom__ut_all_friends
+  .
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__va.

@@ -3,7 +3,7 @@ CLASS zcl_xlom__ex_el_boolean DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     CLASS-DATA false TYPE REF TO zcl_xlom__ex_el_boolean.
     CLASS-DATA true  TYPE REF TO zcl_xlom__ex_el_boolean.
@@ -62,5 +62,9 @@ CLASS zcl_xlom__ex_el_boolean IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.

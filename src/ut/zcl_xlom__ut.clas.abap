@@ -60,7 +60,7 @@ CLASS zcl_xlom__ut IMPLEMENTATION.
            INTO TABLE lookup_ranges
            REFERENCE INTO lookup_range.
 
-    DATA(optimized_addresses) = zcl_xlom__ext_range=>optimize_array_if_range( lookup_range_array ).
+    DATA(optimized_addresses) = zcl_xlom__pv_range_optimize=>optimize_array_if_range( lookup_range_array ).
 
     DATA(row_number) = optimized_addresses-top_left-row.
     WHILE row_number <= optimized_addresses-bottom_right-row.
@@ -100,7 +100,7 @@ CLASS zcl_xlom__ut IMPLEMENTATION.
            REFERENCE INTO lookup_range.
 
     IF optimize_used_range = abap_true.
-      DATA(optimized_addresses) = zcl_xlom__ext_range=>optimize_array_if_range( lookup_range_array ).
+      DATA(optimized_addresses) = zcl_xlom__pv_range_optimize=>optimize_array_if_range( lookup_range_array ).
     ELSE.
       IF lookup_range_array->zif_xlom__va~type = lookup_range_array->zif_xlom__va~c_type-range.
         optimized_addresses = zcl_xlom__ext_range=>get_address( CAST #( lookup_range_array ) ).

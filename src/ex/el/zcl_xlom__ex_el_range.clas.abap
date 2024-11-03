@@ -1,12 +1,10 @@
 CLASS zcl_xlom__ex_el_range DEFINITION
   PUBLIC FINAL
-  CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-    INTERFACES zif_xlom__ex.
     INTERFACES zif_xlom__ex_array.
+    INTERFACES zif_xlom__ex_el.
 
     DATA _address_or_name TYPE string READ-ONLY.
 
@@ -35,5 +33,9 @@ CLASS zcl_xlom__ex_el_range IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    result = _address_or_name.
   ENDMETHOD.
 ENDCLASS.

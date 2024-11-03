@@ -1,10 +1,9 @@
 CLASS zcl_xlom__ex_el_string DEFINITION
   PUBLIC FINAL
-  CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     DATA string TYPE string READ-ONLY.
 
@@ -43,5 +42,10 @@ CLASS zcl_xlom__ex_el_string IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD zif_xlom__ex~get_parameters.
+    RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    result = string.
   ENDMETHOD.
 ENDCLASS.

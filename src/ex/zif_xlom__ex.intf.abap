@@ -600,14 +600,18 @@ INTERFACE zif_xlom__ex
 
   DATA type                         TYPE ty_expression_type     READ-ONLY.
   DATA result_of_evaluation         TYPE REF TO zif_xlom__va    READ-ONLY.
-*  CLASS-DATA parameters                   TYPE tt_parameter           READ-ONLY.
-*  DATA parameters                   TYPE tt_parameter           READ-ONLY.
-  DATA arguments_or_operands        TYPE tt_argument_or_operand READ-ONLY.
+  "! Should be READ-ONLY, but how to make ZCL_XLOM__EX_FU write to it?
+  DATA arguments_or_operands        TYPE tt_argument_or_operand.
+*  DATA arguments_or_operands        TYPE tt_argument_or_operand READ-ONLY.
 
   METHODS evaluate
     IMPORTING arguments     TYPE tt_operand_result
               !context      TYPE REF TO zcl_xlom__ex_ut_eval_context
     RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
+
+  CLASS-DATA name type string READ-ONLY.
+*  CLASS-METHODS get_name
+*    RETURNING VALUE(result) TYPE string.
 
   METHODS get_parameters
     RETURNING VALUE(result) TYPE tt_parameter.

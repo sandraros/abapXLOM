@@ -138,7 +138,11 @@ CLASS zcl_xlom__ex_ut IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD check_arguments_or_operands.
+    TRY.
     DATA(parameters) = expression->get_parameters( ).
+    CATCH cx_sy_dyn_call_illegal_method.
+      ASSERT 1 = 1. " Debug helper to set a break-point
+    ENDTRY.
 
     " Only a variadic function may have more arguments than the number of parameters.
     IF     parameters IS NOT INITIAL

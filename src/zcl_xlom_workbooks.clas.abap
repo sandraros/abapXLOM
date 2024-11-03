@@ -3,7 +3,7 @@ CLASS zcl_xlom_workbooks DEFINITION
   PUBLIC
   CREATE PRIVATE
 *  GLOBAL FRIENDS zif_xlom__ut_all_friends
-  GLOBAL FRIENDS zcl_xlom__pv_chg_workbook_name
+  GLOBAL FRIENDS zcl_xlom__pv_workbook_name_chg
   .
 
   PUBLIC SECTION.

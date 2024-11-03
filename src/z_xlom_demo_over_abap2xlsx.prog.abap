@@ -18,7 +18,10 @@ TRY.
     DATA(xlom_workbook) = xlom_application->workbooks->add( ).
 
 *    DATA(formulas) = VALUE ty_unique_strings( ).
+
+    " CAN'T USE ZCL_EXCEL_READER_HUGE_FILE BECAUSE IT DOESN'T READ TABLES.
     DATA(reader) = NEW zcl_excel_reader_2007( ).
+
     DATA(workbook) = reader->zif_excel_reader~load_file( xlsxpath ).
     DATA(worksheets_iterator) = workbook->get_worksheets_iterator( ).
     WHILE worksheets_iterator->has_next( ).

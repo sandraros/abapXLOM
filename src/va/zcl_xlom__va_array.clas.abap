@@ -1,12 +1,13 @@
 CLASS zcl_xlom__va_array DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  GLOBAL FRIENDS "zif_xlom__ut_all_friends
+                 zcl_xlom__pv_worksheet_array.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__va.
     INTERFACES zif_xlom__va_array.
-    INTERFACES zif_xlom__ut_all_friends.
+*    INTERFACES zif_xlom__ut_all_friends.
 
     TYPES:
       BEGIN OF ts_used_range_one_cell,
@@ -22,10 +23,6 @@ CLASS zcl_xlom__va_array DEFINITION
     DATA used_range TYPE ts_used_range READ-ONLY.
 
     CLASS-METHODS class_constructor.
-
-    CLASS-METHODS create_from_range
-      IMPORTING !range        TYPE REF TO zcl_xlom_range
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_array.
 
     CLASS-METHODS create_initial
       IMPORTING row_count     TYPE i
@@ -88,10 +85,6 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
                                                           column = 1 )
                                   bottom_right = VALUE #( row    = 1
                                                           column = 1 ) ).
-  ENDMETHOD.
-
-  METHOD create_from_range.
-    result = range->parent->_array.
   ENDMETHOD.
 
   METHOD create_initial.

@@ -87,8 +87,8 @@ CLASS zcl_xlom_list_columns IMPLEMENTATION.
              INTO TABLE items
              REFERENCE INTO list_column.
     ENDIF.
-    zcl_xlom__ext_list_column=>set_index( list_column = list_column->object
-                                            index       = index_2 ).
+    zcl_xlom__pv_list_column_index=>set_index( list_column = list_column->object
+                                               index       = index_2 ).
     result = list_column->object.
   ENDMETHOD.
 ENDCLASS.

@@ -20,7 +20,9 @@ CLASS zcl_xlom__ex_fu_filter DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'FILTER'.
+
+*    INTERFACES zif_xlom__ut_all_friends.
 
     CLASS-METHODS class_constructor.
 
@@ -30,8 +32,8 @@ CLASS zcl_xlom__ex_fu_filter DEFINITION
                 if_empty      TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_filter.
 
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODS zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -98,7 +100,7 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
           DATA(result_row_count) = 0.
           DATA(result_column_count) = 0.
 
-          DATA(optimized_lookup_array) = zcl_xlom__ext_range=>optimize_array_if_range( lookup_array ).
+          DATA(optimized_lookup_array) = zcl_xlom__pv_range_optimize=>optimize_array_if_range( lookup_array ).
           " If outside the used range (initial) -> result is not found
           IF optimized_lookup_array IS NOT INITIAL.
 

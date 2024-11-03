@@ -3,9 +3,9 @@
  <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
   <asx:values>
    <VSEOINTERF>
-    <CLSNAME>ZIF_XLOM__UT_ALL_FRIENDS</CLSNAME>
+    <CLSNAME>ZIF_XLOM__EX_EL</CLSNAME>
     <LANGU>E</LANGU>
-    <DESCRIPT>DON&apos;T USE! (Planned to be quickly removed)</DESCRIPT>
+    <DESCRIPT>Elementary field in expression (literal, etc.)</DESCRIPT>
     <EXPOSURE>2</EXPOSURE>
     <STATE>1</STATE>
     <UNICODE>X</UNICODE>

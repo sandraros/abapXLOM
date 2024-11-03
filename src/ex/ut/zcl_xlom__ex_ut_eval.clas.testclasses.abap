@@ -4,9 +4,6 @@ CLASS ltc_app DEFINITION
   INHERITING FROM zcl_xlom__ex_ut_eval_aunit FINAL
   FOR TESTING RISK LEVEL HARMLESS DURATION SHORT.
 
-  PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-
   PRIVATE SECTION.
     METHODS array_evaluation           FOR TESTING RAISING cx_static_check.
     METHODS complex_1                  FOR TESTING RAISING cx_static_check.

@@ -7,6 +7,8 @@ CLASS zcl_xlom__ex_fu_right DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'RIGHT'.
+
     CLASS-METHODS class_constructor.
 
     CLASS-METHODS create
@@ -14,8 +16,8 @@ CLASS zcl_xlom__ex_fu_right DEFINITION
                 num_chars     TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_right.
 
-    METHODs zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODs zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.

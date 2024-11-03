@@ -6,7 +6,7 @@ CLASS zcl_xlom__ex_fu_vlookup DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'VLOOKUP'.
 
     METHODS adjust_evaluated_operands REDEFINITION.
 
@@ -19,9 +19,6 @@ CLASS zcl_xlom__ex_fu_vlookup DEFINITION
                 col_index_num TYPE REF TO zif_xlom__ex
                 range_lookup  TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_vlookup.
-
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.
@@ -102,7 +99,7 @@ CLASS zcl_xlom__ex_fu_vlookup IMPLEMENTATION.
             EXPORTING text = 'Only an exact match is currently supported in VLOOKUP'.
         ENDIF.
 
-        DATA(optimized_table_array) = zcl_xlom__ext_range=>optimize_array_if_range( table_array ).
+        DATA(optimized_table_array) = zcl_xlom__pv_range_optimize=>optimize_array_if_range( table_array ).
         IF optimized_table_array IS INITIAL.
           RAISE EXCEPTION TYPE zcx_xlom_todo
             EXPORTING text = ''.

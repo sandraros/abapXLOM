@@ -1,5 +1,5 @@
 "! Workbook SaveAs -> Change workbook name in workbooks collection
-CLASS zcl_xlom__pv_chg_workbook_name DEFINITION
+CLASS zcl_xlom__pv_workbook_name_chg DEFINITION
   PUBLIC
   FINAL
   CREATE PRIVATE
@@ -14,7 +14,7 @@ ENDCLASS.
 
 
 
-CLASS zcl_xlom__pv_chg_workbook_name IMPLEMENTATION.
+CLASS zcl_xlom__pv_workbook_name_chg IMPLEMENTATION.
   METHOD change_workbook_name.
     workbook->application->workbooks->change_workbook_name( workbook ).
   ENDMETHOD.

@@ -9,7 +9,7 @@ CLASS zcl_xlom__ex_el_none_argument DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     CLASS-DATA singleton TYPE REF TO zcl_xlom__ex_el_none_argument READ-ONLY.
 
@@ -31,5 +31,10 @@ CLASS zcl_xlom__ex_el_none_argument IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    " TODO temporary solution
+    result = '(none)'.
   ENDMETHOD.
 ENDCLASS.

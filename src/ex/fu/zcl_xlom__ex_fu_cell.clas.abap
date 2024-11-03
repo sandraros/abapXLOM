@@ -9,7 +9,9 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'CELL'.
+
+*    INTERFACES zif_xlom__ut_all_friends.
 
     CLASS-METHODS class_constructor.
 
@@ -60,8 +62,8 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
                 !reference    TYPE REF TO zcl_xlom__ex_el_range OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_cell.
 
-    METHODs zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODs zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.

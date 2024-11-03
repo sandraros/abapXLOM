@@ -1,7 +1,9 @@
 CLASS zcl_xlom__ex_ut_parser_item DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+  GLOBAL FRIENDS zcl_xlom__ex_ut_parser
+*  GLOBAL FRIENDS zif_xlom__ut_all_friends
+  .
 
   PRIVATE SECTION.
     TYPES tt_item TYPE STANDARD TABLE OF REF TO zcl_xlom__ex_ut_parser_item WITH EMPTY KEY.

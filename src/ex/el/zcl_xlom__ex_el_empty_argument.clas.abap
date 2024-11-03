@@ -3,7 +3,7 @@ CLASS zcl_xlom__ex_el_empty_argument DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     CLASS-DATA singleton TYPE REF TO zcl_xlom__ex_el_empty_argument READ-ONLY.
 
@@ -24,5 +24,9 @@ CLASS zcl_xlom__ex_el_empty_argument IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    result = '(empty)'.
   ENDMETHOD.
 ENDCLASS.

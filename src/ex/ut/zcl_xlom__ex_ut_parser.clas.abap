@@ -3,7 +3,7 @@ CLASS zcl_xlom__ex_ut_parser DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+*    INTERFACES zif_xlom__ut_all_friends.
 
     CLASS-METHODS create
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_ut_parser.

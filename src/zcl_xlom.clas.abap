@@ -3,8 +3,6 @@ CLASS zcl_xlom DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-
     "! xlApplicationInternational enumeration
     TYPES ty_application_international TYPE i.
     "! xlCalculation enumeration

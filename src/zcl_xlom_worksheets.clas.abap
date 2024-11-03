@@ -2,10 +2,11 @@
 CLASS zcl_xlom_worksheets DEFINITION
   PUBLIC
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+*  GLOBAL FRIENDS zif_xlom__ut_all_friends
+  .
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
+*    INTERFACES zif_xlom__ut_all_friends.
 
     DATA application TYPE REF TO zcl_xlom_application READ-ONLY.
     DATA count       TYPE i                           READ-ONLY.

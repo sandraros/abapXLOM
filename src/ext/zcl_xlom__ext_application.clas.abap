@@ -3,12 +3,13 @@ CLASS zcl_xlom__ext_application DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    CLASS-METHODS _intersect_2
-      IMPORTING arg1          TYPE REF TO zcl_xlom_range
-                arg2          TYPE REF TO zcl_xlom_range
-      RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
+*    CLASS-METHODS _intersect_2
+*      IMPORTING arg1          TYPE REF TO zcl_xlom_range
+*                arg2          TYPE REF TO zcl_xlom_range
+*      RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
 
-    CLASS-METHODS _intersect_2_basis
+    "! Low level intersection between two ranges on which is based ZCL_XLOM_APPLICATION=>INTERSECT.
+    CLASS-METHODS intersect_2_low_level
       IMPORTING arg1          TYPE zcl_xlom=>ts_range_address
                 arg2          TYPE zcl_xlom=>ts_range_address
       RETURNING VALUE(result) TYPE zcl_xlom=>ts_range_address.
@@ -19,27 +20,7 @@ ENDCLASS.
 
 
 CLASS zcl_xlom__ext_application IMPLEMENTATION.
-  METHOD _intersect_2.
-    TYPES tt_range TYPE STANDARD TABLE OF REF TO zcl_xlom_range WITH EMPTY KEY.
-
-    DATA(args) = VALUE tt_range( ( arg1 ) ( arg2 ) ).
-
-    LOOP AT args INTO DATA(arg)
-         WHERE table_line IS BOUND.
-      DATA(address) = zcl_xlom__ext_range=>get_address( arg ).
-      result = _intersect_2_basis( arg1 = result
-                                   arg2 = VALUE #( top_left-column     = address-top_left-column
-                                                   top_left-row        = address-top_left-row
-                                                   bottom_right-column = address-bottom_right-column
-                                                   bottom_right-row    = address-bottom_right-row ) ).
-      IF result IS INITIAL.
-        " Empty intersection
-        RETURN.
-      ENDIF.
-    ENDLOOP.
-  ENDMETHOD.
-
-  METHOD _intersect_2_basis.
+  METHOD intersect_2_low_level.
     result = COND #( WHEN arg1 IS NOT INITIAL
                      THEN arg1
                      ELSE VALUE #( top_left-column     = 0
@@ -65,5 +46,24 @@ CLASS zcl_xlom__ext_application IMPLEMENTATION.
       " Empty intersection
       result = VALUE #( ).
     ENDIF.
+*  METHOD _intersect_2.
+*    TYPES tt_range TYPE STANDARD TABLE OF REF TO zcl_xlom_range WITH EMPTY KEY.
+*
+*    DATA(args) = VALUE tt_range( ( arg1 ) ( arg2 ) ).
+*
+*    LOOP AT args INTO DATA(arg)
+*         WHERE table_line IS BOUND.
+*      DATA(address) = zcl_xlom__ext_range=>get_address( arg ).
+*      result = _intersect_2_basis( arg1 = result
+*                                   arg2 = VALUE #( top_left-column     = address-top_left-column
+*                                                   top_left-row        = address-top_left-row
+*                                                   bottom_right-column = address-bottom_right-column
+*                                                   bottom_right-row    = address-bottom_right-row ) ).
+*      IF result IS INITIAL.
+*        " Empty intersection
+*        RETURN.
+*      ENDIF.
+*    ENDLOOP.
+*  ENDMETHOD.
   ENDMETHOD.
 ENDCLASS.

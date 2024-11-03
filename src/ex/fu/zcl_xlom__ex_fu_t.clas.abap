@@ -9,14 +9,16 @@ CLASS zcl_xlom__ex_fu_t DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'T'.
+
     CLASS-METHODS class_constructor.
 
     CLASS-METHODS create
       IMPORTING !value        TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_t.
 
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODS zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.

@@ -6,6 +6,8 @@ CLASS zcl_xlom__ex_fu_mod DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'MOD'.
+
     CLASS-METHODS class_constructor.
 
     CLASS-METHODS create
@@ -13,8 +15,8 @@ CLASS zcl_xlom__ex_fu_mod DEFINITION
                 divisor       TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_mod.
 
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODS zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.

@@ -5,8 +5,7 @@ CLASS zcl_xlom__ex_op_colon DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_op.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ut_all_friends.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex DATA VALUES name = ':'.
     INTERFACES zif_xlom__ex_array.
 
     CLASS-METHODS class_constructor.
@@ -57,9 +56,9 @@ CLASS zcl_xlom__ex_op_colon IMPLEMENTATION.
         input     = zif_xlom__ex~arguments_or_operands[ c_arg-right_operand ]->result_of_evaluation
         worksheet = context->worksheet ).
     TRY.
-        result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet    = context->worksheet
-                                                                 top_left     = left_operand->_address-top_left
-                                                                 bottom_right = right_operand->_address-bottom_right ).
+        result = zcl_xlom__pv_range_create=>create_from_top_left_bottom_ri( worksheet    = context->worksheet
+                                                                 top_left     = zcl_xlom__ext_range=>get_address( left_operand )-top_left
+                                                                 bottom_right = zcl_xlom__ext_range=>get_address( right_operand )-bottom_right ).
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
     ENDTRY.

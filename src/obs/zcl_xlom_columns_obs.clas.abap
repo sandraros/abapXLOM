@@ -2,7 +2,8 @@ CLASS zcl_xlom_columns_obs DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom_range FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS zif_xlom__ut_all_friends.
+*  GLOBAL FRIENDS
+.
 
   PUBLIC SECTION.
     METHODS count REDEFINITION.

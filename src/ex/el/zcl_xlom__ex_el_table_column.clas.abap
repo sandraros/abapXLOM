@@ -3,7 +3,7 @@ CLASS zcl_xlom__ex_el_table_column DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
+    INTERFACES zif_xlom__ex_el.
 
     DATA name TYPE string READ-ONLY.
 
@@ -30,5 +30,9 @@ CLASS zcl_xlom__ex_el_table_column IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    result = |[{ name }]|.
   ENDMETHOD.
 ENDCLASS.

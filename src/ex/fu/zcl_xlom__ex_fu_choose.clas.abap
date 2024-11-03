@@ -6,6 +6,8 @@ CLASS zcl_xlom__ex_fu_choose DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'CHOOSE'.
+
     TYPES tt_value TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 
     CLASS-METHODS class_constructor.
@@ -16,8 +18,8 @@ CLASS zcl_xlom__ex_fu_choose DEFINITION
                 !values       TYPE tt_value OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_choose.
 
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODS zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.

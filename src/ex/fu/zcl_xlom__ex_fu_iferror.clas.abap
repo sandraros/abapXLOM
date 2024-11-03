@@ -7,6 +7,8 @@ CLASS zcl_xlom__ex_fu_iferror DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'IFERROR'.
+
     CLASS-METHODS class_constructor.
 
     CLASS-METHODS create
@@ -14,8 +16,8 @@ CLASS zcl_xlom__ex_fu_iferror DEFINITION
                 value_if_error TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result)  TYPE REF TO zcl_xlom__ex_fu_iferror.
 
-    METHODS zif_xlom__ex~evaluate REDEFINITION.
-    METHODS zif_xlom__ex~get_parameters REDEFINITION.
+*    METHODS zif_xlom__ex~evaluate REDEFINITION.
+*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
 
   PROTECTED SECTION.
     METHODS constructor.

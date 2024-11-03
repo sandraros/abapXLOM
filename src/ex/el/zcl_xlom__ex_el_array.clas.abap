@@ -3,8 +3,8 @@ CLASS zcl_xlom__ex_el_array DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex.
     INTERFACES zif_xlom__ex_array.
+    INTERFACES zif_xlom__ex_el.
 
     TYPES tt_column TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
     TYPES:
@@ -45,5 +45,9 @@ CLASS zcl_xlom__ex_el_array IMPLEMENTATION.
 
   METHOD zif_xlom__ex~get_parameters.
     RAISE EXCEPTION TYPE zcx_xlom_unexpected.
+  ENDMETHOD.
+
+  METHOD zif_xlom__ex_el~render.
+    RAISE EXCEPTION TYPE zcx_xlom_todo.
   ENDMETHOD.
 ENDCLASS.
