@@ -123,17 +123,28 @@ CLASS zcl_xlom__ex_fu_filter IMPLEMENTATION.
                       result_column_count = lookup_array->column_count.
                     ENDIF.
 
-                    DATA(lookup_array_one_row) = lookup_array->get_array_value(
-                                                     top_left     = VALUE #( column = 1
-                                                                             row    = row_number )
-                                                     bottom_right = VALUE #( column = lookup_array->column_count
-                                                                             row    = row_number ) ).
+**                    DATA(row) = VALUE zif_xlom__va_array=>ts_row( ).
+**                    DATA(column_number_2) = 1.
+**                    WHILE column_number_2 <= result_column_count.
+**                      INSERT lookup_array->get_array_value(
+**                                                     top_left     = VALUE #( column = column_number_2
+**                                                                             row    = row_number )
+**                                                     bottom_right = VALUE #( column = column_number_2
+**                                                                             row    = row_number ) )
+**                             INTO TABLE row-columns_of_row.
+**                      column_number_2 = column_number_2 + 1.
+**                    ENDWHILE.
+*                    DATA(lookup_array_one_row) = lookup_array->get_array_value(
+*                                                     top_left     = VALUE #( column = 1
+*                                                                             row    = row_number )
+*                                                     bottom_right = VALUE #( column = lookup_array->column_count
+*                                                                             row    = row_number ) ).
 
                     DATA(row) = VALUE zif_xlom__va_array=>ts_row( ).
                     DATA(column_number_2) = 1.
                     WHILE column_number_2 <= result_column_count.
-                      INSERT lookup_array_one_row->get_cell_value( column = column_number_2
-                                                                   row    = row_number )
+                      INSERT lookup_array->get_cell_value( column = column_number_2
+                                                           row    = row_number )
                              INTO TABLE row-columns_of_row.
                       column_number_2 = column_number_2 + 1.
                     ENDWHILE.

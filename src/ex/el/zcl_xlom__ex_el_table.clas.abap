@@ -104,23 +104,32 @@ CLASS zcl_xlom__ex_el_table IMPLEMENTATION.
       RETURN.
     ENDIF.
 
+    DATA(list_column) = list_object->list_columns->item( column->name ).
+    DATA(column_number) = list_object->range->column + list_column->index - 1.
+
     CASE rows.
       WHEN c_rows-data.
-        result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
+        result = zcl_xlom_range=>create_from_row_column( worksheet   = list_object->parent
+*        result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
                                                          row         = list_object->range->row + 1
-                                                         column      = list_object->range->column
+                                                         column      = column_number
+*                                                         column      = list_object->range->column
                                                          row_size    = list_object->range->zif_xlom__va_array~row_count
                                                          column_size = 1 ).
       WHEN c_rows-headers.
-        result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
+        result = zcl_xlom_range=>create_from_row_column( worksheet   = list_object->parent
+*        result = zcl_xlom_range=>create_from_row_column( worksheet   = context->worksheet
                                                          row         = list_object->range->row
-                                                         column      = list_object->range->column
+                                                         column      = column_number
+*                                                         column      = list_object->range->column
                                                          row_size    = 1
                                                          column_size = 1 ).
       WHEN c_rows-this_row.
-        DATA(list_column) = list_object->list_columns->item( column->name ).
-        result = context->worksheet->cells( row    = context->containing_cell-row
-                                            column = list_object->range->column + list_column->index - 1 ).
+*        DATA(list_column) = list_object->list_columns->item( column->name ).
+        result = list_object->parent->cells( row    = context->containing_cell-row
+                                             column = column_number ).
+*        result = context->worksheet->cells( row    = context->containing_cell-row
+*                                             column = list_object->range->column + list_column->index - 1 ).
     ENDCASE.
   ENDMETHOD.
 

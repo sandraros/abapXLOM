@@ -124,8 +124,8 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
          & '|\{'
          & '|\[ '             " opening bracket after table name
          & '|\['              " table column name, each character can be:
-         & '(?:''.'       "   either one single quote (escape) with next character
-         & '|[^\[\]]'       "   or any other character except [ and ]
+         & '(?:''.'           "   either one single quote (escape) with next character
+         & '|[^\[\]]'         "   or any other character except [ and ]
          & ')+'
          & '\]'
          & '|\['              " opening bracket after table name
@@ -149,7 +149,9 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
          & '|&'
          & '|%'
          & '|"(?:""|[^"])*"'  " string literal
-         & '|#[A-Z0-9/!?]+'      " error name (#DIV/0!, #N/A, #VALUE!, #GETTING_DATA!, #NAME?, etc.)
+         & '|''(?:''''|[^''])*''!'  " sheet name
+         & '|#[A-Z0-9/!?]+'   " error name (#DIV/0!, #N/A, #VALUE!, #GETTING_DATA!, #NAME?, etc.)
+         & '| +'              " space not part of string literal or sheet name
          & ')'
          IN text RESULTS DATA(matches).
 
@@ -158,20 +160,26 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
 
     DATA(token_values) = VALUE string_table( ).
     LOOP AT matches REFERENCE INTO DATA(match).
-      INSERT substring( val = text
-                        off = match->offset
-                        len = match->length )
-             INTO TABLE token_values.
+      DATA(token_value_2) = substring( val = text
+                                       off = match->offset
+                                       len = match->length ).
+      IF substring( val = token_value_2
+                    off = 0
+                    len = 1 ) = `'`.
+        DATA(sheet_name) = token_value_2.
+*        token_value_2 = condense( val = token_value_2 ).
+      ELSEIF sheet_name IS NOT INITIAL.
+        INSERT sheet_name && token_value_2 INTO TABLE token_values.
+        sheet_name = ``.
+      ELSE.
+        INSERT token_value_2 INTO TABLE token_values.
+      ENDIF.
     ENDLOOP.
 
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA(current_parenthesis_group) = VALUE ty_ref_to_parenthesis_group( ).
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA(parenthesis_group) = VALUE ts_parenthesis_group( ).
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA(parenthesis_level) = 0.
-    " TODO: variable is assigned but never used (ABAP cleaner)
-    DATA(table_specification) = abap_false.
+*    DATA(current_parenthesis_group) = VALUE ty_ref_to_parenthesis_group( ).
+*    DATA(parenthesis_group) = VALUE ts_parenthesis_group( ).
+*    DATA(parenthesis_level) = 0.
+*    DATA(table_specification) = abap_false.
     DATA(token) = VALUE ts_token( ).
     DATA(token_number) = 1.
     LOOP AT token_values REFERENCE INTO DATA(token_value).

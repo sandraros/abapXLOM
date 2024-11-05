@@ -29,11 +29,19 @@ CLASS zcl_xlom__va_string DEFINITION
     CLASS-DATA buffer TYPE tt_buffer.
 
     DATA string TYPE string.
+
+    CLASS-METHODS _create
+      IMPORTING !string       TYPE csequence
+      RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_string.
 ENDCLASS.
 
 
 CLASS zcl_xlom__va_string IMPLEMENTATION.
   METHOD create.
+    result = get( string ).
+  ENDMETHOD.
+
+  METHOD _create.
     result = NEW zcl_xlom__va_string( ).
     result->zif_xlom__va~type = zif_xlom__va=>c_type-string.
     result->string            = string.
@@ -43,7 +51,7 @@ CLASS zcl_xlom__va_string IMPLEMENTATION.
     DATA(buffer_line) = REF #( buffer[ string = string ] OPTIONAL ).
     IF buffer_line IS NOT BOUND.
       INSERT VALUE #( string = string
-                      object = create( string ) )
+                      object = _create( string ) )
              INTO TABLE buffer
              REFERENCE INTO buffer_line.
     ENDIF.

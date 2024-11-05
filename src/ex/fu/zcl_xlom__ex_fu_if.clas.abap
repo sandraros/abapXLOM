@@ -35,8 +35,8 @@ ENDCLASS.
 CLASS zcl_xlom__ex_fu_if IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'CONDITION    ' )
-                          ( name = 'EXPR_IF_TRUE ' )
-                          ( name = 'EXPR_IF_FALSE' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
+                          ( name = 'EXPR_IF_TRUE ' not_part_of_result_array = abap_true )
+                          ( name = 'EXPR_IF_FALSE' not_part_of_result_array = abap_true  default = zcl_xlom__ex_el_boolean=>false ) ).
   ENDMETHOD.
 
   METHOD constructor.

@@ -262,28 +262,43 @@ CLASS zcl_xlom__va IMPLEMENTATION.
           EXPORTING result_error = CAST #( input ).
       WHEN input->c_type-number.
         result = zcl_xlom__va_string=>create( |{ CAST zcl_xlom__va_number( input )->get_number( ) }| ).
-      WHEN input->c_type-range.
-        DATA(input_range) = CAST zcl_xlom_range( input ).
-        DATA(input_range_address) = zcl_xlom__ext_range=>get_address( input_range ).
-        IF input_range_address-top_left <> input_range_address-bottom_right.
-          RAISE EXCEPTION TYPE zcx_xlom_todo.
-        ENDIF.
-        DATA(input_range_worksheet_cells) = zcl_xlom__pv_worksheet_array=>get_cells( input_range->parent ).
-        DATA(cell) = REF #( input_range_worksheet_cells->*[ row    = input_range_address-top_left-row
-                                                            column = input_range_address-top_left-column ] OPTIONAL ).
+      WHEN input->c_type-array
+            OR input->c_type-range.
+        DATA(input_range) = CAST zif_xlom__va_array( input ).
+        DATA(cell) = input_range->get_cell_value( column = 1
+                                                  row    = 1 ).
         DATA(string) = VALUE string( ).
-        IF cell IS BOUND.
-          CASE cell->value->type.
-            WHEN zif_xlom__va=>c_type-number.
-              string = |{ CAST zcl_xlom__va_number( cell->value )->get_number( ) }|.
-            WHEN zif_xlom__va=>c_type-string.
-              string = CAST zcl_xlom__va_string( cell->value )->get_string( ).
-            WHEN zif_xlom__va=>c_type-error.
-              string = CAST zcl_xlom__va_error( cell->value )->english_error_name.
-            WHEN OTHERS.
-              RAISE EXCEPTION TYPE zcx_xlom_todo.
-          ENDCASE.
-        ENDIF.
+        CASE cell->type.
+          WHEN zif_xlom__va=>c_type-number.
+            string = |{ CAST zcl_xlom__va_number( cell )->get_number( ) }|.
+          WHEN zif_xlom__va=>c_type-string.
+            string = CAST zcl_xlom__va_string( cell )->get_string( ).
+          WHEN zif_xlom__va=>c_type-error.
+            string = CAST zcl_xlom__va_error( cell )->english_error_name.
+          WHEN OTHERS.
+            RAISE EXCEPTION TYPE zcx_xlom_todo.
+        ENDCASE.
+*        DATA(input_range) = CAST zcl_xlom_range( input ).
+*        DATA(input_range_address) = zcl_xlom__ext_range=>get_address( input_range ).
+*        IF input_range_address-top_left <> input_range_address-bottom_right.
+*          RAISE EXCEPTION TYPE zcx_xlom_todo.
+*        ENDIF.
+*        DATA(input_range_worksheet_cells) = zcl_xlom__pv_worksheet_array=>get_cells( input_range->parent ).
+*        DATA(cell) = REF #( input_range_worksheet_cells->*[ row    = input_range_address-top_left-row
+*                                                            column = input_range_address-top_left-column ] OPTIONAL ).
+*        DATA(string) = VALUE string( ).
+*        IF cell IS BOUND.
+*          CASE cell->value->type.
+*            WHEN zif_xlom__va=>c_type-number.
+*              string = |{ CAST zcl_xlom__va_number( cell->value )->get_number( ) }|.
+*            WHEN zif_xlom__va=>c_type-string.
+*              string = CAST zcl_xlom__va_string( cell->value )->get_string( ).
+*            WHEN zif_xlom__va=>c_type-error.
+*              string = CAST zcl_xlom__va_error( cell->value )->english_error_name.
+*            WHEN OTHERS.
+*              RAISE EXCEPTION TYPE zcx_xlom_todo.
+*          ENDCASE.
+*        ENDIF.
         result = zcl_xlom__va_string=>create( string ).
 
       WHEN input->c_type-string.

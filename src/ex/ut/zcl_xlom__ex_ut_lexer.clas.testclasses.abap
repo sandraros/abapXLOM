@@ -15,6 +15,10 @@ CLASS ltc_lexer DEFINITION FINAL
     METHODS number                         FOR TESTING RAISING cx_static_check.
     METHODS operator_function              FOR TESTING RAISING cx_static_check.
     METHODS range                          FOR TESTING RAISING cx_static_check.
+    METHODS range_columns                  FOR TESTING RAISING cx_static_check.
+    METHODS range_rows                     FOR TESTING RAISING cx_static_check.
+    METHODS range_sheet_name               FOR TESTING RAISING cx_static_check.
+    METHODS range_sheet_name_with_space    FOR TESTING RAISING cx_static_check.
     METHODS smart_table                    FOR TESTING RAISING cx_static_check.
     METHODS smart_table_all                FOR TESTING RAISING cx_static_check.
     METHODS smart_table_column             FOR TESTING RAISING cx_static_check.
@@ -23,6 +27,8 @@ CLASS ltc_lexer DEFINITION FINAL
     METHODS smart_table_space_separator    FOR TESTING RAISING cx_static_check.
     METHODS smart_table_space_boundaries   FOR TESTING RAISING cx_static_check.
     METHODS smart_table_space_all          FOR TESTING RAISING cx_static_check.
+    METHODS spaces                         FOR TESTING RAISING cx_static_check.
+    METHODS space_for_range_intersection   FOR TESTING RAISING cx_static_check.
     METHODS text_literal                   FOR TESTING RAISING cx_static_check.
     METHODS text_literal_with_double_quote FOR TESTING RAISING cx_static_check.
     METHODS very_long                      FOR TESTING RAISING cx_static_check.
@@ -91,11 +97,11 @@ CLASS ltc_lexer IMPLEMENTATION.
                                                               ( value = `1`  type = c_type-number )
                                                               ( value = `=`  type = c_type-operator )
                                                               ( value = `1`  type = c_type-number )
-                                                              ( value = `,`  type = ',' )
+                                                              ( value = `,`  type = c_type-comma )
                                                               ( value = `0`  type = c_type-number )
-                                                              ( value = `,`  type = ',' )
+                                                              ( value = `,`  type = c_type-comma )
                                                               ( value = `1`  type = c_type-number )
-                                                              ( value = `)`  type = ')' ) ) ).
+                                                              ( value = `)`  type = c_type-parenthesis_close ) ) ).
   ENDMETHOD.
 
   METHOD function_argument_minus_unary.
@@ -155,8 +161,30 @@ CLASS ltc_lexer IMPLEMENTATION.
   METHOD range.
     cl_abap_unit_assert=>assert_equals( act = lexe( 'Sheet1!$A$1' )
                                         exp = VALUE tt_token( ( value = `Sheet1!$A$1` type = 'W' ) ) ).
+  ENDMETHOD.
+
+  METHOD range_columns.
+    cl_abap_unit_assert=>assert_equals( act = lexe( 'A:A' )
+                                        exp = VALUE tt_token( ( value = `A` type = c_type-symbol_name )
+                                                              ( value = `:` type = c_type-operator )
+                                                              ( value = `A` type = c_type-symbol_name ) ) ).
+  ENDMETHOD.
+
+  METHOD range_rows.
+    cl_abap_unit_assert=>assert_equals( act = lexe( '1:1' )
+                                        exp = VALUE tt_token( ( value = `1` type = c_type-number )
+                                                              ( value = `:` type = c_type-operator )
+                                                              ( value = `1` type = c_type-number ) ) ).
+  ENDMETHOD.
+
+  METHOD range_sheet_name.
+    cl_abap_unit_assert=>assert_equals( act = lexe( 'Sheet1!$A$1' )
+                                        exp = VALUE tt_token( ( value = `Sheet1!$A$1` type = c_type-symbol_name ) ) ).
+  ENDMETHOD.
+
+  METHOD range_sheet_name_with_space.
     cl_abap_unit_assert=>assert_equals( act = lexe( `'Sheet 1'!$A$1` )
-                                        exp = VALUE tt_token( ( value = `'Sheet 1'!$A$1` type = 'W' ) ) ).
+                                        exp = VALUE tt_token( ( value = `'Sheet 1'!$A$1` type = c_type-symbol_name ) ) ).
   ENDMETHOD.
 
   METHOD smart_table.
@@ -241,6 +269,35 @@ CLASS ltc_lexer IMPLEMENTATION.
                               ( value = `,`              type = `,` )
                               ( value = `[% Commission]` type = c_type-square_bracket_open )
                               ( value = `]`              type = `]` ) ) ).
+  ENDMETHOD.
+
+  METHOD spaces.
+    DATA(act) = lexe( `"I" & ROW() - 1` ).
+    cl_abap_unit_assert=>assert_equals(
+        act = act
+        exp = VALUE tt_token( ( value = `I`    type = c_type-text_literal )
+                              ( value = ` `    type = c_type-operator )
+                              ( value = `&`    type = c_type-operator )
+                              ( value = ` `    type = c_type-operator )
+                              ( value = `ROW`  type = c_type-function_name )
+                              ( value = `)`    type = c_type-parenthesis_close )
+                              ( value = ` `    type = c_type-operator )
+                              ( value = `-`    type = c_type-operator )
+                              ( value = ` `    type = c_type-operator )
+                              ( value = `1`    type = c_type-number ) ) ).
+  ENDMETHOD.
+
+  METHOD space_for_range_intersection.
+    DATA(act) = lexe( `A:A 1:1` ).
+    cl_abap_unit_assert=>assert_equals(
+        act = act
+        exp = VALUE tt_token( ( value = `A`       type = c_type-symbol_name )
+                              ( value = `:`       type = c_type-operator )
+                              ( value = `A`       type = c_type-symbol_name )
+                              ( value = ` `       type = c_type-operator )
+                              ( value = `1`       type = c_type-number )
+                              ( value = `:`       type = c_type-operator )
+                              ( value = `1`       type = c_type-number ) ) ).
   ENDMETHOD.
 
   METHOD text_literal.

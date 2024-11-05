@@ -18,6 +18,7 @@ CLASS ltc_parser DEFINITION FINAL
     METHODS parentheses_arithmetic         FOR TESTING RAISING cx_static_check.
     METHODS parentheses_arithmetic_complex FOR TESTING RAISING cx_static_check.
     METHODS priority                       FOR TESTING RAISING cx_static_check.
+    METHODS spaces                         FOR TESTING RAISING cx_static_check.
     METHODS table                          FOR TESTING RAISING cx_static_check.
 
     TYPES tt_token       TYPE zcl_xlom__ex_ut_lexer=>tt_token.
@@ -247,7 +248,8 @@ CLASS ltc_parser IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD parse.
-    result = zcl_xlom__ex_ut_parser=>create( )->parse( tokens ).
+    DATA(parser) = zcl_xlom__ex_ut_parser=>create( ).
+    result = parser->parse( tokens ).
   ENDMETHOD.
 
   METHOD priority.
@@ -261,6 +263,26 @@ CLASS ltc_parser IMPLEMENTATION.
                                               right_operand = zcl_xlom__ex_op_mult=>create(
                                                   left_operand  = zcl_xlom__ex_el_number=>create( 2 )
                                                   right_operand = zcl_xlom__ex_el_number=>create( 3 ) ) ).
+    assert_equals( act = act
+                   exp = exp ).
+  ENDMETHOD.
+
+  METHOD spaces.
+    DATA(act) = parse( VALUE #( ( value = `I`    type = c_type-text_literal )
+                                ( value = ` `    type = c_type-operator )
+                                ( value = `&`    type = c_type-operator )
+                                ( value = ` `    type = c_type-operator )
+                                ( value = `ROW`  type = c_type-function_name )
+                                ( value = `)`    type = c_type-parenthesis_close )
+                                ( value = ` `    type = c_type-operator )
+                                ( value = `-`    type = c_type-operator )
+                                ( value = ` `    type = c_type-operator )
+                                ( value = `1`    type = c_type-number ) ) ).
+    DATA(exp) = zcl_xlom__ex_op_ampersand=>create(
+                    left_operand  = zcl_xlom__ex_el_string=>create( 'I' )
+                    right_operand = zcl_xlom__ex_op_minus=>create(
+                        left_operand  = zcl_xlom__ex_fu_row=>create( )
+                        right_operand = zcl_xlom__ex_el_number=>create( 1 ) ) ).
     assert_equals( act = act
                    exp = exp ).
   ENDMETHOD.

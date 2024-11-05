@@ -35,8 +35,8 @@ ENDCLASS.
 
 CLASS zcl_xlom__ex_fu_iferror IMPLEMENTATION.
   METHOD class_constructor.
-    parameters = VALUE #( ( name = 'VALUE         ' error_accepted = abap_true )
-                          ( name = 'VALUE_IF_ERROR' ) ).
+    parameters = VALUE #( ( name = 'VALUE         ' not_part_of_result_array = abap_true   error_accepted = abap_true )
+                          ( name = 'VALUE_IF_ERROR' not_part_of_result_array = abap_true ) ).
   ENDMETHOD.
 
   METHOD constructor.

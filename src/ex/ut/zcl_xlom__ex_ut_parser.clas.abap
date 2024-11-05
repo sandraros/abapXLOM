@@ -102,14 +102,26 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
       WHEN '='.
         result = zcl_xlom__ex_op_equal=>create( left_operand  = arguments[ 1 ]
                                                 right_operand = arguments[ 2 ] ).
+      WHEN '<'.
+        result = zcl_xlom__ex_op_lower=>create( left_operand  = arguments[ 1 ]
+                                                right_operand = arguments[ 2 ] ).
+      WHEN '<='.
+        result = zcl_xlom__ex_op_lower_equal=>create( left_operand  = arguments[ 1 ]
+                                                      right_operand = arguments[ 2 ] ).
+      WHEN '>'.
+        result = zcl_xlom__ex_op_greater=>create( left_operand  = arguments[ 1 ]
+                                                  right_operand = arguments[ 2 ] ).
+      WHEN '>='.
+        result = zcl_xlom__ex_op_greater_equal=>create( left_operand  = arguments[ 1 ]
+                                                        right_operand = arguments[ 2 ] ).
+      WHEN '<>'.
+        result = zcl_xlom__ex_op_not_equal=>create( left_operand  = arguments[ 1 ]
+                                                    right_operand = arguments[ 2 ] ).
       WHEN '&'.
         result = zcl_xlom__ex_op_ampersand=>create( left_operand  = arguments[ 1 ]
                                                     right_operand = arguments[ 2 ] ).
       WHEN ':'.
         result = zcl_xlom__ex_op_colon=>create( left_operand  = arguments[ 1 ]
-                                                right_operand = arguments[ 2 ] ).
-      WHEN '<>'.
-        result = zcl_xlom__ex_op_not_equal=>create( left_operand  = arguments[ 1 ]
                                                 right_operand = arguments[ 2 ] ).
       WHEN OTHERS.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
