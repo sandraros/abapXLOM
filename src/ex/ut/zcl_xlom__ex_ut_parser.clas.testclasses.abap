@@ -18,7 +18,7 @@ CLASS ltc_parser DEFINITION FINAL
     METHODS parentheses_arithmetic         FOR TESTING RAISING cx_static_check.
     METHODS parentheses_arithmetic_complex FOR TESTING RAISING cx_static_check.
     METHODS priority                       FOR TESTING RAISING cx_static_check.
-    METHODS spaces                         FOR TESTING RAISING cx_static_check.
+    METHODS space_for_range_intersection   FOR TESTING RAISING cx_static_check.
     METHODS table                          FOR TESTING RAISING cx_static_check.
 
     TYPES tt_token       TYPE zcl_xlom__ex_ut_lexer=>tt_token.
@@ -267,22 +267,21 @@ CLASS ltc_parser IMPLEMENTATION.
                    exp = exp ).
   ENDMETHOD.
 
-  METHOD spaces.
-    DATA(act) = parse( VALUE #( ( value = `I`    type = c_type-text_literal )
-                                ( value = ` `    type = c_type-operator )
-                                ( value = `&`    type = c_type-operator )
-                                ( value = ` `    type = c_type-operator )
-                                ( value = `ROW`  type = c_type-function_name )
-                                ( value = `)`    type = c_type-parenthesis_close )
-                                ( value = ` `    type = c_type-operator )
-                                ( value = `-`    type = c_type-operator )
-                                ( value = ` `    type = c_type-operator )
-                                ( value = `1`    type = c_type-number ) ) ).
-    DATA(exp) = zcl_xlom__ex_op_ampersand=>create(
-                    left_operand  = zcl_xlom__ex_el_string=>create( 'I' )
-                    right_operand = zcl_xlom__ex_op_minus=>create(
-                        left_operand  = zcl_xlom__ex_fu_row=>create( )
-                        right_operand = zcl_xlom__ex_el_number=>create( 1 ) ) ).
+  METHOD space_for_range_intersection.
+    DATA(act) = parse( VALUE #( ( value = `A` type = c_type-symbol_name )
+                                ( value = `:` type = c_type-operator )
+                                ( value = `A` type = c_type-symbol_name )
+                                ( value = ` ` type = c_type-operator )
+                                ( value = `1` type = c_type-number )
+                                ( value = `:` type = c_type-operator )
+                                ( value = `1` type = c_type-number ) ) ).
+    DATA(exp) = zcl_xlom__ex_op_space=>create(
+                    left_operand  = zcl_xlom__ex_op_colon=>create(
+                                left_operand  = zcl_xlom__ex_el_string=>create( 'A' )
+                                right_operand = zcl_xlom__ex_el_string=>create( 'A' ) )
+                    right_operand = zcl_xlom__ex_op_colon=>create(
+                                left_operand  = zcl_xlom__ex_el_number=>create( 1 )
+                                right_operand = zcl_xlom__ex_el_number=>create( 1 ) ) ).
     assert_equals( act = act
                    exp = exp ).
   ENDMETHOD.

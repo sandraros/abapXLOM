@@ -212,16 +212,11 @@ ENDCLASS.
 
 CLASS zcl_xlom_range IMPLEMENTATION.
   METHOD address.
-    " TODO: parameter ROW_ABSOLUTE is never used (ABAP cleaner)
-    " TODO: parameter COLUMN_ABSOLUTE is never used (ABAP cleaner)
-
-    IF reference_style <> zcl_xlom=>c_reference_style-a1.
-      RAISE EXCEPTION TYPE zcx_xlom_todo.
-    ENDIF.
-    IF external = abap_true.
-      RAISE EXCEPTION TYPE zcx_xlom_todo.
-    ENDIF.
-    IF relative_to IS BOUND.
+    IF    row_absolute     = abap_false
+       OR column_absolute  = abap_false
+       OR reference_style <> zcl_xlom=>c_reference_style-a1
+       OR external         = abap_true
+       OR relative_to     IS BOUND.
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
 
@@ -276,13 +271,6 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     result = zcl_xlom_range=>create_from_row_column( worksheet = parent
                                                      row       = _address-top_left-row + row - 1
                                                      column    = _address-top_left-column + column - 1 ).
-*  ENDMETHOD.
-*
-*  METHOD columns.
-*    result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
-*                                                             top_left              = _address-top_left
-*                                                             bottom_right          = _address-bottom_right ).
-*                                                             column_row_collection = c_column_row_collection-columns ).
   ENDMETHOD.
 
   METHOD convert_column_a_xfd_to_number.
@@ -375,6 +363,7 @@ CLASS zcl_xlom_range IMPLEMENTATION.
       " address is an invalid range address so it's probably referring to an existing name.
       " Maybe it's a table name
       " Maybe it's a range name (local or global scope, i.e. worksheet or workbook)
+      " If nothing found, it will raise the error #NAME?
       RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDIF.
   ENDMETHOD.
@@ -611,8 +600,8 @@ CLASS zcl_xlom_range IMPLEMENTATION.
       ENDIF.
     ENDIF.
   ENDMETHOD.
-  METHOD formula2.
 
+  METHOD formula2.
     DATA(worksheet_cells) = zcl_xlom__pv_worksheet_array=>get_cells( parent ).
     DATA(cell) = REF #( worksheet_cells->*[ column = _address-top_left-column
                                             row    = _address-top_left-row ] OPTIONAL ).
@@ -624,10 +613,6 @@ CLASS zcl_xlom_range IMPLEMENTATION.
       result = zcl_xlom__ex_ut_renderer=>render( cell->formula ).
     ENDIF.
   ENDMETHOD.
-
-
-
-
 
   METHOD list_object.
     DATA(list_object_index) = 1.
@@ -665,22 +650,6 @@ CLASS zcl_xlom_range IMPLEMENTATION.
                              column_offset = 0
                              row_size      = row_size
                              column_size   = column_size ).
-*  ENDMETHOD.
-*
-*  METHOD rows.
-*    DATA(bottom_right) = COND zcl_xlom=>ts_range_address_one_cell( WHEN index = 0 THEN
-*                                                                     _address-bottom_right
-*                                                                   WHEN index >= 1
-*                                                                    AND index <= ( _address-bottom_right-row - _address-top_left-row + 1 ) THEN
-*                                                                     VALUE #(
-*                                                                         column = _address-bottom_right-column
-*                                                                         row    = _address-top_left-row + index - 1 )
-*                                                                   ELSE
-*                                                                     THROW zcx_xlom_todo( ) ).
-*    result = zcl_xlom_range=>create_from_top_left_bottom_ri( worksheet             = parent
-*                                                             top_left              = _address-top_left
-*                                                             bottom_right          = bottom_right ).
-*                                                             column_row_collection = c_column_row_collection-rows ).
   ENDMETHOD.
 
   METHOD set_formula2.
@@ -696,22 +665,21 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     ENDIF.
     DATA(formula_expression) = formula_buffer_line->object.
 
+    DATA(worksheet_array) = zcl_xlom__pv_worksheet_array=>get_array( parent ).
     IF application->calculation = zcl_xlom=>c_calculation-automatic.
-      DATA(cell_value) = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-                             expression = formula_expression
-                             context    = zcl_xlom__ex_ut_eval_context=>create(
-                                              worksheet       = parent
-                                              containing_cell = VALUE #( row    = _address-top_left-row
-                                                                         column = _address-top_left-column ) ) ).
-      zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~set_cell_value(
-                                                          row        = _address-top_left-row
+      DATA(context) = zcl_xlom__ex_ut_eval_context=>create(
+                          worksheet       = parent
+                          containing_cell = VALUE #( row    = _address-top_left-row
+                                                     column = _address-top_left-column ) ).
+      DATA(cell_value) = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = formula_expression
+                                                                        context    = context ).
+      worksheet_array->zif_xlom__va_array~set_cell_value( row        = _address-top_left-row
                                                           column     = _address-top_left-column
                                                           formula    = formula_expression
                                                           calculated = abap_true
                                                           value      = cell_value ).
     ELSE.
-      zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~set_cell_value(
-                                                          row        = _address-top_left-row
+      worksheet_array->zif_xlom__va_array~set_cell_value( row        = _address-top_left-row
                                                           column     = _address-top_left-column
                                                           value      = zcl_xlom__va_number=>get( 0 )
                                                           formula    = formula_expression
@@ -728,8 +696,8 @@ CLASS zcl_xlom_range IMPLEMENTATION.
 
   METHOD value.
     IF _address-top_left = _address-bottom_right.
-      result = zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~get_cell_value(
-                                                                   column = _address-top_left-column
+      DATA(worksheet_array) = zcl_xlom__pv_worksheet_array=>get_array( parent ).
+      result = worksheet_array->zif_xlom__va_array~get_cell_value( column = _address-top_left-column
                                                                    row    = _address-top_left-row ).
     ELSE.
       RAISE EXCEPTION TYPE zcx_xlom_todo.
@@ -746,23 +714,28 @@ CLASS zcl_xlom_range IMPLEMENTATION.
     ENDIF.
   ENDMETHOD.
 
-  METHOD zif_xlom__va_array~get_array_value.
+  METHOD zif_xlom__va_array~get_array_values.
+    RAISE EXCEPTION TYPE zcx_xlom_todo.
+  ENDMETHOD.
+
+  METHOD zif_xlom__va_array~get_cell_value.
+    " if the current range starts from row 2 column 2 and the requested cell is row 2 column 2
+    " then get the worksheet cell from row 3 column 3.
+    DATA(array) = CAST zif_xlom__va_array( zcl_xlom__pv_worksheet_array=>get_array( parent ) ).
+    result = array->get_cell_value( column = _address-top_left-column + column - 1
+                                    row    = _address-top_left-row + row - 1 ).
+  ENDMETHOD.
+
+  METHOD zif_xlom__va_array~get_section_as_array.
     result = _offset_resize( row_offset    = top_left-row - 1
                              column_offset = top_left-column - 1
                              row_size      = bottom_right-row - top_left-row + 1
                              column_size   = bottom_right-column - top_left-column + 1 ).
   ENDMETHOD.
 
-  METHOD zif_xlom__va_array~get_cell_value.
-    " if the current range starts from row 2 column 2 and the requested cell is row 2 column 2
-    " then get the worksheet cell from row 3 column 3.
-    result = zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~get_cell_value(
-                                                                 column = _address-top_left-column + column - 1
-                                                                 row    = _address-top_left-row + row - 1 ).
-  ENDMETHOD.
-
-  METHOD zif_xlom__va_array~set_array_value.
-    zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~set_array_value( rows = rows ).
+  METHOD zif_xlom__va_array~set_array_values.
+    zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~set_array_values( cells = cells ).
+*    zcl_xlom__pv_worksheet_array=>get_array( parent )->zif_xlom__va_array~set_array_values( rows = rows ).
   ENDMETHOD.
 
   METHOD zif_xlom__va_array~set_cell_value.

@@ -97,8 +97,9 @@ CLASS zcl_xlom__ex_ut_operator IMPLEMENTATION.
   METHOD class_constructor.
     " Calculation operators and precedence in Excel
     " https://support.microsoft.com/en-us/office/calculation-operators-and-precedence-in-excel-48be406d-4975-4d31-b2b8-7af9e0e2878a
+    " I changed the priority of ":" from 1 to 0, to parse correctly "=A:A 1:1".
     LOOP AT VALUE tt_operator(
-        ( name = ':'                   operand_position_offsets = VALUE #( ( -1 ) ( +1 ) ) priority = 1 desc = 'range A1:A2 or A1:A2:A2' )
+        ( name = ':'                   operand_position_offsets = VALUE #( ( -1 ) ( +1 ) ) priority = 0 desc = 'range A1:A2 or A1:A2:A2' )
         ( name = ` `                   operand_position_offsets = VALUE #( ( -1 ) ( +1 ) ) priority = 1 desc = 'intersection A1 A2' )
         ( name = ','                   operand_position_offsets = VALUE #( ( -1 ) ( +1 ) ) priority = 1 desc = 'union A1,A2' )
         ( name = '-' unary = abap_true operand_position_offsets = VALUE #( ( +1 ) )        priority = 2 desc = '-1' )

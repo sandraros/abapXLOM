@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_choose DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'CHOOSE'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'CHOOSE'
+                                        type = zif_xlom__ex=>c_type-function-choose.
 
     TYPES tt_value TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 

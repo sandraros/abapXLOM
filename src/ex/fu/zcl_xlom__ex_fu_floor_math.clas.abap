@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_floor_math DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'FLOOR.MATH'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'FLOOR.MATH'
+                                        type = zif_xlom__ex=>c_type-function-floor_math.
 
     CLASS-METHODS class_constructor.
 

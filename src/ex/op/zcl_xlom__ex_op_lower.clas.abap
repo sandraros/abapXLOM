@@ -4,7 +4,8 @@ CLASS zcl_xlom__ex_op_lower DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_op.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = '<'.
+    INTERFACES zif_xlom__ex DATA VALUES name = '<'
+                                        type = zif_xlom__ex=>c_type-operation-lower.
 
     CLASS-METHODS class_constructor.
 
@@ -22,7 +23,7 @@ CLASS zcl_xlom__ex_op_lower DEFINITION
 
     CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
 
-    METHODS constructor.
+*    METHODS constructor.
 ENDCLASS.
 
 
@@ -30,10 +31,10 @@ CLASS zcl_xlom__ex_op_lower IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'LEFT_OPERAND'  )
                           ( name = 'RIGHT_OPERAND' ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-lower.
+*  ENDMETHOD.
+*
+*  METHOD constructor.
+*    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-lower.
   ENDMETHOD.
 
   METHOD create.

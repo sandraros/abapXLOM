@@ -28,6 +28,7 @@ CLASS ltc_lexer DEFINITION FINAL
     METHODS smart_table_space_boundaries   FOR TESTING RAISING cx_static_check.
     METHODS smart_table_space_all          FOR TESTING RAISING cx_static_check.
     METHODS spaces                         FOR TESTING RAISING cx_static_check.
+    METHODS spaces_two                     FOR TESTING RAISING cx_static_check.
     METHODS space_for_range_intersection   FOR TESTING RAISING cx_static_check.
     METHODS text_literal                   FOR TESTING RAISING cx_static_check.
     METHODS text_literal_with_double_quote FOR TESTING RAISING cx_static_check.
@@ -275,29 +276,34 @@ CLASS ltc_lexer IMPLEMENTATION.
     DATA(act) = lexe( `"I" & ROW() - 1` ).
     cl_abap_unit_assert=>assert_equals(
         act = act
-        exp = VALUE tt_token( ( value = `I`    type = c_type-text_literal )
-                              ( value = ` `    type = c_type-operator )
-                              ( value = `&`    type = c_type-operator )
-                              ( value = ` `    type = c_type-operator )
-                              ( value = `ROW`  type = c_type-function_name )
-                              ( value = `)`    type = c_type-parenthesis_close )
-                              ( value = ` `    type = c_type-operator )
-                              ( value = `-`    type = c_type-operator )
-                              ( value = ` `    type = c_type-operator )
-                              ( value = `1`    type = c_type-number ) ) ).
+        exp = VALUE tt_token( ( value = `I`   type = c_type-text_literal )
+                              ( value = `&`   type = c_type-operator )
+                              ( value = `ROW` type = c_type-function_name )
+                              ( value = `)`   type = c_type-parenthesis_close )
+                              ( value = `-`   type = c_type-operator )
+                              ( value = `1`   type = c_type-number ) ) ).
+  ENDMETHOD.
+
+  METHOD spaces_two.
+    DATA(act) = lexe( `1  &2` ).
+    cl_abap_unit_assert=>assert_equals(
+        act = act
+        exp = VALUE tt_token( ( value = `1`   type = c_type-number )
+                              ( value = `&`   type = c_type-operator )
+                              ( value = `2`   type = c_type-number ) ) ).
   ENDMETHOD.
 
   METHOD space_for_range_intersection.
     DATA(act) = lexe( `A:A 1:1` ).
     cl_abap_unit_assert=>assert_equals(
         act = act
-        exp = VALUE tt_token( ( value = `A`       type = c_type-symbol_name )
-                              ( value = `:`       type = c_type-operator )
-                              ( value = `A`       type = c_type-symbol_name )
-                              ( value = ` `       type = c_type-operator )
-                              ( value = `1`       type = c_type-number )
-                              ( value = `:`       type = c_type-operator )
-                              ( value = `1`       type = c_type-number ) ) ).
+        exp = VALUE tt_token( ( value = `A` type = c_type-symbol_name )
+                              ( value = `:` type = c_type-operator )
+                              ( value = `A` type = c_type-symbol_name )
+                              ( value = ` ` type = c_type-operator )
+                              ( value = `1` type = c_type-number )
+                              ( value = `:` type = c_type-operator )
+                              ( value = `1` type = c_type-number ) ) ).
   ENDMETHOD.
 
   METHOD text_literal.

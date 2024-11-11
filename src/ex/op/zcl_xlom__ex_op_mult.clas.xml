@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_OP_MULT</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>* like in 2*3 which is the same as 6</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

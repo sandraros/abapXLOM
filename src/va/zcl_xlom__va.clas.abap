@@ -3,7 +3,6 @@ CLASS zcl_xlom__va DEFINITION
   CREATE PUBLIC.
 
   PUBLIC SECTION.
-*    INTERFACES zif_xlom__ut_all_friends.
     CLASS-METHODS compare
       IMPORTING VALUE(operand_1) TYPE REF TO zif_xlom__va
                 operator         TYPE csequence
@@ -142,13 +141,15 @@ CLASS zcl_xlom__va IMPLEMENTATION.
   METHOD to_array.
     CASE input->type.
       WHEN input->c_type-array
-        OR input->c_type-range.
+          OR input->c_type-range.
         result = CAST #( input ).
+*      WHEN input->c_type-range.
+*        result = zcl_xlom__pv_worksheet_array=>get_array( CAST zcl_xlom_range( input )->parent ).
       WHEN OTHERS.
-        result = zcl_xlom__va_array=>create_initial(
-                     row_count    = 1
-                     column_count = 1
-                     rows         = VALUE #( ( columns_of_row = VALUE #( ( input ) ) ) ) ).
+        result = zcl_xlom__va_array=>create_initial( row_count    = 1
+                                                     column_count = 1
+                                                     cells        = VALUE #( ( row = 1 column = 1 value = input ) ) ).
+*                     rows         = VALUE #( ( columns_of_row = VALUE #( ( input ) ) ) ) ).
     ENDCASE.
   ENDMETHOD.
 
@@ -227,7 +228,13 @@ CLASS zcl_xlom__va IMPLEMENTATION.
         " impossible because processed in the previous block.
         RAISE EXCEPTION TYPE zcx_xlom_unexpected.
       WHEN cell->c_type-string.
-        RAISE EXCEPTION TYPE zcx_xlom_todo.
+        TRY.
+            DATA(number) = CONV f( CAST zcl_xlom__va_string( cell )->get_string( ) ).
+            result = zcl_xlom__va_number=>get( number ).
+          CATCH cx_sy_conversion_no_number.
+            RAISE EXCEPTION TYPE zcx_xlom__va
+              EXPORTING result_error = zcl_xlom__va_error=>value_cannot_be_calculated.
+        ENDTRY.
       WHEN OTHERS.
         RAISE EXCEPTION TYPE zcx_xlom_todo.
     ENDCASE.
@@ -269,12 +276,14 @@ CLASS zcl_xlom__va IMPLEMENTATION.
                                                   row    = 1 ).
         DATA(string) = VALUE string( ).
         CASE cell->type.
+          WHEN zif_xlom__va=>c_type-empty.
+            string = ''.
+          WHEN zif_xlom__va=>c_type-error.
+            string = CAST zcl_xlom__va_error( cell )->english_error_name.
           WHEN zif_xlom__va=>c_type-number.
             string = |{ CAST zcl_xlom__va_number( cell )->get_number( ) }|.
           WHEN zif_xlom__va=>c_type-string.
             string = CAST zcl_xlom__va_string( cell )->get_string( ).
-          WHEN zif_xlom__va=>c_type-error.
-            string = CAST zcl_xlom__va_error( cell )->english_error_name.
           WHEN OTHERS.
             RAISE EXCEPTION TYPE zcx_xlom_todo.
         ENDCASE.

@@ -37,43 +37,62 @@ CLASS zcl_xlom__va_error DEFINITION
 
     "! #BLOCKED!
     CLASS-DATA blocked                    TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #CALC! Is produced by filter(A1:A2;A1="a") if not found
+    "! #CALC!
+    "! Is produced by filter(A1:A2;A1="a") if not found
     CLASS-DATA calc                       TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #CONNECT!
     CLASS-DATA connect                    TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #DIV/0! Is produced by =1/0
+    "! #DIV/0!
+    "! Is produced by =1/0
     CLASS-DATA division_by_zero           TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #FIELD!
     CLASS-DATA field                      TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #GETTING_DATA!
     CLASS-DATA getting_data               TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #N/A. Is produced by =ERROR.TYPE(1) or if C1 contains =A1:A2+B1:B3 -> C3=#N/A.
+    "! #N/A
+    "! Text in the "error checking" button menu: "Value Not Available Error".
+    "! Tooltip over the "error checking" button: "A value is not available to the formula or function."
+    "! Is produced by =ERROR.TYPE(1), =VLOOKUP(1,2,1) (2 is not a range/array) or if C1 contains =A1:A2+B1:B3 -> C3=#N/A.
     CLASS-DATA na_not_applicable          TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #NAME! Is produced by =XXXX if XXXX is not an existing range name.
     CLASS-DATA name                       TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #NULL!
+    "! Text in the "error checking" button menu: "Null Error".
+    "! Tooltip over the "error checking" button: "The ranges in the formula do not intersect."
+    "! Is produced by =A1 A2 (intersection)
     CLASS-DATA null                       TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #NUM! Is produced by =1E+240*1E+240
+    "! #NUM!
+    "! Is produced by =1E+240*1E+240
     CLASS-DATA num                        TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #PYTHON! TODO: internal error number is not 2222, what is it?
     CLASS-DATA python                     TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #REF! Is produced by =INDEX(A1,2,1), =OFFSET(A1,,,0), etc.
+    "! #REF!
+    "! Text in the "error checking" button menu: "Invalid Cell Reference Error".
+    "! Tooltip over the "error checking" button: "Moving or deleting cells caused an invalid cell reference, or function is returning reference error".
+    "! Is produced by =INDEX(A1,2,1), =OFFSET(A1,,,0), =VLOOKUP(1,{1},2), etc.
     CLASS-DATA ref                        TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #SPILL! Is produced by A1 containing ={1,2} and B1 containing a value -> A1=#SPILL!
+    "! #SPILL!
+    "! Is produced by A1 containing ={1,2} and B1 containing a value -> A1=#SPILL!
     CLASS-DATA spill                      TYPE REF TO zcl_xlom__va_error READ-ONLY.
     "! #UNKNOWN!
     CLASS-DATA unknown                    TYPE REF TO zcl_xlom__va_error READ-ONLY.
-    "! #VALUE! Is produced by =1+"a". #VALUE! in English, #VALEUR! in French.
+    "! #VALUE!
+    "! Is produced by =1+"a".
+    "! #VALUE! in English, #VALEUR! in French.
     CLASS-DATA value_cannot_be_calculated TYPE REF TO zcl_xlom__va_error READ-ONLY.
 
     "! English error name (different in other languages e.g. #VALUE! is #VALEUR! in French)
-    DATA english_error_name    TYPE string          READ-ONLY.
+    DATA english_error_name     TYPE string          READ-ONLY.
     "! Example how the error is obtained
-    DATA description           TYPE string          READ-ONLY.
+    DATA description            TYPE string          READ-ONLY.
     "! Value of enumeration xlCVError e.g. xlErrValue = 2015 (#VALUE!)
-    DATA internal_error_number TYPE ty_error_number READ-ONLY.
+    DATA internal_error_number  TYPE ty_error_number READ-ONLY.
     "! Result of formula function ERROR.TYPE e.g. 3 for =ERROR.TYPE(#VALUE!)
-    DATA formula_error_number  TYPE ty_error_number READ-ONLY.
+    DATA formula_error_number   TYPE ty_error_number READ-ONLY.
+    "! Text displayed in the "error checking" button menu
+    DATA error_checking_text    TYPE string          READ-ONLY.
+    "! Tooltip displayed while hovering the "error checking" button menu
+    DATA error_checking_tooltip TYPE string          READ-ONLY.
 
     CLASS-METHODS class_constructor.
 
@@ -100,12 +119,16 @@ CLASS zcl_xlom__va_error DEFINITION
     "! @parameter internal_error_number | Value of enumeration xlCVError e.g. xlErrValue = 2015 (#VALUE!)
     "! @parameter formula_error_number | Result of formula function ERROR.TYPE e.g. 3 for =ERROR.TYPE(#VALUE!)
     "! @parameter description | Example how the error is obtained
+    "! @parameter error_checking_text | Text displayed in the "error checking" button menu
+    "! @parameter error_checking_tooltip | Tooltip displayed while hovering the "error checking" button menu
     CLASS-METHODS create
-      IMPORTING english_error_name    TYPE string
-                internal_error_number TYPE ty_error_number
-                formula_error_number  TYPE ty_error_number
-                !description          TYPE string OPTIONAL
-      RETURNING VALUE(result)         TYPE REF TO zcl_xlom__va_error.
+      IMPORTING english_error_name     TYPE string
+                internal_error_number  TYPE ty_error_number
+                formula_error_number   TYPE ty_error_number
+                !description           TYPE string OPTIONAL
+                error_checking_text    TYPE string OPTIONAL
+                error_checking_tooltip TYPE string OPTIONAL
+      RETURNING VALUE(result)          TYPE REF TO zcl_xlom__va_error.
 ENDCLASS.
 
 
@@ -131,29 +154,36 @@ CLASS zcl_xlom__va_error IMPLEMENTATION.
                                                              internal_error_number = 2043
                                                              formula_error_number  = 8 ).
     na_not_applicable          = zcl_xlom__va_error=>create(
-        english_error_name    = '#N/A          '
-        internal_error_number = 2042
-        formula_error_number  = 7
-        description           = 'Is produced by =ERROR.TYPE(1) or if C1 contains =A1:A2+B1:B3 -> C3=#N/A' ).
+        english_error_name     = '#N/A          '
+        internal_error_number  = 2042
+        formula_error_number   = 7
+        description            = 'Is produced by =ERROR.TYPE(1) or if C1 contains =A1:A2+B1:B3 -> C3=#N/A'
+        error_checking_text    = 'Value Not Available Error'
+        error_checking_tooltip = 'A value is not available to the formula or function.' ).
     name                       = zcl_xlom__va_error=>create(
         english_error_name    = '#NAME?        '
         internal_error_number = 2029
         formula_error_number  = 5
         description           = 'Is produced by =XXXX if XXXX is not an existing range name' ).
-    null                       = zcl_xlom__va_error=>create( english_error_name    = '#NULL!        '
-                                                             internal_error_number = 2000
-                                                             formula_error_number  = 1 ).
-    num                        = zcl_xlom__va_error=>create( english_error_name    = '#NUM!         '
+    null                       = zcl_xlom__va_error=>create( english_error_name     = '#NULL!'
+                                                             internal_error_number  = 2000
+                                                             formula_error_number   = 1
+                                                             error_checking_text    = 'Null Error'
+                                                             error_checking_tooltip = 'The ranges in the formula do not intersect.' ).
+    num                        = zcl_xlom__va_error=>create( english_error_name    = '#NUM!'
                                                              internal_error_number = 2036
                                                              formula_error_number  = 6
                                                              description           = 'Is produced by =1E+240*1E+240' ).
-    python                     = zcl_xlom__va_error=>create( english_error_name    = '#PYTHON!      '
+    python                     = zcl_xlom__va_error=>create( english_error_name    = '#PYTHON!'
                                                              internal_error_number = 2222
                                                              formula_error_number  = 19 ).
-    ref                        = zcl_xlom__va_error=>create( english_error_name    = '#REF!         '
-                                                             internal_error_number = 2023
-                                                             formula_error_number  = 4
-                                                             description           = 'Is produced by =INDEX(A1,2,1)' ).
+    ref                        = zcl_xlom__va_error=>create(
+        english_error_name     = '#REF!'
+        internal_error_number  = 2023
+        formula_error_number   = 4
+        description            = 'Is produced by =INDEX(A1,2,1)'
+        error_checking_text    = 'Invalid Cell Reference Error'
+        error_checking_tooltip = 'Moving or deleting cells caused an invalid cell reference, or function is returning reference error.' ).
     spill                      = zcl_xlom__va_error=>create(
         english_error_name    = '#SPILL!       '
         internal_error_number = 2045

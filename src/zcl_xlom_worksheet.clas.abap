@@ -3,13 +3,10 @@ CLASS zcl_xlom_worksheet DEFINITION
   PUBLIC
   INHERITING FROM zcl_xlom_sheet FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS "zif_xlom__ut_all_friends
-                 zcl_xlom__ext_worksheet
+  GLOBAL FRIENDS zcl_xlom__ext_worksheet
                  zcl_xlom__pv_worksheet_array.
 
   PUBLIC SECTION.
-*    INTERFACES zif_xlom__ut_all_friends.
-
     TYPES ty_name TYPE c LENGTH 31.
 
     DATA application  TYPE REF TO zcl_xlom_application  READ-ONLY.
@@ -120,8 +117,10 @@ CLASS zcl_xlom_worksheet IMPLEMENTATION.
     result->parent       = workbook.
     result->application  = workbook->application.
     result->list_objects = zcl_xlom_list_objects=>create( parent = result ).
-    result->_array       = zcl_xlom__va_array=>create_initial( row_count    = zcl_xlom__ext_worksheet=>max_rows
-                                                               column_count = zcl_xlom__ext_worksheet=>max_columns ).
+    result->_array       = zcl_xlom__va_array=>create_initial(
+                               row_count             = zcl_xlom__ext_worksheet=>max_rows
+                               column_count          = zcl_xlom__ext_worksheet=>max_columns
+                               values_of_other_cells = VALUE #( ( value = zcl_xlom__va_empty=>get_singleton( ) ) ) ).
   ENDMETHOD.
 
   METHOD range.
@@ -166,9 +165,9 @@ CLASS zcl_xlom_worksheet IMPLEMENTATION.
   METHOD used_range.
     result = zcl_xlom_range=>create_from_row_column(
                  worksheet   = me
-                 row         = _array->used_range-top_left-row
-                 column      = _array->used_range-top_left-column
-                 row_size    = _array->used_range-bottom_right-row - _array->used_range-top_left-row + 1
-                 column_size = _array->used_range-bottom_right-column - _array->used_range-top_left-column + 1 ).
+                 row         = _array->zif_xlom__va_array~used_range-top_left-row
+                 column      = _array->zif_xlom__va_array~used_range-top_left-column
+                 row_size    = _array->zif_xlom__va_array~used_range-bottom_right-row - _array->zif_xlom__va_array~used_range-top_left-row + 1
+                 column_size = _array->zif_xlom__va_array~used_range-bottom_right-column - _array->zif_xlom__va_array~used_range-top_left-column + 1 ).
   ENDMETHOD.
 ENDCLASS.

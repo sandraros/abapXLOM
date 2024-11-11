@@ -7,7 +7,8 @@ CLASS zcl_xlom__ex_fu_offset DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'OFFSET'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'OFFSET'
+                                        type = zif_xlom__ex=>c_type-function-offset.
 
     CLASS-METHODS class_constructor.
 
@@ -18,12 +19,6 @@ CLASS zcl_xlom__ex_fu_offset DEFINITION
                 height        TYPE REF TO zif_xlom__ex OPTIONAL
                 !width        TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_offset.
-
-*    METHODS zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -46,11 +41,6 @@ CLASS zcl_xlom__ex_fu_offset IMPLEMENTATION.
                           ( name = 'COLS     ' default = zcl_xlom__ex_el_number=>create( 1 ) )
                           ( name = 'HEIGHT   ' optional = abap_true )
                           ( name = 'WIDTH    ' optional = abap_true ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-offset.
   ENDMETHOD.
 
   METHOD create.

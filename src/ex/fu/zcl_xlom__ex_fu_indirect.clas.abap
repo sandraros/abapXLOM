@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_indirect DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'INDIRECT'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'INDIRECT'
+                                        type = zif_xlom__ex=>c_type-function-indirect.
 
     CLASS-METHODS class_constructor.
 

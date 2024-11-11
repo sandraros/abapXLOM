@@ -7,7 +7,8 @@ CLASS zcl_xlom__ex_fu_left DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'LEFT'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'LEFT'
+                                        type = zif_xlom__ex=>c_type-function-left.
 
     CLASS-METHODS class_constructor.
 

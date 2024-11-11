@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'ADDRESS'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'ADDRESS'
+                                        type = zif_xlom__ex=>c_type-function-address.
 
     CLASS-METHODS class_constructor.
 
@@ -40,12 +41,6 @@ CLASS zcl_xlom__ex_fu_address DEFINITION
                 sheet_text    TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_address.
 
-*    METHODS zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
-
   PRIVATE SECTION.
     CONSTANTS:
       BEGIN OF c_arg,
@@ -75,11 +70,6 @@ CLASS zcl_xlom__ex_fu_address IMPLEMENTATION.
                           ( name = 'ABS_NUM   ' default = zcl_xlom__ex_el_number=>create( 1 ) )
                           ( name = 'A1        ' default = zcl_xlom__ex_el_boolean=>true )
                           ( name = 'SHEET_TEXT' default = zcl_xlom__ex_el_string=>create( '' ) ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-address.
   ENDMETHOD.
 
   METHOD create.

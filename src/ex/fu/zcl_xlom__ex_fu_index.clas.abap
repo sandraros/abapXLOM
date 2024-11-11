@@ -11,7 +11,8 @@ CLASS zcl_xlom__ex_fu_index DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'INDEX'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'INDEX'
+                                        type = zif_xlom__ex=>c_type-function-index.
 
     CLASS-METHODS class_constructor.
 

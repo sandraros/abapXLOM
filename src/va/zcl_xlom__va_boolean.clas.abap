@@ -37,7 +37,7 @@ CLASS zcl_xlom__va_boolean IMPLEMENTATION.
     result = NEW zcl_xlom__va_boolean( ).
     result->zif_xlom__va~type = zif_xlom__va=>c_type-boolean.
     result->boolean_value     = boolean_value.
-    result->number            = COND #( WHEN boolean_value = abap_true THEN -1 ).
+    result->number            = COND #( WHEN boolean_value = abap_true THEN 1 ).
   ENDMETHOD.
 
   METHOD get.

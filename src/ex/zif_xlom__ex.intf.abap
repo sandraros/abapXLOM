@@ -63,21 +63,27 @@ INTERFACE zif_xlom__ex
       BEGIN OF operation,
         ampersand        TYPE ty_expression_type VALUE 100,
         colon            TYPE ty_expression_type VALUE 101,
+        "! range union e.g. =A1,A2,A3 is the same as =A1:A3
         comma            TYPE ty_expression_type VALUE 102,
         divide           TYPE ty_expression_type VALUE 103,
         equal            TYPE ty_expression_type VALUE 104,
-        exponent         TYPE ty_expression_type VALUE 105,
+        "! e.g. =2^8 is the same as =256
+        caret            TYPE ty_expression_type VALUE 105,
         greater          TYPE ty_expression_type VALUE 106,
         greater_or_equal TYPE ty_expression_type VALUE 107,
         lower            TYPE ty_expression_type VALUE 108,
         lower_or_equal   TYPE ty_expression_type VALUE 109,
         minus            TYPE ty_expression_type VALUE 110,
+        "! e.g. =1*-2 is the same as =1*(-2) or =-2
         minus_unary      TYPE ty_expression_type VALUE 111,
         mult             TYPE ty_expression_type VALUE 112,
         not_equal        TYPE ty_expression_type VALUE 113,
+        "! e.g. =10% is the same as =0.10
         percent          TYPE ty_expression_type VALUE 114,
         plus             TYPE ty_expression_type VALUE 115,
+        "! e.g. =2*+3 is the same as =2*(+3) or =6
         plus_unary       TYPE ty_expression_type VALUE 116,
+        "! range intersection e.g. =A:A 1:1 is the same as =A1
         space_           TYPE ty_expression_type VALUE 117,
       END OF operation,
       BEGIN OF function,
@@ -598,7 +604,7 @@ INTERFACE zif_xlom__ex
       END OF function,
     END OF c_type.
 
-  DATA type                         TYPE ty_expression_type     READ-ONLY.
+*  DATA type                         TYPE ty_expression_type     READ-ONLY.
   DATA result_of_evaluation         TYPE REF TO zif_xlom__va    READ-ONLY.
   "! Should be READ-ONLY, but how to make ZCL_XLOM__EX_FU write to it?
   DATA arguments_or_operands        TYPE tt_argument_or_operand.
@@ -609,7 +615,8 @@ INTERFACE zif_xlom__ex
               !context      TYPE REF TO zcl_xlom__ex_ut_eval_context
     RETURNING VALUE(result) TYPE REF TO zif_xlom__va.
 
-  CLASS-DATA name type string READ-ONLY.
+  CLASS-DATA name TYPE string             READ-ONLY.
+  CLASS-DATA type TYPE ty_expression_type READ-ONLY.
 *  CLASS-METHODS get_name
 *    RETURNING VALUE(result) TYPE string.
 

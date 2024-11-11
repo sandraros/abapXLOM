@@ -6,9 +6,8 @@ CLASS zcl_xlom__ex_fu_match DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'MATCH'.
-
-*    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'MATCH'
+                                        type = zif_xlom__ex=>c_type-function-match.
 
     CLASS-METHODS class_constructor.
 
@@ -44,12 +43,6 @@ CLASS zcl_xlom__ex_fu_match DEFINITION
                 lookup_array  TYPE REF TO zif_xlom__ex OPTIONAL
                 match_type    TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_match.
-
-*    METHODS zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
 
   PRIVATE SECTION.
     TYPES:
@@ -94,11 +87,6 @@ CLASS zcl_xlom__ex_fu_match IMPLEMENTATION.
     parameters = VALUE #( ( name = 'LOOKUP_VALUE' )
                           ( name = 'LOOKUP_ARRAY' not_part_of_result_array = abap_true )
                           ( name = 'MATCH_TYPE  ' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-match.
   ENDMETHOD.
 
   METHOD create.

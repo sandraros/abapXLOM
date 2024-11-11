@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_EL_RANGE</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>Range address (&quot;A1&quot;, &quot;A&quot; and &quot;B&quot; in A:B) or any name (&quot;TT&quot;)</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

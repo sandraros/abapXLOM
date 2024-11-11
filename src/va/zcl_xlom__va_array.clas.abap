@@ -1,13 +1,11 @@
 CLASS zcl_xlom__va_array DEFINITION
   PUBLIC FINAL
   CREATE PRIVATE
-  GLOBAL FRIENDS "zif_xlom__ut_all_friends
-                 zcl_xlom__pv_worksheet_array.
+  GLOBAL FRIENDS zcl_xlom__pv_worksheet_array.
 
   PUBLIC SECTION.
     INTERFACES zif_xlom__va.
     INTERFACES zif_xlom__va_array.
-*    INTERFACES zif_xlom__ut_all_friends.
 
     TYPES:
       BEGIN OF ts_used_range_one_cell,
@@ -20,15 +18,23 @@ CLASS zcl_xlom__va_array DEFINITION
         bottom_right TYPE ts_used_range_one_cell,
       END OF ts_used_range.
 
-    DATA used_range TYPE ts_used_range READ-ONLY.
+*    DATA used_range TYPE ts_used_range READ-ONLY.
 
     CLASS-METHODS class_constructor.
 
+    "! <p class="shorttext synchronized" lang="en">CREATE_INITIAL</p>
+    "!
+    "! @parameter row_count    | <p class="shorttext synchronized" lang="en">ROW_COUNT</p>
+    "! @parameter column_count | <p class="shorttext synchronized" lang="en">COLUMN_COUNT</p>
+    "! @parameter result       | <p class="shorttext synchronized" lang="en">RESULT</p>
     CLASS-METHODS create_initial
-      IMPORTING row_count     TYPE i
-                column_count  TYPE i
-                !rows         TYPE zif_xlom__va_array=>tt_row OPTIONAL
-      RETURNING VALUE(result) TYPE REF TO zcl_xlom__va_array.
+      IMPORTING row_count             TYPE i
+                column_count          TYPE i
+                cells                 TYPE zif_xlom__va_array=>tt_cell OPTIONAL
+                values_of_other_cells TYPE zif_xlom__va_array=>tt_cell OPTIONAL
+*                !rows                TYPE zif_xlom__va_array=>tt_row OPTIONAL
+*                values_of_other_cells TYPE REF TO zif_xlom__va        OPTIONAL
+      RETURNING VALUE(result)         TYPE REF TO zcl_xlom__va_array.
 
   PRIVATE SECTION.
     "! Internal type of cell value (empty, number, string, boolean, error, array, compound data)
@@ -64,9 +70,10 @@ CLASS zcl_xlom__va_array DEFINITION
         compound_data TYPE ty_value_type VALUE 7,
       END OF c_value_type.
 
-    CLASS-DATA initial_used_range TYPE zcl_xlom__va_array=>ts_used_range.
+    CLASS-DATA initial_used_range TYPE zcl_xlom__ut=>ts_used_range_with_size.
 
     DATA _cells TYPE tt_cell.
+    DATA values_of_other_cells TYPE zif_xlom__va_array=>tt_cell.
 
     "! @parameter row | Start from 1
     "! @parameter column | Start from 1
@@ -84,7 +91,9 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
     initial_used_range = VALUE #( top_left     = VALUE #( row    = 1
                                                           column = 1 )
                                   bottom_right = VALUE #( row    = 1
-                                                          column = 1 ) ).
+                                                          column = 1 )
+                                  row_count    = 1
+                                  column_count = 1 ).
   ENDMETHOD.
 
   METHOD create_initial.
@@ -92,8 +101,10 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
     result->zif_xlom__va~type               = zif_xlom__va=>c_type-array.
     result->zif_xlom__va_array~row_count    = row_count.
     result->zif_xlom__va_array~column_count = column_count.
-    result->used_range                      = initial_used_range.
-    result->zif_xlom__va_array~set_array_value( rows ).
+    result->zif_xlom__va_array~used_range   = initial_used_range.
+    result->zif_xlom__va_array~set_array_values( cells                 = cells
+*    result->zif_xlom__va_array~set_array_values( rows                 = rows
+                                                 values_of_other_cells = values_of_other_cells ).
   ENDMETHOD.
 
   METHOD set_cell_value_single.
@@ -105,32 +116,97 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
              INTO TABLE _cells
              REFERENCE INTO cell.
     ENDIF.
+
     cell->value      = value.
     cell->formula    = formula.
     cell->calculated = calculated.
 
     IF lines( _cells ) = 1.
-      used_range = VALUE #( top_left     = VALUE #( row    = row
-                                                    column = column )
-                            bottom_right = VALUE #( row    = row
-                                                    column = column ) ).
+      " If it's the first cell defined in the array.
+      zif_xlom__va_array~used_range = VALUE #( top_left     = VALUE #( row    = row
+                                                                       column = column )
+                                               bottom_right = VALUE #( row    = row
+                                                                       column = column )
+                                               row_count    = 1
+                                               column_count = 1 ).
     ELSE.
-      IF row < used_range-top_left-row.
-        used_range-top_left-row = row.
+      DATA(recalculate_row_count) = abap_false.
+      DATA(recalculate_column_count) = abap_false.
+      IF row < zif_xlom__va_array~used_range-top_left-row.
+        zif_xlom__va_array~used_range-top_left-row = row.
+        recalculate_row_count = abap_true.
       ENDIF.
-      IF column < used_range-top_left-column.
-        used_range-top_left-column = column.
+      IF column < zif_xlom__va_array~used_range-top_left-column.
+        zif_xlom__va_array~used_range-top_left-column = column.
+        recalculate_column_count = abap_true.
       ENDIF.
-      IF row > used_range-bottom_right-row.
-        used_range-bottom_right-row = row.
+      IF row > zif_xlom__va_array~used_range-bottom_right-row.
+        zif_xlom__va_array~used_range-bottom_right-row = row.
+        recalculate_row_count = abap_true.
       ENDIF.
-      IF column > used_range-bottom_right-column.
-        used_range-bottom_right-column = column.
+      IF column > zif_xlom__va_array~used_range-bottom_right-column.
+        zif_xlom__va_array~used_range-bottom_right-column = column.
+        recalculate_column_count = abap_true.
+      ENDIF.
+      IF recalculate_row_count = abap_true.
+        zif_xlom__va_array~used_range-row_count = zif_xlom__va_array~used_range-bottom_right-row - zif_xlom__va_array~used_range-top_left-row + 1.
+      ENDIF.
+      IF recalculate_column_count = abap_true.
+        zif_xlom__va_array~used_range-column_count = zif_xlom__va_array~used_range-bottom_right-column - zif_xlom__va_array~used_range-top_left-column + 1.
       ENDIF.
     ENDIF.
   ENDMETHOD.
 
-  METHOD zif_xlom__va_array~get_array_value.
+  METHOD zif_xlom__va_array~get_array_values.
+    result = VALUE #(
+        cells                 = VALUE #( FOR <cell> IN _cells
+                                        ( row = <cell>-row
+                                          column = <cell>-column
+                                          value = <cell>-value ) )
+*        rows                  = VALUE #( FOR row_number = 1 WHILE row_number <= zif_xlom__va_array~used_range-bottom_right-row
+*                                        LET row_number_2 = row_number IN
+*                                        ( columns_of_row = VALUE #( FOR <cell> IN _cells
+*                                                                    WHERE ( row = row_number_2 )
+*                                                                    ( <cell>-value ) ) ) )
+        values_of_other_cells = values_of_other_cells ).
+  ENDMETHOD.
+
+  METHOD zif_xlom__va_array~get_cell_value.
+    IF    row > zif_xlom__va_array~ROW_count
+        or column > zif_xlom__va_array~column_count.
+      result = zcl_xlom__va_error=>ref.
+    ELSEIF    row    < zif_xlom__va_array~used_range-top_left-row
+       OR row    > zif_xlom__va_array~used_range-bottom_right-row.
+      IF lines( values_of_other_cells ) = 1.
+        " Case of the array of a worksheet.
+        result = values_of_other_cells[ 1 ]-value.
+      ELSE.
+        result = values_of_other_cells[ row    = zif_xlom__va_array~used_range-bottom_right-row + 1
+                                        column = column ]-value.
+      ENDIF.
+    ELSEIF column < zif_xlom__va_array~used_range-top_left-column
+       OR column > zif_xlom__va_array~used_range-bottom_right-column.
+      IF lines( values_of_other_cells ) = 1.
+        " Case of the array of a worksheet.
+        result = values_of_other_cells[ 1 ]-value.
+      ELSE.
+        result = values_of_other_cells[ row    = row
+                                        column = zif_xlom__va_array~used_range-bottom_right-column + 1 ]-value.
+      ENDIF.
+    ELSE.
+      DATA(cell) = REF #( _cells[ row    = row
+                                  column = column ] OPTIONAL ).
+      IF cell IS NOT BOUND.
+        " Empty/Blank - Its evaluation depends on its usage (zero or empty string)
+        " =1+Empty gives 1, ="a"&Empty gives "a"
+        result = zcl_xlom__va_empty=>get_singleton( ).
+      ELSE.
+        result = cell->value.
+      ENDIF.
+    ENDIF.
+  ENDMETHOD.
+
+  METHOD zif_xlom__va_array~get_section_as_array.
     DATA(row_count)    = bottom_right-row - top_left-row + 1.
     DATA(column_count) = bottom_right-column - top_left-column + 1.
     DATA(target_array) = create_initial( row_count    = row_count
@@ -151,39 +227,30 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
     result = target_array.
   ENDMETHOD.
 
-  METHOD zif_xlom__va_array~get_cell_value.
-    IF    row    < used_range-top_left-row
-       OR row    > used_range-bottom_right-row
-       OR column < used_range-top_left-column
-       OR column > used_range-bottom_right-column.
-      result = zcl_xlom__va_empty=>get_singleton( ).
-    ELSE.
-      DATA(cell) = REF #( _cells[ row    = row
-                                  column = column ] OPTIONAL ).
-      IF cell IS NOT BOUND.
-        " Empty/Blank - Its evaluation depends on its usage (zero or empty string)
-        " =1+Empty gives 1, ="a"&Empty gives "a"
-        result = zcl_xlom__va_empty=>get_singleton( ).
-      ELSE.
-        result = cell->value.
-      ENDIF.
-    ENDIF.
-  ENDMETHOD.
-
-  METHOD zif_xlom__va_array~set_array_value.
-    DATA(row) = 1.
-    LOOP AT rows REFERENCE INTO DATA(row2).
-
-      DATA(column) = 1.
-      LOOP AT row2->columns_of_row INTO DATA(column_value).
-        zif_xlom__va_array~set_cell_value( column = column
-                                           row    = row
-                                           value  = column_value ).
-        column = column + 1.
-      ENDLOOP.
-
-      row = row + 1.
+  METHOD zif_xlom__va_array~set_array_values.
+    _cells = VALUE #( ).
+    LOOP AT cells REFERENCE INTO DATA(cell).
+      zif_xlom__va_array~set_cell_value( column = cell->column
+                                         row    = cell->row
+                                         value  = cell->value ).
     ENDLOOP.
+
+    me->values_of_other_cells = values_of_other_cells.
+*    DATA(row) = 1.
+*    _cells = VALUE #( ).
+*    LOOP AT rows REFERENCE INTO DATA(row2).
+*      DATA(column) = 1.
+*      LOOP AT row2->columns_of_row INTO DATA(cell_value).
+*        zif_xlom__va_array~set_cell_value( column = column
+*                                           row    = row
+*                                           value  = cell_value ).
+*        column = column + 1.
+*      ENDLOOP.
+*      row = row + 1.
+*    ENDLOOP.
+*    me->value_of_other_cells = COND #( WHEN values_of_other_cells IS BOUND
+*                                       THEN values_of_other_cells
+*                                       ELSE zcl_xlom__va_empty=>get_singleton( ) ).
   ENDMETHOD.
 
   METHOD zif_xlom__va_array~set_cell_value.
@@ -204,9 +271,9 @@ CLASS zcl_xlom__va_array IMPLEMENTATION.
 
         DATA(source_array) = CAST zif_xlom__va_array( value ).
         DATA(source_array_row) = 1.
-        WHILE source_array_row <= source_array->row_count.
+        WHILE source_array_row <= source_array->used_range-row_count.
           DATA(source_array_column) = 1.
-          WHILE source_array_column <= source_array->column_count.
+          WHILE source_array_column <= source_array->used_range-column_count.
             DATA(source_array_cell) = source_array->get_cell_value( column = source_array_column
                                                                     row    = source_array_row ).
             set_cell_value_single( row        = row + source_array_row - 1

@@ -9,9 +9,8 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'CELL'.
-
-*    INTERFACES zif_xlom__ut_all_friends.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'CELL'
+                                        type = zif_xlom__ex=>c_type-function-cell.
 
     CLASS-METHODS class_constructor.
 
@@ -62,12 +61,6 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
                 !reference    TYPE REF TO zcl_xlom__ex_el_range OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_cell.
 
-*    METHODs zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
-
   PRIVATE SECTION.
     CONSTANTS:
       BEGIN OF c_arg,
@@ -77,6 +70,7 @@ CLASS zcl_xlom__ex_fu_cell DEFINITION
 
     CONSTANTS:
       BEGIN OF c_info_type,
+        address  TYPE string VALUE 'address',
         filename TYPE string VALUE 'filename',
       END OF c_info_type.
 
@@ -90,11 +84,6 @@ CLASS zcl_xlom__ex_fu_cell IMPLEMENTATION.
                           ( name = 'REFERENCE' ) ).
   ENDMETHOD.
 
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-cell.
-  ENDMETHOD.
-
   METHOD create.
     result = NEW zcl_xlom__ex_fu_cell( ).
     result->zif_xlom__ex~arguments_or_operands = VALUE #( ( INFO_TYPE )
@@ -106,12 +95,25 @@ CLASS zcl_xlom__ex_fu_cell IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     TRY.
-        " In cell B1, formula =CELL("address",A1:A6) is the same result as =CELL("address",A1), which is $A$1 in cell B1;
-        " the cells B2 to B6 are not initialized with $A$2, $A$3, etc.
-        DATA(info_type_result) = zcl_xlom__va=>to_string( arguments[ c_arg-info_type ] )->get_string( ).
-        CASE info_type_result.
+        DATA(info_type) = zcl_xlom__va=>to_string( arguments[ c_arg-info_type ] )->get_string( ).
+        DATA(reference) = CAST zcl_xlom_range( arguments[ c_arg-reference ] ).
+
+        CASE info_type.
+          WHEN c_info_type-address.
+            " Examples:
+            " - In the same worksheet                 : =CELL("address",A1)        -> $A$1
+            " - Another worksheet in the same workbook: =CELL("address",Sheet2!A1) -> [Book1]Sheet2!$A$1
+            " In cell B1, formula =CELL("address",A1:A6) is the same result as =CELL("address",A1), which is $A$1 in cell B1;
+            " the cells B2 to B6 are not initialized with $A$2, $A$3, etc.
+            IF reference->parent <> context->worksheet.
+              RAISE EXCEPTION TYPE zcx_xlom_todo.
+            ENDIF.
+            DATA(reference_address) = zcl_xlom__ext_range=>get_address( reference ).
+            result = zcl_xlom__va_string=>get(
+                |${ zcl_xlom__ext_range=>convert_column_number_to_a_xfd( reference_address-top_left-column ) }${ reference_address-top_left-row }| ).
+
           WHEN c_info_type-filename.
-            " Retourne par exemple "C:\temp\[Book1.xlsx]Sheet1"
+            " =CELL("filename",A1) -> "C:\temp\[Book1.xlsx]Sheet1"
             result = zcl_xlom__va_string=>create( context->worksheet->parent->path
                                                         && |\\[{ context->worksheet->parent->name }]|
                                                         && context->worksheet->name ).

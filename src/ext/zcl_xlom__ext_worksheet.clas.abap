@@ -14,6 +14,6 @@ ENDCLASS.
 
 CLASS zcl_xlom__ext_worksheet IMPLEMENTATION.
   METHOD get_used_range.
-    result = worksheet->_array->used_range.
+    result = worksheet->_array->zif_xlom__va_array~used_range.
   ENDMETHOD.
 ENDCLASS.

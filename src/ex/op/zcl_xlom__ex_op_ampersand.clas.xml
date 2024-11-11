@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_OP_AMPERSAND</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>&amp; concatenation e.g. &quot;A&quot;&amp;&quot;B&quot; means &quot;AB&quot;</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

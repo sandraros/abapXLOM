@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_column DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'COLUMN'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'COLUMN'
+                                        type = zif_xlom__ex=>c_type-function-column.
 
     CLASS-METHODS class_constructor.
 

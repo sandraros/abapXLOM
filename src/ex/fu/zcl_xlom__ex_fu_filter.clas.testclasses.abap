@@ -22,6 +22,7 @@ CLASS ltc_app DEFINITION
     METHODS array_not_an_array FOR TESTING RAISING cx_static_check.
     METHODS horizontal_nominal FOR TESTING RAISING cx_static_check.
     METHODS vertical_nominal   FOR TESTING RAISING cx_static_check.
+    METHODS vertical_optimize FOR TESTING RAISING cx_static_check.
 
     METHODS setup.
 ENDCLASS.
@@ -48,6 +49,10 @@ CLASS ltc_app IMPLEMENTATION.
         exp = 'm' ).
   ENDMETHOD.
 
+  METHOD setup.
+    setup_default_xlom_objects( ).
+  ENDMETHOD.
+
   METHOD vertical_nominal.
     value = application->evaluate( `FILTER({"a","b";"m","n"},{TRUE;FALSE})` ).
     cl_abap_unit_assert=>assert_equals(
@@ -60,7 +65,24 @@ CLASS ltc_app IMPLEMENTATION.
         exp = 'b' ).
   ENDMETHOD.
 
-  METHOD setup.
-    setup_default_xlom_objects( ).
+  METHOD vertical_optimize.
+    range_c1->set_value( zcl_xlom__va_string=>create( 'a' ) ).
+    range_d1->set_value( zcl_xlom__va_string=>create( 'b' ) ).
+    value = application->evaluate( `FILTER(C:D,C:C="a")` ).
+    DATA(array) = CAST zif_xlom__va_array( value ).
+    cl_abap_unit_assert=>assert_equals(
+        act = array->get_array_values( )
+        exp = VALUE zif_xlom__va_array=>ts_array_values(
+                  cells                 = VALUE #( ( row = 1 column = 1 value = zcl_xlom__va_string=>create( 'a' ) )
+                                                   ( row = 1 column = 2 value = zcl_xlom__va_string=>create( 'b' ) ) )
+                  values_of_other_cells = VALUE #( ) ) ).
+*    cl_abap_unit_assert=>assert_equals(
+*        act = CAST zcl_xlom__va_string( CAST zif_xlom__va_array( value )->get_cell_value( row    = 1
+*                                                                                          column = 1 ) )->get_string( )
+*        exp = 'a' ).
+*    cl_abap_unit_assert=>assert_equals(
+*        act = CAST zcl_xlom__va_string( CAST zif_xlom__va_array( value )->get_cell_value( row    = 1
+*                                                                                          column = 2 ) )->get_string( )
+*        exp = 'b' ).
   ENDMETHOD.
 ENDCLASS.

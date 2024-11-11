@@ -5,7 +5,8 @@ CLASS zcl_xlom__ex_op_colon DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_op.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = ':'.
+    INTERFACES zif_xlom__ex DATA VALUES name = ':'
+                                        type = zif_xlom__ex=>c_type-operation-colon.
     INTERFACES zif_xlom__ex_array.
 
     CLASS-METHODS class_constructor.
@@ -23,8 +24,6 @@ CLASS zcl_xlom__ex_op_colon DEFINITION
       END OF c_arg.
 
     CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
-
-    METHODS constructor.
 ENDCLASS.
 
 
@@ -33,10 +32,6 @@ CLASS zcl_xlom__ex_op_colon IMPLEMENTATION.
     parameters = VALUE #( not_part_of_result_array = abap_true
                           ( name = 'LEFT_OPERAND' )
                           ( name = 'RIGHT_OPERAND' ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-colon.
   ENDMETHOD.
 
   METHOD create.
@@ -56,9 +51,10 @@ CLASS zcl_xlom__ex_op_colon IMPLEMENTATION.
         input     = zif_xlom__ex~arguments_or_operands[ c_arg-right_operand ]->result_of_evaluation
         worksheet = context->worksheet ).
     TRY.
-        result = zcl_xlom__pv_range_create=>create_from_top_left_bottom_ri( worksheet    = context->worksheet
-                                                                 top_left     = zcl_xlom__ext_range=>get_address( left_operand )-top_left
-                                                                 bottom_right = zcl_xlom__ext_range=>get_address( right_operand )-bottom_right ).
+        result = zcl_xlom__pv_range_create=>create_from_top_left_bottom_ri(
+                     worksheet    = context->worksheet
+                     top_left     = zcl_xlom__ext_range=>get_address( left_operand )-top_left
+                     bottom_right = zcl_xlom__ext_range=>get_address( right_operand )-bottom_right ).
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
     ENDTRY.

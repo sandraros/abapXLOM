@@ -9,19 +9,14 @@ CLASS zcl_xlom__ex_fu_t DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'T'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'T'
+                                        type = zif_xlom__ex=>c_type-function-t.
 
     CLASS-METHODS class_constructor.
 
     CLASS-METHODS create
       IMPORTING !value        TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_t.
-
-*    METHODS zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -36,11 +31,6 @@ ENDCLASS.
 CLASS zcl_xlom__ex_fu_t IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'VALUE' ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-t.
   ENDMETHOD.
 
   METHOD create.

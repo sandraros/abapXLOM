@@ -110,11 +110,11 @@ CLASS zcl_xlom_application IMPLEMENTATION.
         RETURN.
     ENDTRY.
 
-    result = zcl_xlom__ex_ut_eval=>evaluate_array_operands(
-                 expression = expression
-                 context    = zcl_xlom__ex_ut_eval_context=>create( worksheet       = CAST #( active_sheet )
-                                                                    containing_cell = VALUE #( row    = 1
-                                                                                               column = 1 ) ) ).
+    DATA(context) = zcl_xlom__ex_ut_eval_context=>create( worksheet       = CAST #( active_sheet )
+                                                          containing_cell = VALUE #( row    = 1
+                                                                                     column = 1 ) ).
+    result = zcl_xlom__ex_ut_eval=>evaluate_array_operands( expression = expression
+                                                            context    = context ).
   ENDMETHOD.
 
   METHOD international.

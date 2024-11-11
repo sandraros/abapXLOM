@@ -5,7 +5,7 @@ CLASS zcl_xlom__ex_fu DEFINITION
 
   PUBLIC SECTION.
     " NB: the interface ZIF_XLOM__EX is defined in subclasses to initialize the static variable NAME.
-*    INTERFACES zif_xlom__ex.
+    "     so "INTERFACES zif_xlom__ex" cannot be indicated here.
 
     METHODS adjust_evaluated_operands
       CHANGING evaluated_operands TYPE zif_xlom__ex=>tt_operand_result.
@@ -30,10 +30,9 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
   ENDMETHOD.
 
   METHOD create_dynamic.
-*    DATA function TYPE REF TO zcl_xlom__ex_fu.
-
-    "    _xlfn.FILTER
-    " OR _xlfn._xlws.FILTER
+    " _xlfn.FILTER
+    " _xlfn._xlws.FILTER
+    " and all other new functions (to be supported in older Excel versions)
     DATA(function_name_2) = EXACT string( function_name ).
     WHILE function_name_2 CP '_xl++.*'.
       function_name_2 = substring( val = function_name_2
@@ -48,6 +47,7 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
       WHEN 'CHOOSE'.      result = NEW zcl_xlom__ex_fu_choose( ).
       WHEN 'COLUMN'.      result = NEW zcl_xlom__ex_fu_column( ).
       WHEN 'CONCATENATE'. result = NEW zcl_xlom__ex_fu_concatenate( ).
+      WHEN 'COUNTA'.      result = NEW zcl_xlom__ex_fu_counta( ).
       WHEN 'COUNTIF'.     result = NEW zcl_xlom__ex_fu_countif( ).
       WHEN 'FILTER'.      result = NEW zcl_xlom__ex_fu_filter( ).
       WHEN 'FIND'.        result = NEW zcl_xlom__ex_fu_find( ).
@@ -60,12 +60,14 @@ CLASS zcl_xlom__ex_fu IMPLEMENTATION.
       WHEN 'LEFT'.        result = NEW zcl_xlom__ex_fu_left( ).
       WHEN 'LEN'.         result = NEW zcl_xlom__ex_fu_len( ).
       WHEN 'MATCH'.       result = NEW zcl_xlom__ex_fu_match( ).
+      WHEN 'MAX'.         result = NEW zcl_xlom__ex_fu_max( ).
       WHEN 'MID'.         result = NEW zcl_xlom__ex_fu_mid( ).
       WHEN 'MOD'.         result = NEW zcl_xlom__ex_fu_mod( ).
       WHEN 'OFFSET'.      result = NEW zcl_xlom__ex_fu_offset( ).
       WHEN 'RIGHT'.       result = NEW zcl_xlom__ex_fu_right( ).
       WHEN 'ROW'.         result = NEW zcl_xlom__ex_fu_row( ).
       WHEN 'SINGLE'.      result = NEW zcl_xlom__ex_fu_single( ).
+      WHEN 'SUMPRODUCT'.  result = NEW zcl_xlom__ex_fu_sumproduct( ).
       WHEN 'T'.           result = NEW zcl_xlom__ex_fu_t( ).
       WHEN 'VLOOKUP'.     result = NEW zcl_xlom__ex_fu_vlookup( ).
       WHEN OTHERS.

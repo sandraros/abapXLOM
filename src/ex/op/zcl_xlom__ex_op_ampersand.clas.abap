@@ -4,7 +4,8 @@ CLASS zcl_xlom__ex_op_ampersand DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_op.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = '&'.
+    INTERFACES zif_xlom__ex DATA VALUES name = '&'
+                                        type = zif_xlom__ex=>c_type-operation-ampersand.
 
     CLASS-METHODS class_constructor.
 
@@ -21,8 +22,6 @@ CLASS zcl_xlom__ex_op_ampersand DEFINITION
       END OF c_arg.
 
     CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
-
-    METHODS constructor.
 ENDCLASS.
 
 
@@ -30,10 +29,6 @@ CLASS zcl_xlom__ex_op_ampersand IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'LEFT_OPERAND ' )
                           ( name = 'RIGHT_OPERAND' ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-ampersand.
   ENDMETHOD.
 
   METHOD create.
@@ -51,6 +46,8 @@ CLASS zcl_xlom__ex_op_ampersand IMPLEMENTATION.
                                            && zcl_xlom__va=>to_string( arguments[ c_arg-right_operand ] )->get_string( ) ).
       CATCH zcx_xlom__va INTO DATA(error).
         result = error->result_error.
+      CATCH cx_root INTO DATA(error_2).
+        ASSERT 1 = 1. " Debug helper to set a break-point
     ENDTRY.
     zif_xlom__ex~result_of_evaluation = result.
   ENDMETHOD.

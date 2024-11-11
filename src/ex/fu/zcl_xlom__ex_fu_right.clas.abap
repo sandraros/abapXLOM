@@ -7,7 +7,8 @@ CLASS zcl_xlom__ex_fu_right DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'RIGHT'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'RIGHT'
+                                        type = zif_xlom__ex=>c_type-function-right.
 
     CLASS-METHODS class_constructor.
 
@@ -15,12 +16,6 @@ CLASS zcl_xlom__ex_fu_right DEFINITION
       IMPORTING !text         TYPE REF TO zif_xlom__ex
                 num_chars     TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_right.
-
-*    METHODs zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -37,11 +32,6 @@ CLASS zcl_xlom__ex_fu_right IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'TEXT' )
                           ( name = 'NUM_CHARS' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-right.
   ENDMETHOD.
 
   METHOD create.

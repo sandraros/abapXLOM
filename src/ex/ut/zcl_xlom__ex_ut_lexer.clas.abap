@@ -171,6 +171,9 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
       ELSEIF sheet_name IS NOT INITIAL.
         INSERT sheet_name && token_value_2 INTO TABLE token_values.
         sheet_name = ``.
+      ELSEif token_value_2 co ' '.
+        " Two or more spaces are condensed into one space
+        INSERT ` ` INTO TABLE token_values.
       ELSE.
         INSERT token_value_2 INTO TABLE token_values.
       ENDIF.
@@ -276,6 +279,18 @@ CLASS zcl_xlom__ex_ut_lexer IMPLEMENTATION.
 
       INSERT token INTO TABLE result.
       token_number = token_number + 1.
+    ENDLOOP.
+
+    " Remove space operators which are not between two symbol names or numbers
+    LOOP AT result TRANSPORTING NO FIELDS where VALUE = ` ` and type = 'O'.
+      if sy-tabix = 1
+        or sy-tabix = lines( result )
+        or not ( ( result[ sy-tabix - 1 ]-type = 'N'
+               or result[ sy-tabix - 1 ]-type = 'W' )
+               and ( result[ sy-tabix + 1 ]-type = 'N'
+               or result[ sy-tabix + 1 ]-type = 'W' ) ).
+        delete result USING KEY loop_key.
+      ENDIF.
     ENDLOOP.
 
     buffer_line->tokens = result.

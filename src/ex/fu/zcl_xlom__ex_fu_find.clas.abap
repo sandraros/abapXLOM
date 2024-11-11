@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_find DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'FIND'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'FIND'
+                                        type = zif_xlom__ex=>c_type-function-find.
 
     CLASS-METHODS class_constructor.
 
@@ -15,12 +16,6 @@ CLASS zcl_xlom__ex_fu_find DEFINITION
                 within_text   TYPE REF TO zif_xlom__ex
                 start_num     TYPE REF TO zif_xlom__ex OPTIONAL
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_find.
-
-*    METHODS zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -41,11 +36,6 @@ CLASS zcl_xlom__ex_fu_find IMPLEMENTATION.
                           ( name = 'START_NUM  ' default = zcl_xlom__ex_el_number=>create( 1 ) ) ).
   ENDMETHOD.
 
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-find.
-  ENDMETHOD.
-
   METHOD create.
     result = NEW zcl_xlom__ex_fu_find( ).
     result->zif_xlom__ex~arguments_or_operands = VALUE #( ( find_text   )
@@ -58,22 +48,26 @@ CLASS zcl_xlom__ex_fu_find IMPLEMENTATION.
 
   METHOD zif_xlom__ex~evaluate.
     TRY.
-        DATA(result_of_find_text) = zcl_xlom__va=>to_string( arguments[ c_arg-find_text ] )->get_string( ).
-        DATA(result_of_within_text) = zcl_xlom__va=>to_string( arguments[ c_arg-within_text ] )->get_string( ).
-        DATA(result_of_start_num) = CAST zcl_xlom__va_number( arguments[ c_arg-start_num ] ).
-        DATA(start_offset) = COND i( WHEN result_of_start_num IS BOUND THEN result_of_start_num->get_number( ) ).
-        IF start_offset > strlen( result_of_within_text ).
-          result = zcl_xlom__va_error=>value_cannot_be_calculated.
+        DATA(find_text) = zcl_xlom__va=>to_string( arguments[ c_arg-find_text ] )->get_string( ).
+        DATA(within_text) = zcl_xlom__va=>to_string( arguments[ c_arg-within_text ] )->get_string( ).
+        DATA(start_num) = zcl_xlom__va=>to_number( arguments[ c_arg-start_num ] )->get_number( ).
+
+        IF find_text IS INITIAL
+            AND start_num <= strlen( within_text ) + 1.
+          result = zcl_xlom__va_number=>create( start_num ).
         ELSE.
-          DATA(result_offset) = COND #( WHEN result_of_find_text IS INITIAL
-                                        THEN 1
-                                        ELSE find( val = result_of_within_text
-                                                   sub = result_of_find_text
-                                                   off = start_offset ) + 1 ).
-          IF result_offset = 0.
+          DATA(start_offset) = start_num - 1.
+          IF start_offset >= strlen( within_text ).
             result = zcl_xlom__va_error=>value_cannot_be_calculated.
           ELSE.
-            result = zcl_xlom__va_number=>create( CONV #( result_offset ) ).
+            DATA(result_offset) = find( val = within_text
+                                        sub = find_text
+                                        off = start_offset ).
+            IF result_offset = -1.
+              result = zcl_xlom__va_error=>value_cannot_be_calculated.
+            ELSE.
+              result = zcl_xlom__va_number=>create( result_offset + 1 ).
+            ENDIF.
           ENDIF.
         ENDIF.
       CATCH zcx_xlom__va INTO DATA(error).

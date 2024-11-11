@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_concatenate DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'CONCATENATE'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'CONCATENATE'
+                                        type = zif_xlom__ex=>c_type-function-concatenate.
 
     TYPES tt_text TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 

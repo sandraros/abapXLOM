@@ -18,11 +18,23 @@ CLASS zcl_xlom__ex_ut_eval DEFINITION
   PROTECTED SECTION.
 
   PRIVATE SECTION.
+    CLASS-METHODS evaluate_single_cell
+      IMPORTING
+        column          TYPE i
+        row             TYPE i
+        operand_results TYPE zif_xlom__ex=>tt_operand_result
+        parameters      TYPE zif_xlom__ex=>tt_parameter
+        context         TYPE REF TO zcl_xlom__ex_ut_eval_context
+        expression      TYPE REF TO zif_xlom__ex
+      RETURNING
+        VALUE(result)   TYPE REF TO zif_xlom__va.
 ENDCLASS.
 
 
 CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
   METHOD evaluate_array_operands.
+    DATA: column_number TYPE i,
+          row_number TYPE i.
     " One simple example to understand:
     "
     " In E1, INDEX(A1:D4,{1,2;3,4},{1,2;3,4}) will correspond to four values in E1:F2:
@@ -142,13 +154,15 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
                                      context   = context ).
     ELSE.
 
-      " Exceptions for few functions
+      " Special logic for a few functions
       IF expression->type between 1000 and 9999.
         CAST zcl_xlom__ex_fu( expression )->adjust_evaluated_operands( CHANGING evaluated_operands = operand_results ).
       ENDIF.
 
       DATA(max_row_count) = 1.
       DATA(max_column_count) = 1.
+      DATA(used_range_row_count) = 1.
+      DATA(used_range_column_count) = 1.
       LOOP AT operand_results INTO operand_result.
         " There can be an operand but no parameter in case the parameter is an endless list
         " of parameters, like in the AND function, only the 2 first parameters are defined.
@@ -160,6 +174,11 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
         CASE operand_result->type.
           WHEN operand_result->c_type-array
             OR operand_result->c_type-range.
+            DATA(optimized_array_range) = zcl_xlom__ut=>intersect_used_range( cast #( operand_result ) ).
+            used_range_row_count = nmax( val1 = used_range_row_count
+                                         val2 = optimized_array_range-inside_used_range-row_count ).
+            used_range_column_count = nmax( val1 = used_range_column_count
+                                            val2 = optimized_array_range-inside_used_range-column_count ).
             max_row_count = nmax( val1 = max_row_count
                                   val2 = CAST zif_xlom__va_array( operand_result )->row_count ).
             max_column_count = nmax( val1 = max_column_count
@@ -167,66 +186,105 @@ CLASS zcl_xlom__ex_ut_eval IMPLEMENTATION.
         ENDCASE.
       ENDLOOP.
 
-      DATA(target_array) = zcl_xlom__va_array=>create_initial( row_count    = max_row_count
-                                                               column_count = max_column_count ).
-      DATA(row) = 1.
-      DO max_row_count TIMES.
+      DATA(cells) = VALUE zif_xlom__va_array=>tt_cell( ).
+*      DATA(rows) = VALUE zif_xlom__va_array=>tt_row( ).
 
-        DATA(column) = 1.
-        DO max_column_count TIMES.
+      row_number = 1.
+      WHILE row_number <= used_range_row_count.
 
-          DATA(single_cell_operands) = VALUE zif_xlom__ex=>tt_operand_result( ).
-          LOOP AT operand_results INTO operand_result.
-            parameter = REF #( parameters[ sy-tabix ] ).
-            IF     parameter->not_part_of_result_array  = abap_false
-               AND operand_result IS BOUND.
-              CASE operand_result->type.
-                WHEN operand_result->c_type-array
-                  OR operand_result->c_type-range.
-                  DATA(operand_array_range) = CAST zif_xlom__va_array( operand_result ).
-                  DATA(cell) = operand_array_range->get_cell_value(
-                                   column = COND #( WHEN operand_array_range->column_count = 1
-                                                    THEN 1
-                                                    ELSE column )
-                                   row    = COND #( WHEN operand_array_range->row_count = 1
-                                                    THEN 1
-                                                    ELSE row ) ).
-                WHEN OTHERS.
-                  cell = operand_result.
-              ENDCASE.
-*              IF operand_result->type = operand_result->c_type-array.
-*                DATA(operand_result_array) = CAST zcl_xlom__va_array( operand_result ).
-*                DATA(cell) = operand_result_array->zif_xlom__va_array~get_cell_value( column = column
-*                                                                                      row    = row ).
-*              ELSEIF operand_result->type = operand_result->c_type-range.
-*                DATA(operand_result_range) = CAST zcl_xlom_range( operand_result ).
-*                cell = operand_result_range->cells( row    = row
-*                                                    column = column ).
-*              ELSE.
-*                cell = operand_result.
-*              ENDIF.
-            ELSE.
-              cell = operand_result.
-            ENDIF.
-            INSERT cell INTO TABLE single_cell_operands.
-          ENDLOOP.
+        DATA(row) = VALUE zif_xlom__va_array=>ts_row( ).
 
-          "======================
-          " EXPRESSION EVALUATION
-          "======================
-          DATA(single_cell_result) = expression->evaluate( arguments = single_cell_operands
-                                                           context   = context ).
+        column_number = 1.
+        WHILE column_number <= used_range_column_count.
+          DATA(single_cell_result) = evaluate_single_cell( column          = column_number
+                                                           row             = row_number
+                                                           operand_results = operand_results
+                                                           parameters      = parameters
+                                                           context         = context
+                                                           expression      = expression ).
+          INSERT VALUE #( row    = row_number
+                          column = column_number
+                          value  = single_cell_result )
+                 into table cells.
+          column_number = column_number + 1.
+        ENDWHILE.
+        row_number = row_number + 1.
+      ENDWHILE.
 
-          target_array->zif_xlom__va_array~set_cell_value( row    = row
-                                                           column = column
-                                                           value  = single_cell_result ).
+      IF    used_range_row_count    < max_row_count
+         OR used_range_column_count < max_column_count.
+        DATA(values_of_other_cells_2) = evaluate_single_cell( column          = nmin( val1 = used_range_column_count + 1
+                                                                                      val2 = max_column_count )
+                                                              row             = nmin( val1 = used_range_row_count + 1
+                                                                                      val2 = max_row_count )
+                                                              operand_results = operand_results
+                                                              parameters      = parameters
+                                                              context         = context
+                                                              expression      = expression ).
+        DATA(values_of_other_cells_3) = zcl_xlom__va=>to_array( values_of_other_cells_2 ).
+        DATA(values_of_other_cells) = VALUE zif_xlom__va_array=>tt_cell( ).
+        row_number = 1.
+        WHILE row_number <= used_range_row_count.
+          column_number = 1.
+          WHILE column_number <= used_range_column_count.
+            INSERT VALUE #( row    = 1
+                            column = column_number
+                            value  = values_of_other_cells_3->get_cell_value( column = column_number
+                                                                              row    = row_number ) )
+                   INTO TABLE values_of_other_cells.
+            column_number = column_number + 1.
+          ENDWHILE.
+          row_number = row_number + 1.
+        ENDWHILE.
+      ENDIF.
 
-          column = column + 1.
-        ENDDO.
+      DATA(target_array) = zcl_xlom__va_array=>create_initial( row_count             = max_row_count
+                                                               column_count          = max_column_count
+                                                               cells                 = cells
+                                                               values_of_other_cells = values_of_other_cells ).
+*                                                               rows                 = rows
+*                                                               value_of_other_cells = value_of_other_cells ).
 
-        row = row + 1.
-      ENDDO.
       result = target_array.
     ENDIF.
   ENDMETHOD.
+
+  METHOD evaluate_single_cell.
+
+    DATA operand_result TYPE REF TO zif_xlom__va.
+    DATA parameter TYPE REF TO zif_xlom__ex=>ts_parameter.
+
+    DATA(single_cell_operands) = VALUE zif_xlom__ex=>tt_operand_result( ).
+    LOOP AT operand_results INTO operand_result.
+      parameter = REF #( parameters[ sy-tabix ] ).
+      IF     parameter->not_part_of_result_array  = abap_false
+         AND operand_result IS BOUND.
+        CASE operand_result->type.
+          WHEN operand_result->c_type-array
+            OR operand_result->c_type-range.
+            DATA(operand_array_range) = CAST zif_xlom__va_array( operand_result ).
+            DATA(cell) = operand_array_range->get_cell_value(
+                             column = COND #( WHEN operand_array_range->column_count = 1
+                                              THEN 1
+                                              ELSE column )
+                             row    = COND #( WHEN operand_array_range->row_count = 1
+                                              THEN 1
+                                              ELSE row ) ).
+          WHEN OTHERS.
+            cell = operand_result.
+        ENDCASE.
+      ELSE.
+        cell = operand_result.
+      ENDIF.
+      INSERT cell INTO TABLE single_cell_operands.
+    ENDLOOP.
+
+    "======================
+    " EXPRESSION EVALUATION
+    "======================
+    result = expression->evaluate( arguments = single_cell_operands
+                                   context   = context ).
+
+  ENDMETHOD.
+
 ENDCLASS.

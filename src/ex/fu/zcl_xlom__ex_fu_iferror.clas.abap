@@ -7,7 +7,8 @@ CLASS zcl_xlom__ex_fu_iferror DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'IFERROR'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'IFERROR'
+                                        type = zif_xlom__ex=>c_type-function-iferror.
 
     CLASS-METHODS class_constructor.
 

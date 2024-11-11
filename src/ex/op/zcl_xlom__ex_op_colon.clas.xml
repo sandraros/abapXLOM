@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_OP_COLON</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>: range interval operator e.g. &quot;A:C&quot; means columns A to C</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>

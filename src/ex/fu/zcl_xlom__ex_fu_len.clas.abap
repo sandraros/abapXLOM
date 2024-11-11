@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_len DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'LEN'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'LEN'
+                                        type = zif_xlom__ex=>c_type-function-len.
 
     CLASS-METHODS class_constructor.
 

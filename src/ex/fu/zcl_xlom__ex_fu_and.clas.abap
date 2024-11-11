@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_and DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'AND'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'AND'
+                                        type = zif_xlom__ex=>c_type-function-and.
 
     TYPES tt_logical TYPE STANDARD TABLE OF REF TO zif_xlom__ex WITH EMPTY KEY.
 

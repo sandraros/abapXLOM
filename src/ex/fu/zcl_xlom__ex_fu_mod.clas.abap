@@ -6,7 +6,8 @@ CLASS zcl_xlom__ex_fu_mod DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_fu.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = 'MOD'.
+    INTERFACES zif_xlom__ex DATA VALUES name = 'MOD'
+                                        type = zif_xlom__ex=>c_type-function-mod.
 
     CLASS-METHODS class_constructor.
 
@@ -14,12 +15,6 @@ CLASS zcl_xlom__ex_fu_mod DEFINITION
       IMPORTING !number       TYPE REF TO zif_xlom__ex
                 divisor       TYPE REF TO zif_xlom__ex
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_fu_mod.
-
-*    METHODS zif_xlom__ex~evaluate REDEFINITION.
-*    METHODS zif_xlom__ex~get_parameters REDEFINITION.
-
-  PROTECTED SECTION.
-    METHODS constructor.
 
   PRIVATE SECTION.
     CONSTANTS:
@@ -36,11 +31,6 @@ CLASS zcl_xlom__ex_fu_mod IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'NUMBER ' )
                           ( name = 'DIVISOR' ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    super->constructor( ).
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-function-len.
   ENDMETHOD.
 
   METHOD create.

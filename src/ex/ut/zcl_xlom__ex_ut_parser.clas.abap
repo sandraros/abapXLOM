@@ -3,8 +3,6 @@ CLASS zcl_xlom__ex_ut_parser DEFINITION
   CREATE PRIVATE.
 
   PUBLIC SECTION.
-*    INTERFACES zif_xlom__ut_all_friends.
-
     CLASS-METHODS create
       RETURNING VALUE(result) TYPE REF TO zcl_xlom__ex_ut_parser.
 
@@ -26,11 +24,6 @@ CLASS zcl_xlom__ex_ut_parser DEFINITION
 
     METHODS get_expression_from_error
       IMPORTING error_name    TYPE string
-      RETURNING VALUE(result) TYPE REF TO zif_xlom__ex.
-
-    METHODS get_expression_from_operator
-      IMPORTING operator      TYPE string
-                arguments     TYPE tt_expr
       RETURNING VALUE(result) TYPE REF TO zif_xlom__ex.
 
     METHODS get_expression_from_symbol_nam
@@ -77,55 +70,6 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
 
   METHOD get_expression_from_error.
     result = zcl_xlom__ex_el_error=>get_from_error_name( error_name ).
-  ENDMETHOD.
-
-  METHOD get_expression_from_operator.
-    DATA(unary) = xsdbool( lines( arguments ) = 1 ).
-    CASE operator.
-      WHEN '+'.
-        IF unary = abap_false.
-          result = zcl_xlom__ex_op_plus=>create( left_operand  = arguments[ 1 ]
-                                                 right_operand = arguments[ 2 ] ).
-        ELSE.
-          RAISE EXCEPTION TYPE zcx_xlom_todo.
-        ENDIF.
-      WHEN '-'.
-        IF unary = abap_false.
-          result = zcl_xlom__ex_op_minus=>create( left_operand  = arguments[ 1 ]
-                                                  right_operand = arguments[ 2 ] ).
-        ELSE.
-          result = zcl_xlom__ex_op_minus_unary=>create( operand = arguments[ 1 ] ).
-        ENDIF.
-      WHEN '*'.
-        result = zcl_xlom__ex_op_mult=>create( left_operand  = arguments[ 1 ]
-                                               right_operand = arguments[ 2 ] ).
-      WHEN '='.
-        result = zcl_xlom__ex_op_equal=>create( left_operand  = arguments[ 1 ]
-                                                right_operand = arguments[ 2 ] ).
-      WHEN '<'.
-        result = zcl_xlom__ex_op_lower=>create( left_operand  = arguments[ 1 ]
-                                                right_operand = arguments[ 2 ] ).
-      WHEN '<='.
-        result = zcl_xlom__ex_op_lower_equal=>create( left_operand  = arguments[ 1 ]
-                                                      right_operand = arguments[ 2 ] ).
-      WHEN '>'.
-        result = zcl_xlom__ex_op_greater=>create( left_operand  = arguments[ 1 ]
-                                                  right_operand = arguments[ 2 ] ).
-      WHEN '>='.
-        result = zcl_xlom__ex_op_greater_equal=>create( left_operand  = arguments[ 1 ]
-                                                        right_operand = arguments[ 2 ] ).
-      WHEN '<>'.
-        result = zcl_xlom__ex_op_not_equal=>create( left_operand  = arguments[ 1 ]
-                                                    right_operand = arguments[ 2 ] ).
-      WHEN '&'.
-        result = zcl_xlom__ex_op_ampersand=>create( left_operand  = arguments[ 1 ]
-                                                    right_operand = arguments[ 2 ] ).
-      WHEN ':'.
-        result = zcl_xlom__ex_op_colon=>create( left_operand  = arguments[ 1 ]
-                                                right_operand = arguments[ 2 ] ).
-      WHEN OTHERS.
-        RAISE EXCEPTION TYPE zcx_xlom_todo.
-    ENDCASE.
   ENDMETHOD.
 
   METHOD get_expression_from_symbol_nam.
@@ -341,9 +285,9 @@ CLASS zcl_xlom__ex_ut_parser IMPLEMENTATION.
 
       WHEN zcl_xlom__ex_ut_lexer=>c_type-operator.
         " OPERATOR
-        item->expression = get_expression_from_operator( operator  = item->value
-                                                         arguments = VALUE #( FOR <subitem> IN item->subitems
-                                                                              ( <subitem>->expression ) ) ).
+        item->expression = zcl_xlom__ex_op=>create_dynamic( operator  = item->value
+                                                            arguments = VALUE #( FOR <subitem> IN item->subitems
+                                                                                 ( <subitem>->expression ) ) ).
       WHEN zcl_xlom__ex_ut_lexer=>c_type-semicolon.
         " Array row separator. No special processing, it's handled inside curly brackets.
         ASSERT 1 = 1. " Debug helper to set a break-point

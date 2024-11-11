@@ -4,7 +4,8 @@ CLASS zcl_xlom__ex_op_greater_equal DEFINITION
   GLOBAL FRIENDS zcl_xlom__ex_op.
 
   PUBLIC SECTION.
-    INTERFACES zif_xlom__ex DATA VALUES name = '>='.
+    INTERFACES zif_xlom__ex DATA VALUES name = '>='
+                                        type = zif_xlom__ex=>c_type-operation-greater_or_equal.
 
     CLASS-METHODS class_constructor.
 
@@ -21,8 +22,6 @@ CLASS zcl_xlom__ex_op_greater_equal DEFINITION
       END OF c_arg.
 
     CLASS-DATA parameters TYPE zif_xlom__ex=>tt_parameter.
-
-    METHODS constructor.
 ENDCLASS.
 
 
@@ -30,10 +29,6 @@ CLASS zcl_xlom__ex_op_greater_equal IMPLEMENTATION.
   METHOD class_constructor.
     parameters = VALUE #( ( name = 'LEFT_OPERAND'  )
                           ( name = 'RIGHT_OPERAND' ) ).
-  ENDMETHOD.
-
-  METHOD constructor.
-    zif_xlom__ex~type = zif_xlom__ex=>c_type-operation-equal.
   ENDMETHOD.
 
   METHOD create.

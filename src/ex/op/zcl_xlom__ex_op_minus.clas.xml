@@ -5,6 +5,7 @@
    <VSEOCLASS>
     <CLSNAME>ZCL_XLOM__EX_OP_MINUS</CLSNAME>
     <LANGU>E</LANGU>
+    <DESCRIPT>- like in =3-1 which is the same as =2</DESCRIPT>
     <STATE>1</STATE>
     <CLSCCINCL>X</CLSCCINCL>
     <FIXPT>X</FIXPT>
